@@ -17,6 +17,22 @@ const SWEEP_DURATION = dur.xl * 1.05;
 const EXIT_DURATION = dur.m;
 const HOLD_MS = 200;
 
+function clearIntroPageBlock() {
+  try {
+    document.documentElement.removeAttribute("data-lm-intro-block");
+  } catch {
+    /* ignore */
+  }
+}
+
+function setIntroPageBlock() {
+  try {
+    document.documentElement.setAttribute("data-lm-intro-block", "");
+  } catch {
+    /* ignore */
+  }
+}
+
 function reducedMotion(): boolean {
   try {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -25,10 +41,11 @@ function reducedMotion(): boolean {
   }
 }
 
+/** SSR + first client frame must match (no `prefers-reduced-motion` here) so hydration stays valid. */
 function initialPhaseForPath(pathname: string | null): "run" | "off" {
-  if (typeof window === "undefined") return "off";
-  if (reducedMotion()) return "off";
-  return pathname === "/" ? "run" : "off";
+  if (pathname == null) return "off";
+  const isHome = pathname === "/" || pathname === "";
+  return isHome ? "run" : "off";
 }
 
 /**
@@ -51,6 +68,7 @@ export function IntroLoader() {
       setPhase("off");
       return;
     }
+    setIntroPageBlock();
     sweepDone.current = false;
     setPlayKey((k) => k + 1);
     setPhase("run");
@@ -64,6 +82,7 @@ export function IntroLoader() {
     }
 
     if (reducedMotion()) {
+      skipFirstPathEffect.current = false;
       setPhase("off");
       return;
     }
@@ -85,6 +104,12 @@ export function IntroLoader() {
     window.addEventListener(LINEAMODE_HOME_INTRO_REPLAY, onReplay);
     return () => window.removeEventListener(LINEAMODE_HOME_INTRO_REPLAY, onReplay);
   }, []);
+
+  useLayoutEffect(() => {
+    if (phase === "off") {
+      clearIntroPageBlock();
+    }
+  }, [phase]);
 
   useLayoutEffect(() => {
     if (phase === "off") return;

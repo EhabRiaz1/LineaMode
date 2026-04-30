@@ -7,7 +7,7 @@ image slots are filled with curated stock imagery served via Unsplash.
 
 | Surface                        | Slot                                | Replace with                          |
 | ------------------------------ | ----------------------------------- | ------------------------------------- |
-| Home / Hero                    | Right-side fabric macro             | Brand fabric-macro 6s loop video      |
+| Home / Hero                    | Full-bleed editorial frame (currently a cream-blazer / red-rose editorial portrait — picked because it sits exactly on the brand palette of Chalk Sand + Carbon Ink + Terracotta) | Lineamode FW '26 hero key visual |
 | Home / Products                | Five category hero + detail images  | Studio-shot lookbook of each category |
 | Home / LookbookTeaser          | Full-bleed editorial               | FW '26 lookbook key visual            |
 | Lookbook                       | All spreads (cover, wide, diptych) | Lookbook '26 final layout assets      |

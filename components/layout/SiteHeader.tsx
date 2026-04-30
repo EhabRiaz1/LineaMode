@@ -106,11 +106,14 @@ export function SiteHeader() {
         </button>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu.
+          Border lives INSIDE the panel (and only when open) so the 0-height
+          collapsed state doesn't leave a phantom 1px hairline below the
+          sticky navbar. */}
       <div
         className={cn(
-          "md:hidden fixed inset-x-0 top-[60px] bg-stone border-t hairline transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-hidden",
-          open ? "max-h-[80vh]" : "max-h-0",
+          "md:hidden fixed inset-x-0 top-[60px] bg-stone transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-hidden",
+          open ? "max-h-[80vh] border-t border-ink/10" : "max-h-0 border-t border-transparent",
         )}
       >
         <nav className="shell flex flex-col gap-4 py-8" aria-label="Mobile primary">

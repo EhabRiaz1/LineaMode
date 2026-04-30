@@ -96,6 +96,13 @@ body {
   overflow-x: hidden;
 }
 
+/* Hide chrome under fixed intro until React removes data-lm-intro-block (see layout inline script). */
+html[data-lm-intro-block] body #main,
+html[data-lm-intro-block] body > header,
+html[data-lm-intro-block] body > footer {
+  visibility: hidden;
+}
+
 ::selection {
   background: var(--color-carbon-ink);
   color: var(--color-stone-veil);

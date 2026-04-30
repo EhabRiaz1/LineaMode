@@ -33,13 +33,19 @@ export function NetworkStats() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 border-t border-stone/15 pt-10">
+        {/* 2-column layout so the giant figures get full breathing room
+            on laptop and "100%" / "14 day" stop crowding each other. The
+            four stats now read as two pairs (30+ / 5, then 100% / 14 day). */}
+        <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:gap-x-16 md:gap-y-16 border-t border-stone/15 pt-10 md:pt-14">
           {stats.map((s) => (
-            <div key={s.label} className="flex flex-col gap-3">
-              <div className="text-display text-[clamp(3.5rem,7vw,7rem)] leading-[0.9]">
+            <div
+              key={s.label}
+              className="flex flex-col gap-3 border-b border-stone/10 pb-8 md:border-b-0 md:pb-0"
+            >
+              <div className="text-display text-[clamp(3.25rem,9vw,8rem)] leading-[0.88] tabular-nums">
                 <NumberCounter to={s.value} suffix={s.suffix} duration={1.8} />
               </div>
-              <p className="text-label text-stone/70 max-w-[16ch]">{s.label}</p>
+              <p className="text-label text-stone/70 max-w-[18ch]">{s.label}</p>
             </div>
           ))}
         </div>

@@ -94,6 +94,12 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-stone text-ink">
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var p=location.pathname;if(p!=='/'&&p!=='')return;if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;document.documentElement.setAttribute('data-lm-intro-block','');}catch(e){}})();",
+          }}
+        />
         <IntroLoaderGate />
         <SmoothScroll />
         <GrainOverlay />
