@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 80" role="img" aria-label="Lineamode Apparel">
+  <style>
+    .b { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 700; }
+    .l { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 300; letter-spacing: 0.04em; }
+    .a { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 300; letter-spacing: 0.6em; font-size: 12px; }
+  </style>
+  <g fill="#201C1D">
+    <text class="b" x="0" y="48" font-size="48">LINEA</text>
+    <text class="l" x="160" y="48" font-size="48">MODE</text>
+    <text class="a" x="0" y="68">A P P A R E L</text>
+  </g>
+</svg>

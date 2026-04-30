@@ -1,0 +1,49 @@
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { NumberCounter } from "@/components/ui/NumberCounter";
+import { GridPattern } from "@/components/ui/GridPattern";
+import { stats } from "@/content/manifesto";
+
+export function NetworkStats() {
+  return (
+    <section className="relative bg-[var(--color-graphite-blue)] text-stone overflow-hidden">
+      <GridPattern
+        density={48}
+        className="absolute inset-0 text-stone opacity-[0.08]"
+        disruption
+      />
+
+      <div className="shell relative py-32 md:py-44">
+        <div className="grid grid-cols-12 gap-6 mb-16">
+          <div className="col-span-12 md:col-span-5">
+            <Eyebrow number="05" className="text-stone/70">
+              Numbers
+            </Eyebrow>
+            <h2 className="text-h1 mt-6">
+              Built on three decades
+              <br />
+              <span className="italic font-extralight">of textile know-how.</span>
+            </h2>
+          </div>
+          <div className="col-span-12 md:col-span-5 md:col-start-8 self-end">
+            <p className="text-body text-stone/75 max-w-md">
+              Lineamode's founding team brings 30+ years of experience working
+              with the world's most demanding brands. Our processes, our mill
+              relationships and our discipline are inherited — not invented.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10 border-t border-stone/15 pt-10">
+          {stats.map((s) => (
+            <div key={s.label} className="flex flex-col gap-3">
+              <div className="text-display text-[clamp(3.5rem,7vw,7rem)] leading-[0.9]">
+                <NumberCounter to={s.value} suffix={s.suffix} duration={1.8} />
+              </div>
+              <p className="text-label text-stone/70 max-w-[16ch]">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
