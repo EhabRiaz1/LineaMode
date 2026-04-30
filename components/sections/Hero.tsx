@@ -7,8 +7,10 @@ import {
   useVelocity,
   useSpring,
   useReducedMotion,
+  useMotionTemplate,
+  useInView,
 } from "motion/react";
-import { useId } from "react";
+import { useRef } from "react";
 import { SplitText } from "@/components/ui/SplitText";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { ButtonLink } from "@/components/ui/Button";
@@ -32,10 +34,20 @@ const HERO_IMAGE =
 
 export function Hero() {
   const reduce = useReducedMotion();
+  const sectionRef = useRef<HTMLElement>(null);
 
-  // Scroll-velocity-driven ripple. The displacement filter is always
-  // applied with a tiny baseline (gives the image a subtle glassiness),
-  // and the magnitude scales with how fast the user is scrolling.
+  // Visibility gate. Once the hero leaves the viewport we let the entire
+  // filter pipeline collapse to a no-op so:
+  //   — Safari stops paying for an off-screen filter graph (fixes the
+  //     "laggy when scrolling past hero" report).
+  //   — Chrome / any other compositor doesn't carry will-change: filter on
+  //     a layer that's no longer painted.
+  const inView = useInView(sectionRef, { margin: "0px 0px 0px 0px" });
+
+  // Scroll-velocity-driven glass distortion. We use plain CSS filters
+  // (blur + saturate) and a tiny scale wobble — all of which are pure
+  // compositor operations on every modern engine, so the result is
+  // identical in Chrome and Safari and gets GPU-accelerated for free.
   const { scrollY } = useScroll();
   const velocity = useVelocity(scrollY);
   const smooth = useSpring(velocity, {
@@ -43,64 +55,57 @@ export function Hero() {
     stiffness: 220,
     mass: 0.5,
   });
-  const rippleScale = useTransform(smooth, (v) =>
-    reduce ? 0 : Math.min(58, Math.abs(v) / 60) + 3,
+
+  // Magnitude of the effect, derived from |scroll velocity|. Capped so a
+  // fast flick can't blur the image into a soup.
+  const blurPx = useTransform(smooth, (v) =>
+    !inView || reduce ? 0 : Math.min(8, Math.abs(v) / 240),
+  );
+  const saturate = useTransform(smooth, (v) =>
+    !inView || reduce ? 1 : 1 + Math.min(0.18, Math.abs(v) / 6000),
+  );
+  const wobble = useTransform(smooth, (v) =>
+    !inView || reduce ? 1 : 1 + Math.min(0.012, Math.abs(v) / 90000),
   );
 
-  // Unique filter id so multiple Hero instances (or dev HMR) don't collide.
-  const filterId = `hero-ripple-${useId().replace(/[:]/g, "")}`;
+  // Compose the CSS filter shorthand. useMotionTemplate keeps this on the
+  // motion thread, so the value is written straight to the layer without
+  // going through React render.
+  const filter = useMotionTemplate`blur(${blurPx}px) saturate(${saturate})`;
 
   return (
-    <section className="relative h-[100svh] min-h-[640px] overflow-hidden text-stone">
-      {/* Off-screen SVG defining the ripple filter */}
-      <svg
-        className="pointer-events-none absolute h-0 w-0 overflow-hidden"
-        aria-hidden
-      >
-        <defs>
-          <filter
-            id={filterId}
-            x="-5%"
-            y="-5%"
-            width="110%"
-            height="110%"
-            colorInterpolationFilters="sRGB"
-          >
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.011 0.018"
-              numOctaves="2"
-              seed="3"
-              stitchTiles="stitch"
-            />
-            <motion.feDisplacementMap
-              in="SourceGraphic"
-              scale={rippleScale}
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Background image, ripple-distorted */}
+    <section
+      ref={sectionRef}
+      className="relative h-[100svh] min-h-[640px] overflow-hidden text-stone"
+    >
+      {/* Background image stack.
+            Outer wrapper  → handles the one-shot intro reveal (opacity + zoom).
+            Inner wrapper  → carries the continuous, scroll-velocity driven
+                              CSS filter and a faint scale wobble.
+          Splitting them avoids two animations fighting over the same `scale`
+          on a single node, and keeps both layers on their own GPU surface. */}
       <motion.div
         className="absolute inset-0"
-        style={{
-          filter: `url(#${filterId})`,
-          willChange: "filter",
-        }}
         initial={{ opacity: 0, scale: 1.06 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.6, ease: easeBrand, delay: 0.2 }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={HERO_IMAGE}
-          alt="Editorial garment study — Lineamode Apparel"
-          className="h-full w-full object-cover object-[center_25%]"
-          draggable={false}
-        />
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            filter,
+            scale: wobble,
+            willChange: "filter, transform",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={HERO_IMAGE}
+            alt="Editorial garment study — Lineamode Apparel"
+            className="h-full w-full object-cover object-[center_25%]"
+            draggable={false}
+          />
+        </motion.div>
       </motion.div>
 
       {/* Layered overlays for legibility (kept outside the filter so they
