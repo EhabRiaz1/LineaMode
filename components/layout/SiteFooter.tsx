@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { GridPattern } from "@/components/ui/GridPattern";
 
 const NAV = [
@@ -50,7 +50,7 @@ export function SiteFooter() {
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
           <div className="md:col-span-4">
-            <Wordmark className="h-5 text-stone" tone="reverse" />
+            <BrandLogo context="dark" className="h-6 max-w-[min(100%,280px)]" />
             <p className="mt-6 max-w-xs text-body text-stone/70">
               An end-to-end apparel partner for brands that move fast.
               Design, product development and manufacturing in one studio.

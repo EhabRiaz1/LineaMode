@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Fraunces, Inter } from "next/font/google";
 import "./globals.css";
+import { IntroLoaderGate } from "@/components/layout/IntroLoaderGate";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { GrainOverlay } from "@/components/layout/GrainOverlay";
@@ -93,6 +94,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-stone text-ink">
+        <IntroLoaderGate />
         <SmoothScroll />
         <GrainOverlay />
         <Cursor />

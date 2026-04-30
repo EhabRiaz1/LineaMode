@@ -7,7 +7,7 @@ type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-ink text-stone hover:bg-ink/85",
+    "bg-ink text-[var(--color-stone-veil)] hover:bg-ink/85",
   ink: "bg-stone text-ink hover:bg-stone/90 ring-1 ring-ink/15",
   ghost:
     "bg-transparent text-ink hover:bg-ink/5 ring-1 ring-ink/25",

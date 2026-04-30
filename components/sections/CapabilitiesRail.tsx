@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useLayoutEffect } from "react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { capabilities } from "@/content/capabilities";
 
@@ -13,7 +13,7 @@ export function CapabilitiesRail() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     let ctx: { revert: () => void } | null = null;
     let mounted = true;
 
@@ -46,6 +46,8 @@ export function CapabilitiesRail() {
             end: () => `+=${distance + 40}`,
             scrub: 0.6,
             pin: true,
+            /** Avoid reparenting pinned nodes outside React's tree (fixes removeChild errors on route change). */
+            pinReparent: false,
             anticipatePin: 1,
             invalidateOnRefresh: true,
           },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Marquee } from "@/components/ui/Marquee";
 import { values } from "@/content/values";
@@ -72,23 +72,21 @@ export function ValuesSection() {
           </div>
 
           <div className="col-span-12 md:col-span-6 md:col-start-7 relative min-h-[280px]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={values[active].number}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.6, ease: easeBrand }}
-                className="md:sticky md:top-32"
-              >
-                <p className="text-eyebrow text-ink/45 mb-6">
-                  Principle / {values[active].number}
-                </p>
-                <p className="text-h2 font-sans font-light leading-tight max-w-xl">
-                  {values[active].description}
-                </p>
-              </motion.div>
-            </AnimatePresence>
+            {/* No AnimatePresence: exit animations race with Next.js unmounting the page and cause removeChild errors. */}
+            <motion.div
+              key={values[active].number}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: easeBrand }}
+              className="md:sticky md:top-32"
+            >
+              <p className="text-eyebrow text-ink/45 mb-6">
+                Principle / {values[active].number}
+              </p>
+              <p className="text-h2 font-sans font-light leading-tight max-w-xl">
+                {values[active].description}
+              </p>
+            </motion.div>
           </div>
         </div>
       </div>

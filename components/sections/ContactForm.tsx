@@ -114,11 +114,11 @@ export function ContactForm() {
                 type="submit"
                 disabled={pending}
                 className={cn(
-                  "inline-flex items-center gap-3 rounded-full bg-ink text-stone h-14 px-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group/btn",
+                  "inline-flex items-center gap-3 rounded-full bg-ink text-[var(--color-stone-veil)] h-14 px-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group/btn",
                   "disabled:opacity-50 disabled:cursor-wait",
                 )}
               >
-                <span className="size-1.5 rounded-full bg-stone transition-transform duration-500 group-hover/btn:scale-150" />
+                <span className="size-1.5 rounded-full bg-[var(--color-stone-veil)] transition-transform duration-500 group-hover/btn:scale-150" />
                 <span className="text-label">
                   {pending ? "Sending…" : "Send brief"}
                 </span>

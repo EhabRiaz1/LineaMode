@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { LINEAMODE_HOME_INTRO_REPLAY } from "@/components/layout/IntroLoader";
 
 const NAV = [
   { href: "/about", label: "About" },
@@ -15,6 +17,7 @@ const NAV = [
 ];
 
 export function SiteHeader() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -35,8 +38,19 @@ export function SiteHeader() {
       )}
     >
       <div className="shell flex items-center justify-between gap-6">
-        <Link href="/" aria-label="Lineamode home" className="flex items-center">
-          <Wordmark
+        <Link
+          href="/"
+          aria-label="Lineamode home"
+          className="flex items-center"
+          onClick={() => {
+            if (pathname === "/") {
+              window.dispatchEvent(new CustomEvent(LINEAMODE_HOME_INTRO_REPLAY));
+            }
+          }}
+        >
+          <BrandLogo
+            context="light"
+            priority
             className={cn(
               "transition-all duration-500",
               scrolled ? "h-3.5" : "h-4",
@@ -58,9 +72,9 @@ export function SiteHeader() {
 
         <Link
           href="/contact"
-          className="hidden md:inline-flex items-center gap-2 text-label border border-ink/30 px-4 py-2 rounded-full hover:bg-ink hover:text-stone transition-colors"
+          className="hidden md:inline-flex items-center gap-2 text-label border border-ink/30 px-4 py-2 rounded-full hover:bg-ink hover:text-[var(--color-stone-veil)] transition-colors"
         >
-          <span className="size-1.5 rounded-full bg-ink group-hover:bg-stone" />
+          <span className="size-1.5 rounded-full bg-ink group-hover:bg-[var(--color-stone-veil)]" />
           Start a project
         </Link>
 
