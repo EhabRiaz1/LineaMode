@@ -20,6 +20,9 @@
 # production
 /build
 
+# brand deck (too large for GitHub; keep locally)
+docs/*.pdf
+
 # misc
 .DS_Store
 *.pem
