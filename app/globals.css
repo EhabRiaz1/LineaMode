@@ -39,10 +39,14 @@
   --shell-max: 1440px;
   --shell-pad-x: clamp(20px, 4vw, 56px);
 
-  /* Typography */
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-display), "Times New Roman", serif;
-  --font-mono: var(--font-mono-sans), "Helvetica Neue", Arial, sans-serif;
+  /* Typography
+     Note: next/font already appends a metric-matched fallback to each
+     of these variables, so we reference them directly and let it own
+     the fallback chain. Manual fallbacks here would override (and break)
+     next/font's auto-generated size-adjust fallback. */
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-fraunces);
+  --font-mono: var(--font-mono-sans);
 }
 
 @theme inline {

@@ -20,7 +20,7 @@ const manrope = Manrope({
 // Fraunces — editorial display, free Google substitute for Larken.
 // Replace with licensed Larken before launch.
 const display = Fraunces({
-  variable: "--font-display",
+  variable: "--font-fraunces",
   subsets: ["latin"],
   display: "swap",
   axes: ["SOFT", "WONK", "opsz"],

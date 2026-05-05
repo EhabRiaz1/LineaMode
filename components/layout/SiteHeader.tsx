@@ -31,10 +31,10 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        "fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] backdrop-blur-md",
         scrolled
-          ? "py-3 backdrop-blur-md bg-stone/80"
-          : "py-5 bg-transparent",
+          ? "py-3 bg-stone/80"
+          : "py-5 bg-stone/40",
       )}
     >
       <div className="shell flex items-center justify-between gap-6">
