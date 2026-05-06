@@ -17,9 +17,9 @@ export default function AboutPage() {
   return (
     <>
       {/* Intro */}
-      <section className="relative pt-40 pb-32 overflow-hidden">
+      <section className="relative bg-[var(--color-ash-linen)] text-ink pt-40 pb-32 overflow-hidden">
         <GridPattern
-          className="absolute inset-0 text-ink opacity-[0.05]"
+          className="absolute inset-0 text-ink opacity-[0.07]"
           density={28}
           disruption
         />
@@ -45,15 +45,24 @@ export default function AboutPage() {
       </section>
 
       {/* Manifesto */}
-      <section className="relative pb-32 md:pb-44">
+      <section className="relative pt-24 pb-32 md:pt-32 md:pb-44">
         <div className="shell grid grid-cols-12 gap-6">
           <div className="col-span-12 md:col-span-3">
             <p className="text-eyebrow text-ink/55">/ 01 Manifesto</p>
           </div>
           <div className="col-span-12 md:col-span-8 md:col-start-5 max-w-3xl">
-            <p className="text-h1 leading-[1.05] mb-12">{manifesto.short}</p>
+            <p className="text-h1 leading-[1.05] mb-10">
+              End-to-end apparel —{" "}
+              <span className="italic font-extralight">
+                design through production.
+              </span>
+            </p>
+            <p className="text-body text-ink/80 max-w-2xl mb-12">
+              A specialism in knitwear made from performance polyesters,
+              with a discipline that reaches into every step of the line.
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 text-body text-ink/75">
-              {manifesto.long.map((p, i) => (
+              {manifesto.long.slice(0, 2).map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
             </div>
@@ -64,59 +73,12 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Founder note */}
-      <section className="relative bg-[var(--color-graphite-blue)] text-stone py-32 md:py-44 overflow-hidden">
-        <GridPattern
-          className="absolute inset-0 text-stone opacity-[0.07]"
-          density={48}
-          disruption
-        />
-        <div className="shell relative grid grid-cols-12 gap-6 items-center">
-          <div className="col-span-12 md:col-span-5">
-            <div className="aspect-[4/5] overflow-hidden ring-1 ring-stone/15">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1600&q=80"
-                alt="Founder portrait"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-          <div className="col-span-12 md:col-span-6 md:col-start-7">
-            <Eyebrow number="02" className="text-stone/70">
-              Founder
-            </Eyebrow>
-            <h2 className="text-h1 mt-6">
-              Saif Ahmed,
-              <br />
-              <span className="italic font-extralight">on the long game.</span>
-            </h2>
-            <p className="text-body text-stone/80 max-w-md mt-8">
-              Three decades in the global textile industry — working alongside
-              the most exacting brands and manufacturers in fashion — taught
-              the studio one thing above all: brands grow when their partner
-              owns the long-term, not just the next purchase order.
-            </p>
-            <p className="text-body text-stone/80 max-w-md mt-4">
-              That belief is the spine of Lineamode. Every process, every
-              hire, every fabric we add to our library is in service of
-              becoming the partner our customers can stay with for years.
-            </p>
-            <div className="mt-10">
-              <ButtonLink href="/contact" variant="ink">
-                Speak to the studio
-              </ButtonLink>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Values */}
       <section className="relative bg-stone py-32 md:py-44">
         <div className="shell">
           <div className="grid grid-cols-12 gap-6 mb-16">
             <div className="col-span-12 md:col-span-4">
-              <Eyebrow number="03">Values</Eyebrow>
+              <Eyebrow number="02">Values</Eyebrow>
               <h2 className="text-h1 mt-6">
                 Five principles
                 <br />
@@ -137,6 +99,55 @@ export default function AboutPage() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Founders CTA — wow panel, 70vh, button to /founders */}
+      <section className="relative bg-[var(--color-graphite-blue)] text-stone overflow-hidden min-h-[70vh] flex items-center">
+        <GridPattern
+          className="absolute inset-0 text-stone opacity-[0.07]"
+          density={48}
+          disruption
+        />
+
+        {/* Soft halo behind the headline */}
+        <div
+          aria-hidden
+          className="absolute -top-40 -left-32 h-[420px] w-[420px] rounded-full bg-stone/10 blur-3xl"
+        />
+
+        <div className="shell relative grid grid-cols-12 gap-6 md:gap-12 items-center py-24 md:py-32 w-full">
+          <div className="col-span-12 md:col-span-5">
+            <div className="aspect-[4/5] overflow-hidden ring-1 ring-stone/15 [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1600&q=80"
+                alt="The founders of Lineamode Apparel"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+          <div className="col-span-12 md:col-span-6 md:col-start-7">
+            <Eyebrow number="03" className="text-stone/70">
+              Founders
+            </Eyebrow>
+            <h2 className="text-display leading-[0.95] mt-6">
+              Two founders.
+              <br />
+              <span className="italic font-extralight">One studio.</span>
+            </h2>
+            <p className="text-body text-stone/80 max-w-md mt-8">
+              Three decades in the global textile industry — working alongside
+              the most exacting brands and manufacturers in fashion — taught
+              the studio one thing above all: brands grow when their partner
+              owns the long-term, not just the next purchase order.
+            </p>
+            <div className="mt-10">
+              <ButtonLink href="/founders" variant="ink">
+                Meet the founders →
+              </ButtonLink>
+            </div>
           </div>
         </div>
       </section>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { GridPattern } from "@/components/ui/GridPattern";
 
@@ -8,6 +9,7 @@ const NAV = [
     links: [
       { href: "/about", label: "About" },
       { href: "/capabilities", label: "Capabilities" },
+      { href: "/design", label: "Design" },
       { href: "/products", label: "Products" },
       { href: "/sustainability", label: "Sustainability" },
     ],
@@ -37,14 +39,13 @@ export function SiteFooter() {
         disruption
       />
 
-      <div className="shell relative pt-28 pb-10">
-        {/* Kinetic tagline block */}
-        <div className="border-y border-stone/15 py-12 my-12">
+      <div className="shell relative pt-28 pb-8">
+        {/* Tagline — single line, smaller, italic accent matches the hero. */}
+        <div className="border-y border-stone/15 py-12 my-12 text-center">
           <p className="text-eyebrow text-stone/60 mb-6">Lineamode 2026</p>
-          <p className="text-display leading-[0.95]">
-            From <em className="not-italic font-light">Idea</em>
-            <br />
-            to Execution
+          <p className="text-h1 leading-[0.95]">
+            From Idea
+            <span className="italic font-extralight"> to Execution.</span>
           </p>
         </div>
 
@@ -89,6 +90,20 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} Lineamode Apparel. All rights reserved.</p>
           <p>Design-led apparel manufacturing · Islamabad, Pakistan</p>
         </div>
+      </div>
+
+      {/* Sitewide wordmark — sits inside the shell so it lines up with
+          the same left/right margins as the dividers and nav columns
+          above it (rather than running edge-to-edge of the viewport). */}
+      <div className="shell relative pb-6 md:pb-10">
+        <Image
+          src="/brand/lineamode-wordmark.png"
+          alt="Lineamode"
+          width={1253}
+          height={199}
+          sizes="(min-width: 1440px) 1440px, 100vw"
+          className="block w-full h-auto object-contain object-center brightness-0 invert"
+        />
       </div>
     </footer>
   );

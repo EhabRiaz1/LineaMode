@@ -1,8 +1,10 @@
 import { Hero } from "@/components/sections/Hero";
-import { ManifestoSection } from "@/components/sections/ManifestoSection";
+// Kept for re-use on other pages.
+// import { ManifestoSection } from "@/components/sections/ManifestoSection";
+// import { NetworkStats } from "@/components/sections/NetworkStats";
+import { WhatWeDoSection } from "@/components/sections/WhatWeDoSection";
 import { CapabilitiesRail } from "@/components/sections/CapabilitiesRail";
 import { ProductPreview } from "@/components/sections/ProductPreview";
-import { NetworkStats } from "@/components/sections/NetworkStats";
 import { ValuesSection } from "@/components/sections/ValuesSection";
 import { LookbookTeaser } from "@/components/sections/LookbookTeaser";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
@@ -15,14 +17,13 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <ManifestoSection />
-      <CapabilitiesRail />
+      <WhatWeDoSection />
       <ProductPreview />
-      <NetworkStats />
       <ValuesSection />
       <LookbookTeaser />
       <JournalTeaser posts={posts} />
       <ContactCTA />
+      <CapabilitiesRail />
     </>
   );
 }

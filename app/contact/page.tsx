@@ -93,21 +93,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Closing */}
-      <section className="relative bg-ink text-stone py-32 overflow-hidden">
-        <GridPattern
-          className="absolute inset-0 text-stone opacity-[0.07]"
-          density={48}
-          disruption
-        />
-        <div className="shell relative">
-          <p className="text-display leading-[0.95]">
-            From <em className="not-italic font-light">Idea</em>
-            <br />
-            to Execution.
-          </p>
-        </div>
-      </section>
     </>
   );
 }

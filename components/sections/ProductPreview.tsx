@@ -7,13 +7,30 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { products } from "@/content/products";
 import { easeBrand } from "@/lib/motion/easings";
 
+/**
+ * Editorial product grid (5 tiles).
+ *
+ * Layout rhythm — every row sums to 12 columns so nothing feels
+ * stranded or off-grid:
+ *   row 1   →  P0 (cols 1–7)  +  P1 (cols 8–12)         portrait
+ *   row 2   →  P2 (cols 1–5)  +  P3 (cols 6–12)         portrait
+ *   row 3   →  P4 (cols 1–12)                            cinematic
+ */
+const TILE_LAYOUT = [
+  { cols: "col-span-12 md:col-span-7", aspect: "aspect-[4/5]" },
+  { cols: "col-span-12 md:col-span-5", aspect: "aspect-[4/5]" },
+  { cols: "col-span-12 md:col-span-5", aspect: "aspect-[4/5]" },
+  { cols: "col-span-12 md:col-span-7", aspect: "aspect-[4/5]" },
+  { cols: "col-span-12", aspect: "aspect-[21/9]" },
+];
+
 export function ProductPreview() {
   return (
     <section className="relative bg-[var(--color-chalk-sand)] text-ink py-32 md:py-44">
       <div className="shell">
         <div className="flex items-end justify-between gap-12 mb-16">
           <div className="max-w-2xl">
-            <Eyebrow number="04">Products</Eyebrow>
+            <Eyebrow number="02">Products</Eyebrow>
             <h2 className="text-h1 mt-6">
               Knitwear <span className="italic font-extralight">at the centre.</span>
               <br />
@@ -47,14 +64,13 @@ function ProductTile({
 }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const inView = useInView(ref, { once: true, margin: "-10% 0px" });
-  const cols = index === 0 ? "col-span-12 md:col-span-7 row-span-2" : "col-span-6 md:col-span-5";
-  const aspect = index === 0 ? "aspect-[5/6]" : "aspect-[4/5]";
+  const layout = TILE_LAYOUT[index] ?? TILE_LAYOUT[TILE_LAYOUT.length - 1];
 
   return (
     <Link
       href={`/products#${product.slug}`}
       ref={ref}
-      className={`${cols} group/tile relative overflow-hidden ring-1 ring-ink/15 ${aspect}`}
+      className={`${layout.cols} group/tile relative overflow-hidden ring-1 ring-ink/15 ${layout.aspect}`}
     >
       <motion.div
         className="absolute inset-0"
@@ -90,7 +106,6 @@ function ProductTile({
         </div>
       </div>
 
-      {/* Subtle bottom hairline that grows on hover */}
       <span className="absolute left-6 right-6 bottom-4 h-px bg-stone/40 origin-left scale-x-50 group-hover/tile:scale-x-100 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]" />
     </Link>
   );

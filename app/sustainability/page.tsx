@@ -112,49 +112,51 @@ export default function SustainabilityPage() {
         </div>
       </section>
 
-      {/* Certifications */}
-      <section className="bg-ink text-stone py-32 md:py-44 overflow-hidden">
-        <div className="shell">
-          <div className="grid grid-cols-12 gap-6 mb-16">
-            <div className="col-span-12 md:col-span-5">
-              <Eyebrow number="02" className="text-stone/70">
-                Certifications
-              </Eyebrow>
-              <h2 className="text-h1 mt-6">
-                What we hold,
-                <br />
-                <span className="italic font-extralight">what we're pursuing.</span>
-              </h2>
-            </div>
-            <div className="col-span-12 md:col-span-5 md:col-start-8 self-end">
-              <p className="text-body text-stone/75 max-w-md">
-                We are early-stage on certifications and choose to be honest
-                about it. The list below is what we are actively building
-                towards — verified by independent auditors, not assumed.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-stone/15">
-            {CERTIFICATIONS.map((c) => (
-              <div
-                key={c.code}
-                className="bg-ink p-8 md:p-10 flex flex-col gap-3 min-h-48"
-              >
-                <span className="text-label text-stone/55">{c.state}</span>
-                <span className="text-h2">{c.code}</span>
-                <span className="text-body text-stone/70 mt-auto">{c.name}</span>
+      {/* Certifications — hidden for now, kept in source for re-use. */}
+      {false && (
+        <section className="bg-ink text-stone py-32 md:py-44 overflow-hidden">
+          <div className="shell">
+            <div className="grid grid-cols-12 gap-6 mb-16">
+              <div className="col-span-12 md:col-span-5">
+                <Eyebrow number="02" className="text-stone/70">
+                  Certifications
+                </Eyebrow>
+                <h2 className="text-h1 mt-6">
+                  What we hold,
+                  <br />
+                  <span className="italic font-extralight">what we're pursuing.</span>
+                </h2>
               </div>
-            ))}
-          </div>
+              <div className="col-span-12 md:col-span-5 md:col-start-8 self-end">
+                <p className="text-body text-stone/75 max-w-md">
+                  We are early-stage on certifications and choose to be honest
+                  about it. The list below is what we are actively building
+                  towards — verified by independent auditors, not assumed.
+                </p>
+              </div>
+            </div>
 
-          <div className="mt-16 flex justify-end">
-            <ButtonLink href="/contact" variant="ink">
-              Audit our supply chain
-            </ButtonLink>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-stone/15">
+              {CERTIFICATIONS.map((c) => (
+                <div
+                  key={c.code}
+                  className="bg-ink p-8 md:p-10 flex flex-col gap-3 min-h-48"
+                >
+                  <span className="text-label text-stone/55">{c.state}</span>
+                  <span className="text-h2">{c.code}</span>
+                  <span className="text-body text-stone/70 mt-auto">{c.name}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-16 flex justify-end">
+              <ButtonLink href="/contact" variant="ink">
+                Audit our supply chain
+              </ButtonLink>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </>
   );
 }

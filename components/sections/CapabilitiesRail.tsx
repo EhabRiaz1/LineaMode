@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useLayoutEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useInView } from "motion/react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { capabilities } from "@/content/capabilities";
 
@@ -8,11 +9,6 @@ import { capabilities } from "@/content/capabilities";
  * Editorial photography per discipline. Each image is intentionally
  * brand-toned (warm neutrals or B&W) and is read through a dark scrim,
  * so it functions as atmosphere rather than a literal product shot.
- *   — design-support       → multi-garment rack (range / merchandised line)
- *   — product-development  → flatlay with fabric + garment in development
- *   — fabric-sourcing      → cable-knit rack — fabric texture is the subject
- *   — manufacturing        → single garment on hanger (production output)
- *   — merchandising        → B&W storefront grid (retail planning, mannequins)
  */
 const CAPABILITY_IMAGES: Record<string, string> = {
   "design-support":
@@ -28,63 +24,81 @@ const CAPABILITY_IMAGES: Record<string, string> = {
 };
 
 /**
- * Pinned horizontal scroll rail for the capability deck.
- *   — Desktop (md+): GSAP ScrollTrigger pins the section and translates
- *     the track horizontally as the user scrolls vertically.
- *   — Mobile: GSAP is skipped; the track lives inside a native
- *     `overflow-x-auto` scroller with CSS snap so every card is reachable.
+ * Auto-bouncing horizontal carousel (last section before the footer).
+ *
+ *   — While the section is in view, a rAF loop drives `scrollLeft` on
+ *     the wrapper; when we hit either edge we flip direction so the
+ *     rail bounces back and forth.
+ *   — Page scroll is never locked: the section sits inline.
+ *   — User input (pointer down, touch, horizontal wheel/trackpad
+ *     gesture) pauses the autoplay for a short cool-down so the user
+ *     never fights the loop. Autoplay resumes after they stop.
  */
+const PIXELS_PER_SECOND = 60;
+const USER_COOLDOWN_MS = 2000;
+
 export function CapabilitiesRail() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(sectionRef, {
+    margin: "0px 0px -10% 0px",
+  });
 
-  useLayoutEffect(() => {
-    let ctx: { revert: () => void } | null = null;
-    let mounted = true;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
 
-    (async () => {
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduce) return;
-      const isMobile = window.matchMedia("(max-width: 767px)").matches;
-      if (isMobile) return;
+    const el = scrollerRef.current;
+    if (!el) return;
 
-      const gsapModule = await import("gsap");
-      const stModule = await import("gsap/ScrollTrigger");
-      if (!mounted) return;
+    let raf = 0;
+    let last = performance.now();
+    let direction = 1;
+    let userPauseUntil = 0;
 
-      const gsap = gsapModule.default || gsapModule.gsap;
-      const ScrollTrigger = stModule.ScrollTrigger || stModule.default;
-      gsap.registerPlugin(ScrollTrigger);
+    const flagUser = () => {
+      userPauseUntil = performance.now() + USER_COOLDOWN_MS;
+    };
+    const onWheel = (e: WheelEvent) => {
+      // Only treat horizontal wheel/trackpad gestures as user input,
+      // so vertical page scrolling over the rail doesn't kill autoplay.
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) flagUser();
+    };
 
-      const section = sectionRef.current;
-      const track = trackRef.current;
-      if (!section || !track) return;
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
 
-      ctx = gsap.context(() => {
-        const distance = track.scrollWidth - window.innerWidth + 80;
-        gsap.to(track, {
-          x: -distance,
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: () => `+=${distance + 40}`,
-            scrub: 0.6,
-            pin: true,
-            /** Avoid reparenting pinned nodes outside React's tree (fixes removeChild errors on route change). */
-            pinReparent: false,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
-        });
-      }, section);
-    })();
+      const max = el.scrollWidth - el.clientWidth;
+      if (inView && max > 0 && now > userPauseUntil) {
+        let next = el.scrollLeft + PIXELS_PER_SECOND * dt * direction;
+        if (next >= max) {
+          next = max;
+          direction = -1;
+        } else if (next <= 0) {
+          next = 0;
+          direction = 1;
+        }
+        el.scrollLeft = next;
+      }
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    el.addEventListener("pointerdown", flagUser, { passive: true });
+    el.addEventListener("touchstart", flagUser, { passive: true });
+    el.addEventListener("wheel", onWheel, { passive: true });
+
+    raf = requestAnimationFrame(tick);
 
     return () => {
-      mounted = false;
-      ctx?.revert();
+      cancelAnimationFrame(raf);
+      el.removeEventListener("pointerdown", flagUser);
+      el.removeEventListener("touchstart", flagUser);
+      el.removeEventListener("wheel", onWheel);
     };
-  }, []);
+  }, [inView]);
 
   return (
     <section
@@ -93,7 +107,7 @@ export function CapabilitiesRail() {
     >
       <div className="shell flex items-end justify-between gap-12 mb-10 md:mb-14">
         <div className="max-w-2xl">
-          <Eyebrow number="03">Capabilities</Eyebrow>
+          <Eyebrow number="08">Capabilities</Eyebrow>
           <h2 className="text-h1 mt-6">
             One studio.
             <br />
@@ -105,12 +119,13 @@ export function CapabilitiesRail() {
         </p>
       </div>
 
-      {/* Wrapper:
-            mobile  → native horizontal scroller w/ CSS snap.
-            desktop → unconstrained, GSAP transforms the inner track. */}
-      <div className="overflow-x-auto md:overflow-visible scroll-smooth snap-x snap-mandatory md:snap-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* Native horizontal scroll container. The auto-loop drives
+          scrollLeft directly so the user can take over at any moment. */}
+      <div
+        ref={scrollerRef}
+        className="overflow-x-auto cursor-grab active:cursor-grabbing [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         <div
-          ref={trackRef}
           className="flex gap-6 md:gap-10 px-[var(--shell-pad-x)] will-change-transform"
           style={{ width: "max-content" }}
         >
@@ -119,9 +134,8 @@ export function CapabilitiesRail() {
             return (
               <article
                 key={c.slug}
-                className="relative shrink-0 snap-start w-[86vw] md:w-[58vw] lg:w-[40vw] h-[clamp(440px,68vh,580px)] md:h-[clamp(420px,58vh,560px)] overflow-hidden ring-1 ring-ink/15 text-stone"
+                className="relative shrink-0 w-[86vw] md:w-[58vw] lg:w-[40vw] h-[clamp(440px,68vh,580px)] md:h-[clamp(420px,58vh,560px)] overflow-hidden ring-1 ring-ink/15 text-stone"
               >
-                {/* Background photograph */}
                 {image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -133,9 +147,6 @@ export function CapabilitiesRail() {
                   />
                 ) : null}
 
-                {/* Scrim stack — bottom-weighted so titles and bullets sit on
-                    the darkest area of the gradient. The faint blur keeps
-                    rich photography from competing with the type. */}
                 <div
                   aria-hidden
                   className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/55 to-ink/20"
@@ -145,7 +156,6 @@ export function CapabilitiesRail() {
                   className="absolute inset-0 backdrop-blur-[2px] backdrop-saturate-110"
                 />
 
-                {/* Content */}
                 <div className="absolute inset-0 p-7 md:p-9 flex flex-col justify-between">
                   <div className="flex justify-between text-label text-stone/75">
                     <span>/ {c.number}</span>

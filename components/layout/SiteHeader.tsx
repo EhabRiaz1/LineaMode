@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { LINEAMODE_HOME_INTRO_REPLAY } from "@/components/layout/IntroLoader";
@@ -10,6 +10,7 @@ import { LINEAMODE_HOME_INTRO_REPLAY } from "@/components/layout/IntroLoader";
 const NAV = [
   { href: "/about", label: "About" },
   { href: "/capabilities", label: "Capabilities" },
+  { href: "/design", label: "Design" },
   { href: "/products", label: "Products" },
   { href: "/sustainability", label: "Sustainability" },
   { href: "/lookbook", label: "Lookbook" },
@@ -18,26 +19,53 @@ const NAV = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
+  const lastY = useRef(0);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    lastY.current = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const dy = y - lastY.current;
+
+      if (y < 80) {
+        setHidden(false);
+      } else if (dy > 4 && y > 120) {
+        setHidden(true);
+      } else if (dy < -4) {
+        setHidden(false);
+      }
+      lastY.current = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Mobile menu auto-shows the bar regardless of scroll position.
+  useEffect(() => {
+    if (open) setHidden(false);
+  }, [open]);
+
   return (
     <header
+      data-hidden={hidden}
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] backdrop-blur-md",
-        scrolled
-          ? "py-3 bg-stone/80"
-          : "py-5 bg-stone/40",
+        "fixed left-1/2 top-3 md:top-4 z-50",
+        "w-[calc(100%-1.5rem)] md:w-[calc(100%-3rem)] md:max-w-[1480px]",
+        "rounded-full border border-stone/30 bg-stone/35 backdrop-blur-[6px] backdrop-saturate-150",
+        "shadow-[0_8px_24px_-18px_rgba(15,15,12,0.35),inset_0_1px_0_rgba(255,255,255,0.45)]",
+        "transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+        hidden ? "opacity-0" : "opacity-100",
       )}
+      style={{
+        transform: hidden
+          ? "translate(-50%, -160%)"
+          : "translate(-50%, 0)",
+      }}
     >
-      <div className="shell flex items-center justify-between gap-6">
+      <div className="px-5 md:px-7 py-2.5 md:py-3 flex items-center justify-between gap-6">
         <Link
           href="/"
           aria-label="Lineamode home"
@@ -51,10 +79,7 @@ export function SiteHeader() {
           <BrandLogo
             context="light"
             priority
-            className={cn(
-              "transition-all duration-500",
-              scrolled ? "h-3.5" : "h-4",
-            )}
+            className="h-3.5"
           />
         </Link>
 
@@ -106,17 +131,15 @@ export function SiteHeader() {
         </button>
       </div>
 
-      {/* Mobile menu.
-          Border lives INSIDE the panel (and only when open) so the 0-height
-          collapsed state doesn't leave a phantom 1px hairline below the
-          sticky navbar. */}
+      {/* Mobile menu — anchored to the floating pill so it slides out
+          from underneath rather than from the very top of the viewport. */}
       <div
         className={cn(
-          "md:hidden fixed inset-x-0 top-[60px] bg-stone transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-hidden",
-          open ? "max-h-[80vh] border-t border-ink/10" : "max-h-0 border-t border-transparent",
+          "md:hidden absolute inset-x-0 top-full mt-2 rounded-2xl bg-stone border border-ink/10 backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] overflow-hidden",
+          open ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0 pointer-events-none",
         )}
       >
-        <nav className="shell flex flex-col gap-4 py-8" aria-label="Mobile primary">
+        <nav className="px-5 py-6 flex flex-col gap-4" aria-label="Mobile primary">
           {NAV.map((item) => (
             <Link
               key={item.href}
@@ -136,14 +159,6 @@ export function SiteHeader() {
           </Link>
         </nav>
       </div>
-
-      {/* Hairline underline (Linear Grid motif) */}
-      <div
-        className={cn(
-          "absolute inset-x-0 bottom-0 h-px bg-ink/10 transition-opacity duration-500",
-          scrolled ? "opacity-100" : "opacity-0",
-        )}
-      />
     </header>
   );
 }

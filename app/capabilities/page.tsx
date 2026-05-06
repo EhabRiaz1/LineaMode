@@ -2,6 +2,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SplitText } from "@/components/ui/SplitText";
 import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
+import { CapabilitiesNav } from "@/components/sections/CapabilitiesNav";
 import { capabilities } from "@/content/capabilities";
 import { pageMetadata } from "@/lib/seo/metadata";
 
@@ -56,23 +57,9 @@ export default function CapabilitiesPage() {
         </div>
       </section>
 
-      {/* Anchor nav */}
-      <nav
-        aria-label="Capability sections"
-        className="sticky top-[60px] z-30 bg-stone/85 backdrop-blur border-y hairline"
-      >
-        <div className="shell flex gap-8 overflow-x-auto py-4 text-label">
-          {capabilities.map((c) => (
-            <a
-              key={c.slug}
-              href={`#${c.slug}`}
-              className="whitespace-nowrap text-ink/65 hover:text-ink transition-colors"
-            >
-              / {c.number} {c.title}
-            </a>
-          ))}
-        </div>
-      </nav>
+      {/* Floating bottom anchor-nav (active section is highlighted as
+          the user scrolls; mobile collapses to the active label only). */}
+      <CapabilitiesNav />
 
       {/* Capability detail blocks */}
       {capabilities.map((c, i) => (

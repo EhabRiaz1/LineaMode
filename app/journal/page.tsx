@@ -20,15 +20,15 @@ export default async function JournalPage() {
   return (
     <>
       {/* Intro */}
-      <section className="relative pt-40 pb-24 overflow-hidden">
+      <section className="relative bg-ink text-stone pt-40 pb-24 overflow-hidden">
         <GridPattern
-          className="absolute inset-0 text-ink opacity-[0.05]"
+          className="absolute inset-0 text-stone opacity-[0.08]"
           density={28}
           disruption
         />
         <div className="shell relative grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-3">
-            <Eyebrow number="00">Journal</Eyebrow>
+            <Eyebrow number="00" className="text-stone/80">Journal</Eyebrow>
           </div>
           <div className="col-span-12 md:col-span-9">
             <h1 className="text-display leading-[0.95]">
