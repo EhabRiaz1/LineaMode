@@ -49,7 +49,7 @@ export default async function JournalPage() {
 
       {/* Featured */}
       {featured && (
-        <section className="relative pb-24 border-b hairline">
+        <section className="relative pt-24 md:pt-32 pb-24 border-b hairline">
           <Link
             href={`/journal/${featured.slug}`}
             className="shell grid grid-cols-12 gap-6 md:gap-12 items-end group/featured"

@@ -14,17 +14,16 @@ export function WhatWeDoSection() {
   const inView = useInView(sectionRef, { margin: "-15% 0px -15% 0px" });
 
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [cycleKey, setCycleKey] = useState(0);
 
   useEffect(() => {
-    if (!inView || paused) return;
+    if (!inView) return;
     const t = window.setTimeout(() => {
       setActive((i) => (i + 1) % capabilities.length);
       setCycleKey((k) => k + 1);
     }, CYCLE_MS);
     return () => window.clearTimeout(t);
-  }, [inView, paused, cycleKey, active]);
+  }, [inView, cycleKey, active]);
 
   const onSelect = (i: number) => {
     setActive(i);
@@ -51,15 +50,9 @@ export function WhatWeDoSection() {
         </div>
 
         <div className="grid grid-cols-12 gap-4 md:gap-12">
-          {/* Tab list — hover handlers live here so vertical scrolling
-              past the section never accidentally pauses the cycle. */}
-          <ul
-            className="col-span-12 md:col-span-5 flex flex-col"
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
-            onFocusCapture={() => setPaused(true)}
-            onBlurCapture={() => setPaused(false)}
-          >
+          {/* Tab list — the cycle runs continuously while the section
+              is in view; clicking a tab restarts the timer from there. */}
+          <ul className="col-span-12 md:col-span-5 flex flex-col">
             {capabilities.map((c, i) => (
               <li key={c.slug} className="relative">
                 <button
@@ -97,13 +90,9 @@ export function WhatWeDoSection() {
                     key={`bar-${cycleKey}-${i}`}
                     className="absolute left-0 bottom-0 h-px bg-ink origin-left"
                     initial={{ scaleX: 0 }}
-                    animate={
-                      paused || !inView
-                        ? { scaleX: 0 }
-                        : { scaleX: 1 }
-                    }
+                    animate={!inView ? { scaleX: 0 } : { scaleX: 1 }}
                     transition={{
-                      duration: paused || !inView ? 0 : CYCLE_MS / 1000,
+                      duration: !inView ? 0 : CYCLE_MS / 1000,
                       ease: "linear",
                     }}
                     style={{ width: "100%" }}

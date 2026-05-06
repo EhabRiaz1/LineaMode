@@ -100,12 +100,10 @@ body {
   overflow-x: hidden;
 }
 
-/* Hide chrome under fixed intro until React removes data-lm-intro-block (see layout inline script). */
-html[data-lm-intro-block] body #main,
-html[data-lm-intro-block] body > header,
-html[data-lm-intro-block] body > footer {
-  visibility: hidden;
-}
+/* The intro loader sits on top of the page as a fade-out overlay. It does
+   NOT hide the page underneath — that way if anything goes wrong with the
+   loader (HMR hiccup, animation interrupted, browser extension), the site
+   is still visible and usable. */
 
 ::selection {
   background: var(--color-carbon-ink);

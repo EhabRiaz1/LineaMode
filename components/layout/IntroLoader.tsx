@@ -16,22 +16,11 @@ const WORDMARK_H = 199;
 const SWEEP_DURATION = dur.xl * 1.05;
 const EXIT_DURATION = dur.m;
 const HOLD_MS = 200;
-
-function clearIntroPageBlock() {
-  try {
-    document.documentElement.removeAttribute("data-lm-intro-block");
-  } catch {
-    /* ignore */
-  }
-}
-
-function setIntroPageBlock() {
-  try {
-    document.documentElement.setAttribute("data-lm-intro-block", "");
-  } catch {
-    /* ignore */
-  }
-}
+/** Hard fallback: even if the sweep's `onAnimationComplete` never fires
+ *  (HMR stale state, animation interrupted, motion lib hiccup), guarantee
+ *  the loader leaves after this total duration so the page is never
+ *  permanently hidden behind it. */
+const RUN_FALLBACK_MS = Math.ceil(SWEEP_DURATION * 1000) + HOLD_MS + 250;
 
 function reducedMotion(): boolean {
   try {
@@ -68,7 +57,6 @@ export function IntroLoader() {
       setPhase("off");
       return;
     }
-    setIntroPageBlock();
     sweepDone.current = false;
     setPlayKey((k) => k + 1);
     setPhase("run");
@@ -106,12 +94,6 @@ export function IntroLoader() {
   }, []);
 
   useLayoutEffect(() => {
-    if (phase === "off") {
-      clearIntroPageBlock();
-    }
-  }, [phase]);
-
-  useLayoutEffect(() => {
     if (phase === "off") return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -127,6 +109,18 @@ export function IntroLoader() {
     }, EXIT_DURATION * 1000 + 80);
     return () => window.clearTimeout(id);
   }, [phase]);
+
+  /** Run-phase safety net: if the sweep's onAnimationComplete never fires
+   *  (e.g. HMR / strict-mode interruption), force the exit ourselves. */
+  useLayoutEffect(() => {
+    if (phase !== "run") return;
+    const id = window.setTimeout(() => {
+      if (sweepDone.current) return;
+      sweepDone.current = true;
+      setPhase("exit");
+    }, RUN_FALLBACK_MS);
+    return () => window.clearTimeout(id);
+  }, [phase, playKey]);
 
   if (phase === "off") return null;
 
