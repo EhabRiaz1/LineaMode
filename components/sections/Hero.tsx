@@ -185,7 +185,7 @@ export function Hero() {
 
             {/* Secondary — outlined pill on stone hairline, stone text. */}
             <ButtonLink
-              href="/contact"
+              href="/start"
               variant="ghost"
               className="!text-stone ring-stone/45 hover:bg-stone/10"
             >
