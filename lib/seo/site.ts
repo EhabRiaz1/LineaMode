@@ -15,6 +15,12 @@ export const SITE_TWITTER_DESCRIPTION =
 
 export const DEFAULT_OG_IMAGE_PATH = "/brand/og-default.jpg";
 
+export const DEFAULT_OG_IMAGE_URL = `${SITE_URL}${DEFAULT_OG_IMAGE_PATH}`;
+
+export const DEFAULT_OG_IMAGE_WIDTH = 800;
+
+export const DEFAULT_OG_IMAGE_HEIGHT = 418;
+
 export const DEFAULT_OG_IMAGE_ALT = `${SITE_NAME} — ${SITE_TAGLINE}`;
 
 export const SQUARE_LOGO_PATH = "/brand/logo-square.png";

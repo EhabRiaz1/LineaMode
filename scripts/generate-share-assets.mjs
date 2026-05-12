@@ -14,11 +14,11 @@ async function ensureParent(path) {
 }
 
 async function createOgImage() {
-  const width = 1200;
-  const height = 630;
+  const width = 800;
+  const height = 418;
   const outputPath = join(root, "public/brand/og-default.jpg");
   const wordmark = await sharp(wordmarkPath)
-    .resize({ width: 880, withoutEnlargement: true })
+    .resize({ width: 560, withoutEnlargement: true })
     .png()
     .toBuffer();
   const wordmarkMeta = await sharp(wordmark).metadata();
@@ -27,20 +27,29 @@ async function createOgImage() {
   const frame = Buffer.from(
     `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
       <rect width="100%" height="100%" fill="${STONE}"/>
-      <text x="50%" y="78%" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="22" letter-spacing="0.35em" fill="${INK}" opacity="0.62">FROM IDEA TO EXECUTION</text>
-      <text x="50%" y="88%" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="18" fill="${INK}" opacity="0.45">www.lineamode.com</text>
+      <text x="50%" y="78%" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="16" letter-spacing="0.28em" fill="${INK}" opacity="0.62">FROM IDEA TO EXECUTION</text>
+      <text x="50%" y="88%" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="${INK}" opacity="0.45">www.lineamode.com</text>
     </svg>`,
   );
 
   await ensureParent(outputPath);
   await sharp(frame)
     .composite([{ input: wordmark, top: wordmarkTop, left: wordmarkLeft }])
-    .jpeg({ quality: 82, mozjpeg: true })
+    .jpeg({
+      quality: 58,
+      mozjpeg: true,
+      progressive: false,
+      chromaSubsampling: "4:2:0",
+    })
     .toFile(outputPath);
 
   const { size } = await stat(outputPath);
-  if (size > 300 * 1024) {
-    throw new Error(`og-default.jpg is ${size} bytes; WhatsApp requires <= 300KB`);
+  const aspectRatio = width / height;
+  if (size > 600 * 1024) {
+    throw new Error(`og-default.jpg is ${size} bytes; WhatsApp requires <= 600KB`);
+  }
+  if (width < 300 || aspectRatio > 4) {
+    throw new Error(`og-default.jpg is ${width}x${height}; WhatsApp requires width >= 300px and aspect ratio <= 4:1`);
   }
 }
 

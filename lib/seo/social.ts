@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import {
   DEFAULT_OG_IMAGE_ALT,
-  DEFAULT_OG_IMAGE_PATH,
+  DEFAULT_OG_IMAGE_HEIGHT,
+  DEFAULT_OG_IMAGE_URL,
+  DEFAULT_OG_IMAGE_WIDTH,
   SITE_NAME,
   SITE_OG_DESCRIPTION,
   SITE_TAGLINE,
@@ -11,15 +13,16 @@ import {
 
 export const defaultOpenGraphImages = [
   {
-    url: DEFAULT_OG_IMAGE_PATH,
-    width: 1200,
-    height: 630,
+    url: DEFAULT_OG_IMAGE_URL,
+    secureUrl: DEFAULT_OG_IMAGE_URL,
+    width: DEFAULT_OG_IMAGE_WIDTH,
+    height: DEFAULT_OG_IMAGE_HEIGHT,
     alt: DEFAULT_OG_IMAGE_ALT,
     type: "image/jpeg",
   },
 ] as const;
 
-export const defaultTwitterImages = [DEFAULT_OG_IMAGE_PATH] as const;
+export const defaultTwitterImages = [DEFAULT_OG_IMAGE_URL] as const;
 
 export const siteIcons: NonNullable<Metadata["icons"]> = {
   icon: [
