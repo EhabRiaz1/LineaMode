@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Fraunces, Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { IntroLoaderGate } from "@/components/layout/IntroLoaderGate";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -99,19 +100,31 @@ export default async function RootLayout({
         />
       </head>
       <body className="bg-stone text-ink">
-        <IntroLoaderGate />
-        <SmoothScroll />
+        <Suspense fallback={null}>
+          <IntroLoaderGate />
+        </Suspense>
+        <Suspense fallback={null}>
+          <SmoothScroll />
+        </Suspense>
         <GrainOverlay />
-        <Cursor />
-        <SiteHeader visibility={visibility} />
-        <PageTransitionGate>
-          <main id="main" className="relative">
-            {children}
-          </main>
-        </PageTransitionGate>
-        <MarketingChromeGate>
-          <SiteFooter />
-        </MarketingChromeGate>
+        <Suspense fallback={null}>
+          <Cursor />
+        </Suspense>
+        <Suspense fallback={null}>
+          <SiteHeader visibility={visibility} />
+        </Suspense>
+        <Suspense fallback={<main id="main" className="relative">{children}</main>}>
+          <PageTransitionGate>
+            <main id="main" className="relative">
+              {children}
+            </main>
+          </PageTransitionGate>
+        </Suspense>
+        <Suspense fallback={null}>
+          <MarketingChromeGate>
+            <SiteFooter />
+          </MarketingChromeGate>
+        </Suspense>
       </body>
     </html>
   );
