@@ -18,7 +18,7 @@ export const defaultOpenGraphImages = [
     width: DEFAULT_OG_IMAGE_WIDTH,
     height: DEFAULT_OG_IMAGE_HEIGHT,
     alt: DEFAULT_OG_IMAGE_ALT,
-    type: "image/jpeg",
+    type: "image/png",
   },
 ] as const;
 

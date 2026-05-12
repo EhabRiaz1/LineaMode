@@ -13,14 +13,13 @@ export const SITE_OG_DESCRIPTION =
 export const SITE_TWITTER_DESCRIPTION =
   "End-to-end clothing manufacturer specializing in knitwear and performance polyesters.";
 
-export const DEFAULT_OG_IMAGE_PATH = "/brand/og-default.jpg";
+/** Used for link previews (WhatsApp, iMessage, Slack, etc.) and JSON-LD logo. */
+export const SQUARE_LOGO_PATH = "/brand/logo-square.png";
 
-export const DEFAULT_OG_IMAGE_URL = `${SITE_URL}${DEFAULT_OG_IMAGE_PATH}`;
+export const DEFAULT_OG_IMAGE_URL = `${SITE_URL}${SQUARE_LOGO_PATH}`;
 
-export const DEFAULT_OG_IMAGE_WIDTH = 800;
+export const DEFAULT_OG_IMAGE_WIDTH = 512;
 
-export const DEFAULT_OG_IMAGE_HEIGHT = 418;
+export const DEFAULT_OG_IMAGE_HEIGHT = 512;
 
 export const DEFAULT_OG_IMAGE_ALT = `${SITE_NAME} — ${SITE_TAGLINE}`;
-
-export const SQUARE_LOGO_PATH = "/brand/logo-square.png";
