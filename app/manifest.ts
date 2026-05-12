@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/seo/site";
+import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo/site";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -17,7 +17,7 @@ export default function manifest(): MetadataRoute.Manifest {
         type: "image/svg+xml",
       },
       {
-        src: "/apple-icon.png",
+        src: "/apple-touch-icon.png",
         sizes: "180x180",
         type: "image/png",
       },

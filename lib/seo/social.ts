@@ -1,24 +1,24 @@
 import type { Metadata } from "next";
 import {
   DEFAULT_OG_IMAGE_ALT,
-  DEFAULT_OG_IMAGE_HEIGHT,
-  DEFAULT_OG_IMAGE_WIDTH,
+  LINK_PREVIEW_IMAGE_HEIGHT,
+  LINK_PREVIEW_IMAGE_PATH,
+  LINK_PREVIEW_IMAGE_WIDTH,
   SITE_NAME,
   SITE_OG_DESCRIPTION,
   SITE_TAGLINE,
   SITE_TWITTER_DESCRIPTION,
-  SQUARE_LOGO_PATH,
 } from "@/lib/seo/site";
 
 function previewImageForOrigin(siteOrigin: string) {
-  const url = `${siteOrigin}${SQUARE_LOGO_PATH}`;
+  const url = `${siteOrigin}${LINK_PREVIEW_IMAGE_PATH}`;
   return {
     url,
     secureUrl: url,
-    width: DEFAULT_OG_IMAGE_WIDTH,
-    height: DEFAULT_OG_IMAGE_HEIGHT,
+    width: LINK_PREVIEW_IMAGE_WIDTH,
+    height: LINK_PREVIEW_IMAGE_HEIGHT,
     alt: DEFAULT_OG_IMAGE_ALT,
-    type: "image/png",
+    type: "image/jpeg",
   } as const;
 }
 
@@ -35,7 +35,7 @@ export function buildDefaultOpenGraph(siteOrigin: string): NonNullable<Metadata[
 }
 
 export function buildDefaultTwitter(siteOrigin: string): NonNullable<Metadata["twitter"]> {
-  const imageUrl = `${siteOrigin}${SQUARE_LOGO_PATH}`;
+  const imageUrl = `${siteOrigin}${LINK_PREVIEW_IMAGE_PATH}`;
   return {
     card: "summary_large_image",
     title: `${SITE_NAME} — ${SITE_TAGLINE}`,
@@ -62,7 +62,7 @@ export function buildPageTwitter(
   siteOrigin: string,
   opts: { title: string; description: string },
 ): NonNullable<Metadata["twitter"]> {
-  const imageUrl = `${siteOrigin}${SQUARE_LOGO_PATH}`;
+  const imageUrl = `${siteOrigin}${LINK_PREVIEW_IMAGE_PATH}`;
   return {
     card: "summary_large_image",
     title: opts.title,
@@ -76,6 +76,6 @@ export const siteIcons: NonNullable<Metadata["icons"]> = {
     { url: "/favicon.ico" },
     { url: "/icon.svg", type: "image/svg+xml" },
   ],
-  apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   shortcut: "/favicon.ico",
 };

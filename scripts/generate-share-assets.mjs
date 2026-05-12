@@ -5,6 +5,7 @@ import sharp from "sharp";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const wordmarkPath = join(root, "public/brand/lineamode-wordmark.png");
+const squarePath = join(root, "public/brand/logo-square.png");
 
 const STONE = "#E1E1DC";
 const INK = "#201C1D";
@@ -76,22 +77,62 @@ async function createSquareLogo() {
     .toFile(outputPath);
 }
 
-async function createAppleIcon() {
-  const size = 180;
-  const outputPath = join(root, "app/apple-icon.png");
-  const svg = Buffer.from(
-    `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="${INK}"/>
-      <text x="50%" y="58%" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="700" font-size="56" fill="${STONE}">LM</text>
+/** 1200×630 JPEG from square logo — reliable for WhatsApp / Facebook crawlers. */
+async function createOgSocialJpeg() {
+  const width = 1200;
+  const height = 630;
+  const outputPath = join(root, "public/brand/og-social.jpg");
+  const logo = await sharp(squarePath)
+    .resize({
+      width: Math.round(width * 0.72),
+      height: Math.round(height * 0.72),
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .png()
+    .toBuffer();
+  const logoMeta = await sharp(logo).metadata();
+  const top = Math.round((height - (logoMeta.height ?? 0)) / 2);
+  const left = Math.round((width - (logoMeta.width ?? 0)) / 2);
+  const frame = Buffer.from(
+    `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="${STONE}"/>
     </svg>`,
   );
 
   await ensureParent(outputPath);
-  await sharp(svg).png().toFile(outputPath);
+  await sharp(frame)
+    .composite([{ input: logo, top, left }])
+    .jpeg({
+      quality: 82,
+      mozjpeg: true,
+      progressive: false,
+      chromaSubsampling: "4:2:0",
+    })
+    .toFile(outputPath);
+
+  const { size } = await stat(outputPath);
+  if (size > 600 * 1024) {
+    throw new Error(`og-social.jpg is ${size} bytes; must be <= 600KB`);
+  }
+}
+
+/** iOS / fallback icon — same wordmark as logo-square (not the small LM glyph). */
+async function createPublicAppleTouchIcon() {
+  const size = 180;
+  const outputPath = join(root, "public/apple-touch-icon.png");
+  const logo = await sharp(squarePath)
+    .resize(size, size, { fit: "cover", position: "centre" })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+
+  await ensureParent(outputPath);
+  await sharp(logo).toFile(outputPath);
 }
 
 await createOgImage();
 await createSquareLogo();
-await createAppleIcon();
+await createOgSocialJpeg();
+await createPublicAppleTouchIcon();
 
-console.log("Generated share assets in public/brand and app/");
+console.log("Generated share assets in public/brand and public/apple-touch-icon.png");

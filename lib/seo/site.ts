@@ -31,11 +31,17 @@ export const SITE_OG_DESCRIPTION =
 export const SITE_TWITTER_DESCRIPTION =
   "End-to-end clothing manufacturer specializing in knitwear and performance polyesters.";
 
-/** Used for link previews (WhatsApp, iMessage, Slack, etc.) and JSON-LD logo. */
+/** Square wordmark — JSON-LD `logo`, in-page brand, etc. */
 export const SQUARE_LOGO_PATH = "/brand/logo-square.png";
 
-export const DEFAULT_OG_IMAGE_WIDTH = 512;
+/**
+ * Flat JPEG for Open Graph / Twitter / WhatsApp (crawlers often handle JPG more reliably than PNG).
+ * Same wordmark look as `logo-square.png`, 1200×630.
+ */
+export const LINK_PREVIEW_IMAGE_PATH = "/brand/og-social.jpg";
 
-export const DEFAULT_OG_IMAGE_HEIGHT = 512;
+export const LINK_PREVIEW_IMAGE_WIDTH = 1200;
+
+export const LINK_PREVIEW_IMAGE_HEIGHT = 630;
 
 export const DEFAULT_OG_IMAGE_ALT = `${SITE_NAME} — ${SITE_TAGLINE}`;
