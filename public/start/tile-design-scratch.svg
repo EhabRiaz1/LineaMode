@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600" fill="none">
+  <defs>
+    <linearGradient id="g2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a3b2a1" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#e1e1dc" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#3c4a59" stop-opacity="0.35"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1600" fill="url(#g2)"/>
+  <rect x="80" y="120" width="1040" height="1360" rx="24" stroke="#201c1d" stroke-opacity="0.12" stroke-width="2"/>
+  <text x="600" y="780" text-anchor="middle" font-family="system-ui, sans-serif" font-size="42" letter-spacing="0.35em" fill="#201c1d" opacity="0.35">PLACEHOLDER</text>
+  <text x="600" y="840" text-anchor="middle" font-family="system-ui, sans-serif" font-size="22" letter-spacing="0.2em" fill="#201c1d" opacity="0.28">FROM SCRATCH</text>
+</svg>

@@ -2,6 +2,7 @@
 
 import { motion, useInView, type Variants } from "motion/react";
 import { useRef, type ReactNode } from "react";
+import { useBfcacheRestore } from "@/lib/hooks/useBfcacheRestore";
 import { fadeUp } from "@/lib/motion/variants";
 
 export function ScrollReveal({
@@ -23,6 +24,7 @@ export function ScrollReveal({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once, margin: margin as never });
+  const wasRestored = useBfcacheRestore();
   const Component = motion[Tag as never] as typeof motion.div;
 
   return (
@@ -30,8 +32,8 @@ export function ScrollReveal({
       ref={ref}
       className={className}
       variants={variants}
-      initial="hidden"
-      animate={inView ? "show" : "hidden"}
+      initial={wasRestored ? "show" : "hidden"}
+      animate={wasRestored || inView ? "show" : "hidden"}
       transition={{ delay }}
     >
       {children}

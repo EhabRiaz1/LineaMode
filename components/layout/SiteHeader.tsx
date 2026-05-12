@@ -2,26 +2,37 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { LINEAMODE_HOME_INTRO_REPLAY } from "@/components/layout/IntroLoader";
+import type { PageVisibility } from "@/lib/cms";
 
-const NAV = [
+const BASE_NAV = [
   { href: "/about", label: "About" },
-  { href: "/capabilities", label: "Capabilities" },
-  { href: "/design", label: "Design" },
   { href: "/products", label: "Products" },
-  { href: "/sustainability", label: "Sustainability" },
-  { href: "/lookbook", label: "Lookbook" },
-  { href: "/journal", label: "Journal" },
+  { href: "/capabilities", label: "Services" },
+  { href: "/journal", label: "Newsletter", visibilityKey: "journal" },
+  { href: "/contact", label: "Contact" },
 ];
 
-export function SiteHeader() {
+type Props = {
+  visibility?: PageVisibility;
+};
+
+export function SiteHeader({ visibility }: Props) {
   const pathname = usePathname();
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
   const lastY = useRef(0);
+
+  const NAV = useMemo(() => {
+    return BASE_NAV.filter((item) => {
+      if (!item.visibilityKey) return true;
+      const pageVisibility = visibility?.[item.visibilityKey];
+      return pageVisibility?.navbar !== false;
+    });
+  }, [visibility]);
 
   useEffect(() => {
     lastY.current = window.scrollY;
@@ -43,10 +54,9 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Mobile menu auto-shows the bar regardless of scroll position.
-  useEffect(() => {
-    if (open) setHidden(false);
-  }, [open]);
+  // The admin console owns its own chrome (sidebar + topbar). Suppress the
+  // marketing header on every /admin route so we don't double-up the UI.
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <header
@@ -65,25 +75,30 @@ export function SiteHeader() {
           : "translate(-50%, 0)",
       }}
     >
-      <div className="px-5 md:px-7 py-2.5 md:py-3 flex items-center justify-between gap-6">
-        <Link
-          href="/"
-          aria-label="Lineamode home"
-          className="flex items-center"
-          onClick={() => {
-            if (pathname === "/") {
-              window.dispatchEvent(new CustomEvent(LINEAMODE_HOME_INTRO_REPLAY));
-            }
-          }}
-        >
-          <BrandLogo
-            context="light"
-            priority
-            className="h-3.5"
-          />
-        </Link>
+      <div className="px-5 md:px-7 py-2.5 md:py-3 flex items-center gap-6">
+        <div className="flex-shrink-0">
+          <Link
+            href="/"
+            aria-label="Lineamode home"
+            className="flex items-center"
+            onClick={() => {
+              if (pathname === "/") {
+                window.dispatchEvent(new CustomEvent(LINEAMODE_HOME_INTRO_REPLAY));
+              }
+            }}
+          >
+            <BrandLogo
+              context="light"
+              priority
+              className="h-3.5"
+            />
+          </Link>
+        </div>
 
-        <nav className="hidden md:flex items-center gap-7" aria-label="Primary">
+        <nav
+          className="hidden md:flex flex-1 items-center justify-center gap-6 pl-10 md:translate-x-4"
+          aria-label="Primary"
+        >
           {NAV.map((item) => (
             <Link
               key={item.href}
@@ -95,20 +110,26 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <Link
-          href="/contact"
-          className="hidden md:inline-flex items-center gap-2 text-label border border-ink/30 px-4 py-2 rounded-full hover:bg-ink hover:text-[var(--color-stone-veil)] transition-colors"
-        >
-          <span className="size-1.5 rounded-full bg-ink group-hover:bg-[var(--color-stone-veil)]" />
-          Start a project
-        </Link>
+        <div className="hidden md:flex items-center gap-2">
+          <Link
+            href="/start"
+            className="inline-flex items-center gap-2 text-label border border-ink/30 px-4 py-2 rounded-full hover:bg-ink hover:text-[var(--color-stone-veil)] transition-colors"
+          >
+            <span className="size-1.5 rounded-full bg-ink group-hover:bg-[var(--color-stone-veil)]" />
+            Start a project
+          </Link>
+        </div>
 
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="md:hidden flex flex-col gap-1.5 p-2"
+          onClick={() => {
+            const nextOpen = !open;
+            setOpen(nextOpen);
+            if (nextOpen) setHidden(false);
+          }}
+          className="md:hidden flex flex-col gap-1.5 p-2 ml-auto"
         >
           <span
             className={cn(
@@ -151,7 +172,7 @@ export function SiteHeader() {
             </Link>
           ))}
           <Link
-            href="/contact"
+            href="/start"
             onClick={() => setOpen(false)}
             className="mt-4 text-label inline-flex items-center gap-2 self-start border border-ink/30 px-4 py-2 rounded-full"
           >

@@ -15,18 +15,20 @@ export function WhatWeDoSection() {
 
   const [active, setActive] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
+  const [hasManualSelection, setHasManualSelection] = useState(false);
 
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || hasManualSelection) return;
     const t = window.setTimeout(() => {
       setActive((i) => (i + 1) % capabilities.length);
       setCycleKey((k) => k + 1);
     }, CYCLE_MS);
     return () => window.clearTimeout(t);
-  }, [inView, cycleKey, active]);
+  }, [inView, cycleKey, active, hasManualSelection]);
 
   const onSelect = (i: number) => {
     setActive(i);
+    setHasManualSelection(true);
     setCycleKey((k) => k + 1);
   };
 
@@ -40,86 +42,100 @@ export function WhatWeDoSection() {
       <div className="shell">
         <div className="grid grid-cols-12 gap-6 mb-12">
           <div className="col-span-12 md:col-span-5">
-            <Eyebrow number="01">What we do</Eyebrow>
-            <h2 className="text-h1 mt-6">
-              One studio,
-              <br />
-              <span className="italic font-extralight">five disciplines.</span>
+            <Eyebrow number="02">Services</Eyebrow>
+            <h2 className="mt-6 font-[family-name:var(--font-display)] text-[clamp(2.25rem,4.5vw,4.75rem)] font-light leading-[1.02] tracking-[-0.02em]">
+              <span className="block whitespace-nowrap">What we can do</span>
+              <span className="block whitespace-nowrap italic font-extralight">
+                for your fashion brand
+              </span>
             </h2>
           </div>
         </div>
 
         <div className="grid grid-cols-12 gap-4 md:gap-12">
-          {/* Tab list — the cycle runs continuously while the section
-              is in view; clicking a tab restarts the timer from there. */}
-          <ul className="col-span-12 md:col-span-5 flex flex-col">
-            {capabilities.map((c, i) => (
-              <li key={c.slug} className="relative">
-                <button
-                  type="button"
-                  onClick={() => onSelect(i)}
-                  className={cn(
-                    "group flex items-center justify-between text-left w-full py-5 transition-colors",
-                    active === i ? "text-ink" : "text-ink/50 hover:text-ink/85",
-                  )}
-                  aria-pressed={active === i}
-                >
-                  <span className="flex items-baseline gap-5">
-                    <span className="text-label text-ink/40">/ {c.number}</span>
-                    <span className="text-h2">{c.title}</span>
-                  </span>
+            <ul className="col-span-12 md:col-span-5 flex flex-col">
+              {capabilities.map((c, i) => (
+                <li key={c.slug} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => onSelect(i)}
+                    className={cn(
+                      "group flex items-center justify-between text-left w-full py-5 transition-colors",
+                      active === i
+                        ? "text-[#36454F]"
+                        : "text-ink/50 hover:text-ink/85",
+                    )}
+                    aria-pressed={active === i}
+                  >
+                    <span className="flex items-baseline gap-5">
+                      <span
+                        className={cn(
+                          "text-label transition-colors",
+                          active === i ? "text-[#36454F]/70" : "text-ink/40",
+                        )}
+                      >
+                        / {c.number}
+                      </span>
+                      <span className="text-h2 font-light">{c.title}</span>
+                    </span>
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "text-label transition-opacity",
+                        active === i ? "opacity-100" : "opacity-0",
+                      )}
+                    >
+                      →
+                    </span>
+                  </button>
+
+                  {active === i ? (
+                    <motion.p
+                      key={`mobile-${c.slug}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.45, ease: easeBrand }}
+                      className="text-h2 font-sans font-light leading-tight max-w-xl pb-6 md:hidden"
+                    >
+                      {c.short}
+                    </motion.p>
+                  ) : null}
+
                   <span
                     aria-hidden
-                    className={cn(
-                      "text-label transition-opacity",
-                      active === i ? "opacity-100" : "opacity-0",
-                    )}
-                  >
-                    →
-                  </span>
-                </button>
-
-                {/* Hairline + progress fill */}
-                <span
-                  aria-hidden
-                  className="absolute left-0 right-0 bottom-0 h-px bg-ink/15"
-                />
-                {active === i ? (
-                  <motion.span
-                    aria-hidden
-                    key={`bar-${cycleKey}-${i}`}
-                    className="absolute left-0 bottom-0 h-px bg-ink origin-left"
-                    initial={{ scaleX: 0 }}
-                    animate={!inView ? { scaleX: 0 } : { scaleX: 1 }}
-                    transition={{
-                      duration: !inView ? 0 : CYCLE_MS / 1000,
-                      ease: "linear",
-                    }}
-                    style={{ width: "100%" }}
+                    className="absolute left-0 right-0 bottom-0 h-px bg-ink/15"
                   />
-                ) : null}
-              </li>
-            ))}
-          </ul>
+                  {active === i && !hasManualSelection ? (
+                    <motion.span
+                      aria-hidden
+                      key={`bar-${cycleKey}-${i}`}
+                      className="absolute left-0 bottom-0 h-px origin-left bg-[#36454F]"
+                      initial={{ scaleX: 0 }}
+                      animate={!inView ? { scaleX: 0 } : { scaleX: 1 }}
+                      transition={{
+                        duration: !inView ? 0 : CYCLE_MS / 1000,
+                        ease: "linear",
+                      }}
+                      style={{ width: "100%" }}
+                    />
+                  ) : null}
+                </li>
+              ))}
+            </ul>
 
-          {/* Detail — sticky right column, mirrors ValuesSection's
-              behaviour so the panel locks at top-32 once it reaches it. */}
-          <div className="col-span-12 md:col-span-6 md:col-start-7 relative">
-            <motion.div
-              key={item.slug}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: easeBrand }}
-              className="md:sticky md:top-32"
-            >
-              <p className="text-eyebrow text-ink/45 mb-6">
-                Discipline / {item.number}
-              </p>
-              <p className="text-h2 font-sans font-light leading-tight max-w-xl">
-                {item.short}
-              </p>
-            </motion.div>
-          </div>
+            <div className="hidden md:block col-span-12 md:col-span-6 md:col-start-7 relative">
+              <motion.div
+                key={item.slug}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: easeBrand }}
+                className="md:sticky md:top-32"
+              >
+                <p className="text-h2 font-sans font-light leading-tight max-w-xl">
+                  {item.short}
+                </p>
+              </motion.div>
+            </div>
         </div>
       </div>
     </section>

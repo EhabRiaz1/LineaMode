@@ -71,6 +71,41 @@
 }
 
 /* =====================================================================
+   Admin portal theme variants
+   ===================================================================== */
+
+:root {
+  --sidebar-bg: var(--color-stone-veil);
+  --sidebar-text: var(--color-carbon-ink);
+  --sidebar-text-muted: rgba(32, 28, 29, 0.55);
+  --sidebar-hover: rgba(32, 28, 29, 0.05);
+}
+
+.admin-dark {
+  --background: #1a1a1a;
+  --foreground: #e5e5e5;
+  --hairline: rgba(255, 255, 255, 0.12);
+  --hairline-strong: rgba(255, 255, 255, 0.25);
+  --muted: rgba(255, 255, 255, 0.6);
+  --sidebar-bg: #141414;
+  --sidebar-text: #e5e5e5;
+  --sidebar-text-muted: rgba(229, 229, 229, 0.55);
+  --sidebar-hover: rgba(255, 255, 255, 0.05);
+}
+
+.admin-dark .bg-stone {
+  background-color: var(--background);
+}
+
+.admin-dark .text-ink {
+  color: var(--foreground);
+}
+
+.admin-dark .border-\[var\(--hairline\)\] {
+  border-color: var(--hairline);
+}
+
+/* =====================================================================
    Reset / base
    ===================================================================== */
 
@@ -308,6 +343,22 @@ body {
 }
 
 /* =====================================================================
+   View Transitions — used on /start (Loom Reel → Letter)
+   ===================================================================== */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 540ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-old(loom-reel),
+::view-transition-new(loom-reel) {
+  animation-duration: 700ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* =====================================================================
    Reduced motion
    ===================================================================== */
 
@@ -328,5 +379,12 @@ body {
 
   .marquee-track {
     animation: none;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(loom-reel),
+  ::view-transition-new(loom-reel) {
+    animation: none !important;
   }
 }

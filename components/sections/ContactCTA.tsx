@@ -8,7 +8,7 @@ export function ContactCTA() {
       <div className="shell relative">
         <div className="grid grid-cols-12 gap-6">
           <div className="col-span-12 md:col-span-3">
-            <Eyebrow number="09" className="text-stone/80">
+            <Eyebrow number="06" className="text-stone/80">
               Start a Project
             </Eyebrow>
           </div>

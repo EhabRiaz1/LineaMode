@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { GridPattern } from "@/components/ui/GridPattern";
+import { CopyrightYear } from "@/components/layout/CopyrightYear";
 
 const NAV = [
   {
@@ -17,7 +18,7 @@ const NAV = [
   {
     heading: "Library",
     links: [
-      { href: "/lookbook", label: "Lookbook '26" },
+      // { href: "/lookbook", label: "Lookbook '26" },
       { href: "/journal", label: "Journal" },
     ],
   },
@@ -87,7 +88,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-20 pt-8 border-t border-stone/15 flex flex-col md:flex-row gap-4 justify-between text-label text-stone/60">
-          <p>© {new Date().getFullYear()} Lineamode Apparel. All rights reserved.</p>
+          <p>© <CopyrightYear /> Lineamode Apparel. All rights reserved.</p>
           <p>Design-led apparel manufacturing · Islamabad, Pakistan</p>
         </div>
       </div>

@@ -1,14 +1,20 @@
 /**
  * Content adapter.
  *
- * The site reads all dynamic content (currently: journal entries) through
- * this single module. The default backend is `local` — a file-based provider
- * that reads typed modules under `content/`. A `sanity` provider is stubbed
- * out so that the day a real CMS is wired up, the only file that needs to
- * change is `lib/cms/index.ts` (this file) — every page stays untouched.
+ * The site reads all dynamic content (currently: pages, journal, and
+ * key/value settings) through this single module. The default backend is
+ * `supabase` when the env vars are present, with a `local` provider as
+ * fallback for first-run dev / CI / local previews.
+ *
+ * Every wrapper below is `'use cache'` + `cacheTag(...)` so customer
+ * routes can statically prerender under Next 16 `cacheComponents`. Admin
+ * server actions invalidate by tag (see lib/cms/cache-tags.ts).
  */
 
+import { cacheTag } from "next/cache";
 import * as local from "./local";
+import { cmsTags } from "./cache-tags";
+import type { Page } from "./blocks";
 
 export type JournalSummary = {
   slug: string;
@@ -24,22 +30,93 @@ export type JournalEntry = JournalSummary & {
   readTime: string;
 };
 
+export type PageVisibility = {
+  [key: string]: {
+    navbar: boolean;
+    homepage: boolean;
+  };
+};
+
 export type CmsProvider = {
   listJournal(): Promise<JournalSummary[]>;
   getJournalEntry(slug: string): Promise<JournalEntry | null>;
+  getPage(slug: string): Promise<Page | null>;
+  getSetting<T = unknown>(key: string): Promise<T | null>;
 };
 
-type ProviderKey = "local" | "sanity";
-const PROVIDER: ProviderKey = "local";
-
-const providers: Record<ProviderKey, CmsProvider> = {
-  local,
-  // Sanity provider stub — replace with a real implementation when the CMS
-  // is provisioned. For now it falls through to the local file-based store
-  // so flipping `PROVIDER` doesn't crash.
-  sanity: local,
+const localProvider: CmsProvider = {
+  listJournal: local.listJournal,
+  getJournalEntry: local.getJournalEntry,
+  getPage: async () => null,
+  getSetting: async () => null,
 };
 
-export const cms: CmsProvider = providers[PROVIDER];
-export const listJournal = () => cms.listJournal();
-export const getJournalEntry = (slug: string) => cms.getJournalEntry(slug);
+function isSupabaseConfigured(): boolean {
+  return Boolean(
+    process.env.SUPABASE_URL &&
+      process.env.SUPABASE_ANON_KEY &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+  );
+}
+
+let providerCache: CmsProvider | null = null;
+
+async function resolveProvider(): Promise<CmsProvider> {
+  if (providerCache) return providerCache;
+  if (isSupabaseConfigured()) {
+    const supabase = await import("./supabase");
+    providerCache = {
+      listJournal: supabase.listJournal,
+      getJournalEntry: supabase.getJournalEntry,
+      getPage: supabase.getPage,
+      getSetting: supabase.getSetting,
+    } satisfies CmsProvider;
+  } else {
+    providerCache = localProvider;
+  }
+  return providerCache;
+}
+
+export const listJournal = async (): Promise<JournalSummary[]> => {
+  "use cache";
+  cacheTag(cmsTags.journalIndex());
+  const provider = await resolveProvider();
+  const remote = await provider.listJournal();
+  if (remote.length > 0) return remote;
+  return local.listJournal();
+};
+
+export const getJournalEntry = async (slug: string): Promise<JournalEntry | null> => {
+  "use cache";
+  cacheTag(cmsTags.journalEntry(slug));
+  const provider = await resolveProvider();
+  const remote = await provider.getJournalEntry(slug);
+  if (remote) return remote;
+  return local.getJournalEntry(slug);
+};
+
+export const getPage = async (slug: string): Promise<Page | null> => {
+  "use cache";
+  cacheTag(cmsTags.page(slug));
+  const provider = await resolveProvider();
+  return provider.getPage(slug);
+};
+
+export const getSetting = async <T = unknown>(key: string): Promise<T | null> => {
+  "use cache";
+  cacheTag(cmsTags.setting(key));
+  const provider = await resolveProvider();
+  return provider.getSetting<T>(key);
+};
+
+const DEFAULT_VISIBILITY: PageVisibility = {
+  lookbook: { navbar: true, homepage: true },
+  journal: { navbar: true, homepage: true },
+};
+
+export const getPageVisibility = async (): Promise<PageVisibility> => {
+  "use cache";
+  cacheTag(cmsTags.setting("page_visibility"));
+  const visibility = await getSetting<PageVisibility>("page_visibility");
+  return visibility ?? DEFAULT_VISIBILITY;
+};

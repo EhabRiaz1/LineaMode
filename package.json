@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "dev:turbo": "next dev --turbopack",
+    "dev": "next dev --turbopack",
+    "dev:webpack": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -13,6 +13,7 @@
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.2.4",
+    "@supabase/supabase-js": "^2.105.3",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
     "gsap": "^3.15.0",

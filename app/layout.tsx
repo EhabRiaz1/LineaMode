@@ -7,8 +7,10 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { GrainOverlay } from "@/components/layout/GrainOverlay";
 import { Cursor } from "@/components/layout/Cursor";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
-import { PageTransition } from "@/components/layout/PageTransition";
+import { PageTransitionGate } from "@/components/layout/PageTransitionGate";
+import { MarketingChromeGate } from "@/components/layout/MarketingChromeGate";
 import { organizationJsonLd } from "@/lib/seo/jsonld";
+import { getPageVisibility } from "@/lib/cms";
 
 // Manrope — body / UI (per brand guidelines)
 const manrope = Manrope({
@@ -79,9 +81,11 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const visibility = await getPageVisibility();
+  
   return (
     <html
       lang="en"
@@ -99,13 +103,15 @@ export default function RootLayout({
         <SmoothScroll />
         <GrainOverlay />
         <Cursor />
-        <SiteHeader />
-        <PageTransition>
+        <SiteHeader visibility={visibility} />
+        <PageTransitionGate>
           <main id="main" className="relative">
             {children}
           </main>
-        </PageTransition>
-        <SiteFooter />
+        </PageTransitionGate>
+        <MarketingChromeGate>
+          <SiteFooter />
+        </MarketingChromeGate>
       </body>
     </html>
   );

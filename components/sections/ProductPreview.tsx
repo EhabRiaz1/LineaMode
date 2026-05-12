@@ -1,112 +1,139 @@
 "use client";
 
-import Link from "next/link";
-import { motion, useInView } from "motion/react";
-import { useRef } from "react";
+import Image from "next/image";
+import { useState } from "react";
+import { motion } from "motion/react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { products } from "@/content/products";
+import { homeProducts } from "@/content/home-products";
 import { easeBrand } from "@/lib/motion/easings";
-
-/**
- * Editorial product grid (5 tiles).
- *
- * Layout rhythm — every row sums to 12 columns so nothing feels
- * stranded or off-grid:
- *   row 1   →  P0 (cols 1–7)  +  P1 (cols 8–12)         portrait
- *   row 2   →  P2 (cols 1–5)  +  P3 (cols 6–12)         portrait
- *   row 3   →  P4 (cols 1–12)                            cinematic
- */
-const TILE_LAYOUT = [
-  { cols: "col-span-12 md:col-span-7", aspect: "aspect-[4/5]" },
-  { cols: "col-span-12 md:col-span-5", aspect: "aspect-[4/5]" },
-  { cols: "col-span-12 md:col-span-5", aspect: "aspect-[4/5]" },
-  { cols: "col-span-12 md:col-span-7", aspect: "aspect-[4/5]" },
-  { cols: "col-span-12", aspect: "aspect-[21/9]" },
-];
+import { cn } from "@/lib/utils";
 
 export function ProductPreview() {
-  return (
-    <section className="relative bg-[var(--color-chalk-sand)] text-ink py-32 md:py-44">
-      <div className="shell">
-        <div className="flex items-end justify-between gap-12 mb-16">
-          <div className="max-w-2xl">
-            <Eyebrow number="02">Products</Eyebrow>
-            <h2 className="text-h1 mt-6">
-              Knitwear <span className="italic font-extralight">at the centre.</span>
-              <br />
-              Built outwards from there.
-            </h2>
-          </div>
-          <Link
-            href="/products"
-            className="hidden md:inline-flex text-label items-center gap-2 hover:gap-3 transition-all"
-          >
-            All products →
-          </Link>
-        </div>
+  const [active, setActive] = useState(0);
 
-        <div className="grid grid-cols-12 gap-4 md:gap-6">
-          {products.map((p, i) => (
-            <ProductTile key={p.slug} index={i} product={p} />
-          ))}
+  const onSelect = (index: number) => {
+    setActive(index);
+  };
+
+  const activeProduct = homeProducts[active] ?? homeProducts[0];
+
+  return (
+    <section className="relative min-h-[48rem] overflow-hidden bg-ink py-32 text-stone md:min-h-[min(94vh,940px)] md:py-44">
+      <div className="absolute inset-0">
+        {homeProducts.map((product, index) => (
+          <Image
+            key={product.slug}
+            src={product.poster}
+            alt={index === active ? product.imageAlt : ""}
+            fill
+            priority={index === 0}
+            sizes="100vw"
+            className={cn(
+              "object-cover transition-[opacity,transform] duration-1000 ease-out",
+              index === active
+                ? "scale-100 opacity-100"
+                : "scale-[1.03] opacity-0",
+            )}
+          />
+        ))}
+      </div>
+
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-r from-ink/88 via-ink/48 to-ink/18"
+      />
+      <div
+        aria-hidden
+        className={cn(
+          "absolute inset-0 bg-gradient-to-br opacity-80 mix-blend-multiply transition-colors duration-700",
+          activeProduct.accentClass,
+        )}
+      />
+      <div aria-hidden className="absolute inset-0 bg-ink/16" />
+
+      <div className="shell relative z-10 flex min-h-[32rem] items-center md:min-h-[36rem]">
+        <div className="grid w-full grid-cols-12 items-center gap-10 md:gap-12">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-10% 0px" }}
+            transition={{ duration: 0.7, ease: easeBrand }}
+            className="col-span-12 max-w-4xl md:col-span-7 lg:col-span-7"
+          >
+            <Eyebrow number="03">Products</Eyebrow>
+            <h2 className="mt-6 font-[family-name:var(--font-display)] text-[clamp(2.35rem,4.4vw,4.9rem)] font-light leading-[1.02] tracking-[-0.045em] text-stone">
+              We cover a full range of product
+              <span className="block italic font-extralight">
+                designed to meet performance and lifestyle needs
+              </span>
+            </h2>
+            <p className="mt-7 max-w-xl text-body leading-relaxed text-stone/78">
+              From everyday essentials to performance-led ranges, we build
+              product lines with the right fabric, fit, and finish for the
+              market they need to serve.
+            </p>
+            {/* Mobile buttons: narrower, centered under the copy */}
+            <div className="mt-8 flex flex-col items-center gap-3 md:hidden">
+              {homeProducts.map((product, index) => {
+                const isActive = index === active;
+                return (
+                  <button
+                    key={`m-${product.slug}`}
+                    type="button"
+                    onClick={() => onSelect(index)}
+                    aria-pressed={isActive}
+                    className={cn(
+                      "inline-flex items-center justify-center rounded-full border px-5 py-3 text-sm transition-all duration-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone focus-visible:ring-offset-2 focus-visible:ring-offset-ink",
+                      isActive
+                        ? "border-stone bg-stone text-ink shadow-[0_18px_48px_rgba(0,0,0,0.18)]"
+                        : "border-stone/35 bg-stone/8 text-stone backdrop-blur-md hover:border-stone/70 hover:bg-stone/16",
+                    )}
+                  >
+                    <span className="font-[family-name:var(--font-display)] text-[1rem] font-light tracking-[-0.02em]">
+                      {product.title}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          <div className="col-span-12 hidden md:col-span-5 md:block lg:col-start-10 lg:col-span-3">
+            <div className="flex max-w-xs flex-col gap-3 md:ml-auto">
+              {homeProducts.map((product, index) => {
+                const isActive = index === active;
+
+                return (
+                  <button
+                    key={product.slug}
+                    type="button"
+                    onClick={() => onSelect(index)}
+                    aria-pressed={isActive}
+                    className={cn(
+                      "group relative overflow-hidden rounded-full border px-5 py-3 text-left transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone focus-visible:ring-offset-2 focus-visible:ring-offset-ink md:px-6 md:py-3.5",
+                      isActive
+                        ? "border-stone bg-stone text-ink shadow-[0_22px_70px_rgba(0,0,0,0.22)]"
+                        : "border-stone/35 bg-stone/8 text-stone backdrop-blur-md hover:border-stone/70 hover:bg-stone/16",
+                    )}
+                  >
+                    <span className="flex items-center justify-between gap-5">
+                      <span className="font-[family-name:var(--font-display)] text-[clamp(1.05rem,1.35vw,1.35rem)] font-light leading-none tracking-[-0.02em]">
+                        {product.title}
+                      </span>
+                      <span
+                        className={cn(
+                          "h-2.5 w-2.5 shrink-0 rounded-full transition-colors duration-300",
+                          isActive ? "bg-terracotta" : "bg-stone/55",
+                        )}
+                      />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function ProductTile({
-  product,
-  index,
-}: {
-  product: (typeof products)[number];
-  index: number;
-}) {
-  const ref = useRef<HTMLAnchorElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-10% 0px" });
-  const layout = TILE_LAYOUT[index] ?? TILE_LAYOUT[TILE_LAYOUT.length - 1];
-
-  return (
-    <Link
-      href={`/products#${product.slug}`}
-      ref={ref}
-      className={`${layout.cols} group/tile relative overflow-hidden ring-1 ring-ink/15 ${layout.aspect}`}
-    >
-      <motion.div
-        className="absolute inset-0"
-        initial={{ scale: 1.08 }}
-        animate={inView ? { scale: 1 } : { scale: 1.08 }}
-        transition={{ duration: 1.6, ease: easeBrand }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={product.hero}
-          alt={product.title}
-          className="w-full h-full object-cover transition-opacity duration-700 group-hover/tile:opacity-0"
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={product.detail}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-700 group-hover/tile:opacity-100"
-        />
-      </motion.div>
-
-      <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-between text-stone">
-        <div className="flex justify-between text-label text-stone/85">
-          <span>/ {String(index + 1).padStart(2, "0")}</span>
-          <span>{product.tagline}</span>
-        </div>
-        <div>
-          <h3 className="text-h2 leading-tight">{product.title}</h3>
-          <p className="text-body text-stone/85 max-w-md mt-2 hidden md:block">
-            {product.description.split(".")[0]}.
-          </p>
-        </div>
-      </div>
-
-      <span className="absolute left-6 right-6 bottom-4 h-px bg-stone/40 origin-left scale-x-50 group-hover/tile:scale-x-100 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]" />
-    </Link>
   );
 }

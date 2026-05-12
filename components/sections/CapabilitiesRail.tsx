@@ -13,13 +13,11 @@ import { capabilities } from "@/content/capabilities";
 const CAPABILITY_IMAGES: Record<string, string> = {
   "design-support":
     "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1400&q=80",
-  "product-development":
-    "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=1400&q=80",
-  "fabric-sourcing":
+  "textile-sourcing":
     "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=1400&q=80",
-  "manufacturing":
+  production:
     "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=1400&q=80",
-  "merchandising":
+  merchandising:
     "https://images.unsplash.com/photo-1485518882345-15568b007407?auto=format&fit=crop&w=1400&q=80",
 };
 
@@ -107,7 +105,7 @@ export function CapabilitiesRail() {
     >
       <div className="shell flex items-end justify-between gap-12 mb-10 md:mb-14">
         <div className="max-w-2xl">
-          <Eyebrow number="08">Capabilities</Eyebrow>
+          <Eyebrow number="07">Capabilities</Eyebrow>
           <h2 className="text-h1 mt-6">
             One studio.
             <br />
@@ -115,7 +113,7 @@ export function CapabilitiesRail() {
           </h2>
         </div>
         <p className="hidden md:block text-label text-ink/55">
-          Drag · Scroll · 05 disciplines
+          Drag · Scroll · 04 disciplines
         </p>
       </div>
 

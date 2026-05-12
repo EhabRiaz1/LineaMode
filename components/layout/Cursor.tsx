@@ -1,17 +1,23 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 /**
  * Custom cursor — a 6px dot tracking the pointer 1:1, plus a 32px ring that
  * trails with inertia. Ring scales/fills on hover targets and on press.
  * Hidden on touch / coarse pointer devices via CSS.
+ *
+ * Disabled on /admin so the console feels like an app surface (precise
+ * pointer over forms / tables) rather than the editorial site.
  */
 export function Cursor() {
+  const pathname = usePathname();
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (pathname?.startsWith("/admin")) return;
     const dot = dotRef.current;
     const ring = ringRef.current;
     if (!dot || !ring) return;
@@ -78,7 +84,9 @@ export function Cursor() {
       window.removeEventListener("pointerup", onUp);
       cleanupHover();
     };
-  }, []);
+  }, [pathname]);
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>

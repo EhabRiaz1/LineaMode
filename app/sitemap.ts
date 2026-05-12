@@ -4,6 +4,9 @@ import { listJournal } from "@/lib/cms";
 const BASE = "https://www.lineamode.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // 'use cache' makes the whole sitemap a Cache Component, which is
+  // required for cacheComponents-mode to allow `new Date()`.
+  "use cache";
   const journal = await listJournal();
   const now = new Date();
 

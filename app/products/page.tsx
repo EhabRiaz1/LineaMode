@@ -30,12 +30,12 @@ export default function ProductsPage() {
             <h1 className="text-display leading-[0.95]">
               <span className="block">
                 <SplitText by="word" stagger={0.05} duration={1}>
-                  Knitwear at the centre.
+                  We cover a full range of product
                 </SplitText>
               </span>
               <span className="block italic font-extralight">
                 <SplitText by="word" stagger={0.05} duration={1} delay={0.2}>
-                  Built outwards from there.
+                  designed to meet performance and lifestyle needs
                 </SplitText>
               </span>
             </h1>

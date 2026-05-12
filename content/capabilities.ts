@@ -13,7 +13,7 @@ export const capabilities: Capability[] = [
     slug: "design-support",
     title: "Design Support",
     short:
-      "Design with us, or design through us. We translate your concept into garments engineered to scale.",
+      "We translate your ideas to well-engineered garments. Using best practices and tools for trend forecasting, materials selection, and pattern-fitting, we help ensure we prototype product to help meet your quality and cost requirements.",
     description:
       "From mood-board to tech pack, our design team works alongside yours to develop ranges that are commercially aware and technically resolved.",
     bullets: [
@@ -25,25 +25,10 @@ export const capabilities: Capability[] = [
   },
   {
     number: "02",
-    slug: "product-development",
-    title: "Product Development",
+    slug: "textile-sourcing",
+    title: "Textile Sourcing",
     short:
-      "Patterns, prototypes, fittings — every detail re-developed until it earns its place in the line.",
-    description:
-      "We move from first sample to production-ready in weeks, with disciplined iteration so nothing reaches your buyer that isn't right.",
-    bullets: [
-      "Pattern engineering and grading",
-      "Multi-round prototyping with audit trail",
-      "Fit sessions and sizing roll-outs",
-      "Performance-fabric R&D in-house",
-    ],
-  },
-  {
-    number: "03",
-    slug: "fabric-sourcing",
-    title: "Fabric Sourcing",
-    short:
-      "Performance polyesters and premium knits from a curated mill network across the region.",
+      "Leveraging an elaborate vendor network and many years of experience, we help source all the materials necessary to ensure the best quality and price for the garments you wish to make and sell.",
     description:
       "Three decades of mill relationships let us specify fabrics with confidence — including custom yarns, finishes and blends developed for your line.",
     bullets: [
@@ -54,11 +39,11 @@ export const capabilities: Capability[] = [
     ],
   },
   {
-    number: "04",
-    slug: "manufacturing",
-    title: "Agile Manufacturing",
+    number: "03",
+    slug: "production",
+    title: "Production",
     short:
-      "Low MOQ. Short lead times. A lean line that responds to your calendar, not the other way around.",
+      "We pursue agile manufacturing with low MOQs and specialities in a variety of products. Faster lead times and product variety will help ensure commercial success with lean inventory and speed-to-market.",
     description:
       "Our manufacturing floor is built for high-mix, low-volume runs so growing brands can launch on instinct without over-committing inventory.",
     bullets: [
@@ -69,11 +54,11 @@ export const capabilities: Capability[] = [
     ],
   },
   {
-    number: "05",
+    number: "04",
     slug: "merchandising",
     title: "Merchandising",
     short:
-      "Critical-path planning, costings and order tracking so launches land on time and on margin.",
+      "Data-driven strategies and analytics help pursue growth and depth in your product range. We have the ability to provide all the necessary insights to help plan your collections.",
     description:
       "A dedicated merchandiser owns your timeline end-to-end — from PO to dispatch — keeping every stakeholder honest and informed.",
     bullets: [

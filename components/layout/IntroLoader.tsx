@@ -2,9 +2,7 @@
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { easeBrand, dur } from "@/lib/motion/easings";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 /** Dispatched from the header home `Link` when already on `/` so the intro can replay. */
 export const LINEAMODE_HOME_INTRO_REPLAY = "lineamode:replay-home-intro";
@@ -13,128 +11,118 @@ const WORDMARK_SRC = "/brand/lineamode-wordmark.png";
 const WORDMARK_W = 1253;
 const WORDMARK_H = 199;
 
-const SWEEP_DURATION = dur.xl * 1.05;
-const EXIT_DURATION = dur.m;
+const SWEEP_MS = 1680;
 const HOLD_MS = 200;
-/** Hard fallback: even if the sweep's `onAnimationComplete` never fires
- *  (HMR stale state, animation interrupted, motion lib hiccup), guarantee
- *  the loader leaves after this total duration so the page is never
- *  permanently hidden behind it. */
-const RUN_FALLBACK_MS = Math.ceil(SWEEP_DURATION * 1000) + HOLD_MS + 250;
+const EXIT_MS = 700;
+const TOTAL_MS = SWEEP_MS + HOLD_MS + EXIT_MS; // 2580
+const SAFETY_MS = TOTAL_MS + 600; // 3180 — backstop for animationend never firing
 
-function reducedMotion(): boolean {
-  try {
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  } catch {
-    return false;
-  }
-}
-
-/** SSR + first client frame must match (no `prefers-reduced-motion` here) so hydration stays valid. */
-function initialPhaseForPath(pathname: string | null): "run" | "off" {
-  if (pathname == null) return "off";
-  const isHome = pathname === "/" || pathname === "";
-  return isHome ? "run" : "off";
+function isHomePath(pathname: string | null): boolean {
+  return pathname === "/" || pathname === "" || pathname == null;
 }
 
 /**
- * Full-screen intro on every visit to `/` (and when home is clicked again on `/`).
+ * Full-screen intro the first time `/` is reached (direct load or client-side
+ * navigation from any other route), plus replay-on-demand from the header logo.
+ *
+ * Design notes:
+ *   1. The entire visible life of the loader (sweep + hold + fade) is driven by
+ *      a single CSS animation `lm-intro-loader-life` on the outer wrapper. CSS
+ *      animations are guaranteed to play on element mount, so the loader will
+ *      always fade away visually even if React's render/effect scheduling is
+ *      disrupted by Fast Refresh, Strict Mode double-mounts, or Next.js router
+ *      cache reuse on back navigation.
+ *   2. The keyframes end at `opacity: 0; pointer-events: none`, so even if the
+ *      DOM node lingers, it cannot intercept clicks or visually block the page.
+ *   3. Actual unmount is driven by the wrapper's `onAnimationEnd` (preferred)
+ *      with a JS safety timer as a backstop in case `animationend` is missed
+ *      (e.g. tab visibility changes, animation pause-on-blur, etc.).
  */
 export function IntroLoader() {
   const pathname = usePathname();
-  const pathRef = useRef(pathname);
-  pathRef.current = pathname;
-
-  const [phase, setPhase] = useState<"run" | "exit" | "off">(() =>
-    initialPhaseForPath(pathname),
-  );
+  const [mounted, setMounted] = useState<boolean>(() => isHomePath(pathname));
   const [playKey, setPlayKey] = useState(0);
-  const sweepDone = useRef(false);
-  const skipFirstPathEffect = useRef(true);
+  const lastPathRef = useRef(pathname);
 
-  const startIntro = () => {
-    if (reducedMotion()) {
-      setPhase("off");
-      return;
+  const startIntro = useCallback(() => {
+    if (typeof window !== "undefined") {
+      try {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          setMounted(false);
+          return;
+        }
+      } catch {
+        // Ignore matchMedia failures and play the intro.
+      }
     }
-    sweepDone.current = false;
     setPlayKey((k) => k + 1);
-    setPhase("run");
-  };
+    setMounted(true);
+  }, []);
 
-  useLayoutEffect(() => {
-    if (pathname !== "/") {
-      skipFirstPathEffect.current = false;
-      setPhase("off");
-      return;
-    }
-
-    if (reducedMotion()) {
-      skipFirstPathEffect.current = false;
-      setPhase("off");
-      return;
-    }
-
-    if (skipFirstPathEffect.current) {
-      skipFirstPathEffect.current = false;
-      return;
-    }
-
-    startIntro();
-  }, [pathname]);
-
+  // Manual replay from the home logo click while already on `/`.
   useEffect(() => {
     const onReplay = () => {
-      if (pathRef.current !== "/") return;
-      if (reducedMotion()) return;
+      if (pathname !== "/") return;
       startIntro();
     };
     window.addEventListener(LINEAMODE_HOME_INTRO_REPLAY, onReplay);
     return () => window.removeEventListener(LINEAMODE_HOME_INTRO_REPLAY, onReplay);
-  }, []);
+  }, [pathname, startIntro]);
 
+  // Path-change handler:
+  //  - leaving `/` → unmount the loader immediately
+  //  - arriving at `/` from any other route → replay the intro with a fresh key
+  useEffect(() => {
+    const prev = lastPathRef.current;
+    lastPathRef.current = pathname;
+    if (pathname !== "/") {
+      setMounted(false);
+      return;
+    }
+    if (prev !== pathname && prev !== "/" && prev !== "" && prev != null) {
+      startIntro();
+    }
+  }, [pathname, startIntro]);
+
+  // Safety net: force-unmount after the full animation duration + buffer in
+  // case `animationend` never fires (tab hidden, animation paused, etc.). The
+  // CSS animation will have already faded the loader to `opacity: 0` and set
+  // `pointer-events: none`, so even before this fires the loader cannot block
+  // interaction — this just ensures DOM cleanup.
+  useEffect(() => {
+    if (!mounted) return;
+    const id = window.setTimeout(() => setMounted(false), SAFETY_MS);
+    return () => window.clearTimeout(id);
+  }, [mounted, playKey]);
+
+  // Lock body scroll while the loader is mounted.
   useLayoutEffect(() => {
-    if (phase === "off") return;
+    if (!mounted) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [phase]);
+  }, [mounted]);
 
-  useLayoutEffect(() => {
-    if (phase !== "exit") return;
-    const id = window.setTimeout(() => {
-      setPhase("off");
-    }, EXIT_DURATION * 1000 + 80);
-    return () => window.clearTimeout(id);
-  }, [phase]);
-
-  /** Run-phase safety net: if the sweep's onAnimationComplete never fires
-   *  (e.g. HMR / strict-mode interruption), force the exit ourselves. */
-  useLayoutEffect(() => {
-    if (phase !== "run") return;
-    const id = window.setTimeout(() => {
-      if (sweepDone.current) return;
-      sweepDone.current = true;
-      setPhase("exit");
-    }, RUN_FALLBACK_MS);
-    return () => window.clearTimeout(id);
-  }, [phase, playKey]);
-
-  if (phase === "off") return null;
+  if (!mounted) return null;
 
   return (
-    <motion.div
+    <div
+      key={`life-${playKey}`}
       role="status"
       aria-label="Lineamode loading"
-      aria-busy={phase === "run"}
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-stone"
-      initial={{ opacity: 1 }}
-      animate={{ opacity: phase === "exit" ? 0 : 1 }}
-      transition={{ duration: EXIT_DURATION, ease: easeBrand }}
+      aria-busy="true"
+      className="lm-intro-loader fixed inset-0 z-[120] flex items-center justify-center bg-stone"
+      onAnimationEnd={(event) => {
+        // Only react to the wrapper's life animation, not the child sweep/edge.
+        if (event.animationName === "lm-intro-loader-life") {
+          setMounted(false);
+        }
+      }}
     >
       <div className="relative w-[min(88vw,520px)] aspect-[1253/199]">
+        {/* Ghost wordmark (low-contrast trace beneath the sweep). */}
         <Image
           src={WORDMARK_SRC}
           alt=""
@@ -145,21 +133,8 @@ export function IntroLoader() {
           aria-hidden
         />
 
-        <motion.div
-          key={playKey}
-          className="absolute inset-0 overflow-hidden"
-          initial={{ clipPath: "inset(0 100% 0 0)" }}
-          animate={{ clipPath: "inset(0 0% 0 0)" }}
-          transition={{ duration: SWEEP_DURATION, ease: easeBrand }}
-          onAnimationComplete={() => {
-            if (pathRef.current !== "/") return;
-            if (sweepDone.current) return;
-            sweepDone.current = true;
-            window.setTimeout(() => {
-              setPhase((p) => (p === "run" ? "exit" : p));
-            }, HOLD_MS);
-          }}
-        >
+        {/* The sweep: a fresh-mounted div whose CSS animation runs on mount. */}
+        <div className="lm-intro-sweep absolute inset-0 overflow-hidden">
           <Image
             src={WORDMARK_SRC}
             alt="Lineamode"
@@ -168,20 +143,59 @@ export function IntroLoader() {
             priority
             className="h-full w-full object-contain object-center brightness-0"
           />
-        </motion.div>
+        </div>
 
-        {phase === "run" && (
-          <motion.div
-            key={`edge-${playKey}`}
-            aria-hidden
-            className="pointer-events-none absolute top-[8%] bottom-[8%] w-[3px] rounded-full bg-terracotta shadow-[0_0_18px_rgba(201,122,90,0.85)]"
-            initial={{ left: "0%", x: "-50%" }}
-            animate={{ left: "100%", x: "-50%" }}
-            transition={{ duration: SWEEP_DURATION, ease: easeBrand }}
-          />
-        )}
+        <div
+          aria-hidden
+          className="lm-intro-edge pointer-events-none absolute top-[8%] bottom-[8%] w-[3px] rounded-full bg-terracotta shadow-[0_0_18px_rgba(201,122,90,0.85)]"
+        />
       </div>
-    </motion.div>
+
+      <style>{`
+        .lm-intro-loader {
+          animation: lm-intro-loader-life ${TOTAL_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes lm-intro-loader-life {
+          0%, ${((SWEEP_MS + HOLD_MS) / TOTAL_MS) * 100}% {
+            opacity: 1;
+            pointer-events: auto;
+          }
+          99.9% {
+            opacity: 0;
+            pointer-events: none;
+          }
+          100% {
+            opacity: 0;
+            pointer-events: none;
+          }
+        }
+
+        .lm-intro-sweep {
+          clip-path: inset(0 100% 0 0);
+          animation: lm-intro-sweep ${SWEEP_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes lm-intro-sweep {
+          0%   { clip-path: inset(0 100% 0 0); }
+          100% { clip-path: inset(0 0% 0 0); }
+        }
+
+        .lm-intro-edge {
+          left: 0%;
+          transform: translateX(-50%);
+          animation: lm-intro-edge ${SWEEP_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes lm-intro-edge {
+          0%   { left: 0%; }
+          100% { left: 100%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .lm-intro-loader,
+          .lm-intro-sweep,
+          .lm-intro-edge { animation-duration: 1ms; }
+        }
+      `}</style>
+    </div>
   );
 }
 

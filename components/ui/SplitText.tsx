@@ -2,6 +2,7 @@
 
 import { motion, useInView } from "motion/react";
 import { useRef, type ElementType, type ReactNode } from "react";
+import { useBfcacheRestore } from "@/lib/hooks/useBfcacheRestore";
 import { easeBrand } from "@/lib/motion/easings";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,7 @@ export function SplitText({
 }: SplitTextProps) {
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once, margin: "-10% 0px" });
+  const wasRestored = useBfcacheRestore();
   const Tag = as as ElementType;
 
   const units = by === "word" ? children.split(/(\s+)/) : children.split("");
@@ -48,7 +50,7 @@ export function SplitText({
       >
         <motion.span
           initial={{ y: "110%" }}
-          animate={inView ? { y: "0%" } : { y: "110%" }}
+          animate={wasRestored || inView ? { y: "0%" } : { y: "110%" }}
           transition={{
             duration,
             ease: easeBrand,
