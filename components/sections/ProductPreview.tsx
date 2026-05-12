@@ -18,8 +18,9 @@ export function ProductPreview() {
   const activeProduct = homeProducts[active] ?? homeProducts[0];
 
   return (
-    <section className="relative min-h-[48rem] overflow-hidden bg-ink py-32 text-stone md:min-h-[min(94vh,940px)] md:py-44">
-      <div className="absolute inset-0">
+    <section className="relative min-h-[48rem] bg-ink py-32 text-stone md:min-h-[min(94vh,940px)] md:py-44">
+      <motion.div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <motion.div className="absolute inset-0">
         {homeProducts.map((product, index) => (
           <Image
             key={product.slug}
@@ -36,38 +37,39 @@ export function ProductPreview() {
             )}
           />
         ))}
-      </div>
+        </motion.div>
 
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-gradient-to-r from-ink/88 via-ink/48 to-ink/18"
-      />
-      <div
-        aria-hidden
-        className={cn(
-          "absolute inset-0 bg-gradient-to-br opacity-80 mix-blend-multiply transition-colors duration-700",
-          activeProduct.accentClass,
-        )}
-      />
-      <div aria-hidden className="absolute inset-0 bg-ink/16" />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-r from-ink/88 via-ink/48 to-ink/18"
+        />
+        <div
+          aria-hidden
+          className={cn(
+            "absolute inset-0 bg-gradient-to-br opacity-80 mix-blend-multiply transition-colors duration-700",
+            activeProduct.accentClass,
+          )}
+        />
+        <motion.div aria-hidden className="absolute inset-0 bg-ink/16" />
+      </motion.div>
 
-      <div className="shell relative z-10 flex min-h-[32rem] items-center md:min-h-[36rem]">
-        <div className="grid w-full grid-cols-12 items-center gap-10 md:gap-12">
+      <motion.div className="shell relative z-10 min-h-[32rem] md:flex md:min-h-[36rem] md:items-center">
+        <motion.div className="w-full md:grid md:grid-cols-12 md:items-center md:gap-12">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-10% 0px" }}
             transition={{ duration: 0.7, ease: easeBrand }}
-            className="col-span-12 max-w-4xl md:col-span-7 lg:col-span-7"
+            className="w-full min-w-0 md:col-span-7 lg:col-span-7"
           >
             <Eyebrow number="03">Products</Eyebrow>
-            <h2 className="mt-6 font-[family-name:var(--font-display)] text-[clamp(2.35rem,4.4vw,4.9rem)] font-light leading-[1.02] tracking-[-0.045em] text-stone">
-              We cover a full range of product
+            <h2 className="mt-6 max-w-full font-[family-name:var(--font-display)] text-[clamp(2.35rem,4.4vw,4.9rem)] font-light leading-[1.02] tracking-[-0.045em] text-stone text-balance">
+              We cover a full range of products
               <span className="block italic font-extralight">
                 designed to meet performance and lifestyle needs
               </span>
             </h2>
-            <p className="mt-7 max-w-xl text-body leading-relaxed text-stone/78">
+            <p className="mt-7 max-w-full text-body leading-relaxed text-stone/78 text-pretty md:max-w-xl">
               From everyday essentials to performance-led ranges, we build
               product lines with the right fabric, fit, and finish for the
               market they need to serve.
@@ -98,7 +100,7 @@ export function ProductPreview() {
             </div>
           </motion.div>
 
-          <div className="col-span-12 hidden md:col-span-5 md:block lg:col-start-10 lg:col-span-3">
+          <motion.div className="hidden md:col-span-5 md:block lg:col-start-10 lg:col-span-3">
             <div className="flex max-w-xs flex-col gap-3 md:ml-auto">
               {homeProducts.map((product, index) => {
                 const isActive = index === active;
@@ -131,9 +133,9 @@ export function ProductPreview() {
                 );
               })}
             </div>
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }

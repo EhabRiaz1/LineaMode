@@ -30,7 +30,7 @@ export default function ProductsPage() {
             <h1 className="text-display leading-[0.95]">
               <span className="block">
                 <SplitText by="word" stagger={0.05} duration={1}>
-                  We cover a full range of product
+                  We cover a full range of products
                 </SplitText>
               </span>
               <span className="block italic font-extralight">
