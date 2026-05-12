@@ -6,10 +6,10 @@ import { listJournal } from "@/lib/cms";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "Journal",
-  description:
-    "Notes from the studio, the floor, and the field. Field essays on knit, performance polyester, MOQ discipline and the long game of apparel manufacturing.",
-  path: "/journal",
+    title: "Journal",
+    description:
+      "Notes from the studio, the floor, and the field. Field essays on knit, performance polyester, MOQ discipline and the long game of apparel manufacturing.",
+    path: "/journal",
 });
 
 export default async function JournalPage() {

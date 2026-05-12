@@ -7,10 +7,10 @@ import { founders } from "@/content/founders";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "Founders",
-  description:
-    "Meet the founders of Lineamode Apparel — Saif Ahmed and Wasay Hasan. Three decades of textile know-how directing one studio.",
-  path: "/founders",
+    title: "Founders",
+    description:
+      "Meet the founders of Lineamode Apparel — Saif Ahmed and Wasay Hasan. Three decades of textile know-how directing one studio.",
+    path: "/founders",
 });
 
 export default function FoundersPage() {

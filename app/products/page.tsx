@@ -6,10 +6,10 @@ import { products } from "@/content/products";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "Products",
-  description:
-    "Knitwear, performance polyesters, soft wovens, outerwear and sweaters — engineered in one studio with a single discipline.",
-  path: "/products",
+    title: "Products",
+    description:
+      "Knitwear, performance polyesters, soft wovens, outerwear and sweaters — engineered in one studio with a single discipline.",
+    path: "/products",
 });
 
 export default function ProductsPage() {

@@ -5,10 +5,10 @@ import { GridPattern } from "@/components/ui/GridPattern";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "Sustainability",
-  description:
-    "Lower MOQ, lean supply chain, considered fibres. The principles that shape how Lineamode manufactures responsibly.",
-  path: "/sustainability",
+    title: "Sustainability",
+    description:
+      "Lower MOQ, lean supply chain, considered fibres. The principles that shape how Lineamode manufactures responsibly.",
+    path: "/sustainability",
 });
 
 const PRINCIPLES = [

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { SITE_NAME, SITE_URL } from "@/lib/seo/site";
-import { defaultOpenGraphImages, defaultTwitterImages } from "@/lib/seo/social";
+import { SITE_NAME, getDeploymentSiteOrigin } from "@/lib/seo/site";
+import { buildPageOpenGraph, buildPageTwitter } from "@/lib/seo/social";
 
 export function pageMetadata({
   title,
@@ -11,25 +11,22 @@ export function pageMetadata({
   description: string;
   path: string;
 }): Metadata {
-  const url = `${SITE_URL}${path}`;
+  const siteOrigin = getDeploymentSiteOrigin();
+  const url = `${siteOrigin}${path}`;
   const pageTitle = `${title} · ${SITE_NAME}`;
 
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: {
+    openGraph: buildPageOpenGraph(siteOrigin, {
       title: pageTitle,
       description,
-      url,
-      type: "website",
-      images: [...defaultOpenGraphImages],
-    },
-    twitter: {
-      card: "summary_large_image",
+      path,
+    }),
+    twitter: buildPageTwitter(siteOrigin, {
       title: pageTitle,
       description,
-      images: [...defaultTwitterImages],
-    },
+    }),
   };
 }

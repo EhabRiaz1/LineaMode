@@ -6,10 +6,10 @@ import { lookbook26, type Spread } from "@/content/lookbook";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "Lookbook '26",
-  description:
-    "An editorial scroll of the studio's knitwear and performance polyester development for the '26 calendar.",
-  path: "/lookbook",
+    title: "Lookbook '26",
+    description:
+      "An editorial scroll of the studio's knitwear and performance polyester development for the '26 calendar.",
+    path: "/lookbook",
 });
 
 export default function LookbookPage() {

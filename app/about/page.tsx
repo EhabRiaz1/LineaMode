@@ -7,10 +7,10 @@ import { values } from "@/content/values";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "About",
-  description:
-    "Lineamode Apparel was established to help brands address quality, lead-time and coordination problems with end-to-end design-to-production solutions.",
-  path: "/about",
+    title: "About",
+    description:
+      "Lineamode Apparel was established to help brands address quality, lead-time and coordination problems with end-to-end design-to-production solutions.",
+    path: "/about",
 });
 
 export default function AboutPage() {

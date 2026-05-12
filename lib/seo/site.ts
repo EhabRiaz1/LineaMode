@@ -1,5 +1,23 @@
 export const SITE_URL = "https://www.lineamode.com";
 
+/**
+ * Canonical public origin for absolute URLs in metadata (Open Graph, favicon base, JSON-LD).
+ *
+ * - Set `NEXT_PUBLIC_SITE_URL` on Vercel (e.g. `https://lineamode.vercel.app` or your custom domain).
+ * - If unset, uses `VERCEL_URL` (each Vercel project’s default host) so previews work on *.vercel.app.
+ * - Falls back to `SITE_URL` for local dev.
+ */
+export function getDeploymentSiteOrigin(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  if (explicit) return explicit;
+  const vercel = process.env.VERCEL_URL?.trim();
+  if (vercel) {
+    const host = vercel.replace(/^https?:\/\//, "");
+    return `https://${host}`;
+  }
+  return SITE_URL;
+}
+
 export const SITE_NAME = "Lineamode Apparel";
 
 export const SITE_TAGLINE = "From Idea to Execution";
@@ -15,8 +33,6 @@ export const SITE_TWITTER_DESCRIPTION =
 
 /** Used for link previews (WhatsApp, iMessage, Slack, etc.) and JSON-LD logo. */
 export const SQUARE_LOGO_PATH = "/brand/logo-square.png";
-
-export const DEFAULT_OG_IMAGE_URL = `${SITE_URL}${SQUARE_LOGO_PATH}`;
 
 export const DEFAULT_OG_IMAGE_WIDTH = 512;
 

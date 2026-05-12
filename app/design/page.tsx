@@ -6,10 +6,10 @@ import { capabilities } from "@/content/capabilities";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "Design",
-  description:
-    "Lineamode's design service — trend forecasting, range planning, sketch development, CAD, tech packs, and brand-aligned material curation. Design with us, or design through us.",
-  path: "/design",
+    title: "Design",
+    description:
+      "Lineamode's design service — trend forecasting, range planning, sketch development, CAD, tech packs, and brand-aligned material curation. Design with us, or design through us.",
+    path: "/design",
 });
 
 const SUB_SERVICES = [

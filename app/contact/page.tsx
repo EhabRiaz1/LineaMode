@@ -5,10 +5,10 @@ import { ContactForm } from "@/components/sections/ContactForm";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "Contact",
-  description:
-    "Brief the studio. Tell us what you're making and we'll reply inside two working days with fabric, costing and an indicative critical path.",
-  path: "/contact",
+    title: "Contact",
+    description:
+      "Brief the studio. Tell us what you're making and we'll reply inside two working days with fabric, costing and an indicative critical path.",
+    path: "/contact",
 });
 
 export default function ContactPage() {

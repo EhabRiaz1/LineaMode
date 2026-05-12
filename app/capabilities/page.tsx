@@ -7,10 +7,10 @@ import { capabilities } from "@/content/capabilities";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
-  title: "Capabilities",
-  description:
-    "Design support, product development, fabric sourcing, agile manufacturing and merchandising — five disciplines, one studio.",
-  path: "/capabilities",
+    title: "Capabilities",
+    description:
+      "Design support, product development, fabric sourcing, agile manufacturing and merchandising — five disciplines, one studio.",
+    path: "/capabilities",
 });
 
 const PROCESS = [

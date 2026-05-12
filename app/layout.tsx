@@ -10,15 +10,22 @@ import { Cursor } from "@/components/layout/Cursor";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { PageTransitionGate } from "@/components/layout/PageTransitionGate";
 import { MarketingChromeGate } from "@/components/layout/MarketingChromeGate";
-import { organizationJsonLd } from "@/lib/seo/jsonld";
+import { buildOrganizationJsonLd } from "@/lib/seo/jsonld";
 import { getPageVisibility } from "@/lib/cms";
 import {
   SITE_DESCRIPTION,
   SITE_NAME,
   SITE_TAGLINE,
-  SITE_URL,
+  getDeploymentSiteOrigin,
 } from "@/lib/seo/site";
-import { defaultOpenGraph, defaultTwitter, siteIcons } from "@/lib/seo/social";
+import {
+  buildDefaultOpenGraph,
+  buildDefaultTwitter,
+  siteIcons,
+} from "@/lib/seo/social";
+
+const deploymentOrigin = getDeploymentSiteOrigin();
+const metadataBase = new URL(`${deploymentOrigin.replace(/\/$/, "")}/`);
 
 // Manrope — body / UI (per brand guidelines)
 const manrope = Manrope({
@@ -45,7 +52,7 @@ const monoSans = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase,
   title: {
     default: `${SITE_NAME} — ${SITE_TAGLINE}`,
     template: `%s · ${SITE_NAME}`,
@@ -63,8 +70,8 @@ export const metadata: Metadata = {
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
   icons: siteIcons,
-  openGraph: defaultOpenGraph,
-  twitter: defaultTwitter,
+  openGraph: buildDefaultOpenGraph(deploymentOrigin),
+  twitter: buildDefaultTwitter(deploymentOrigin),
   robots: { index: true, follow: true },
 };
 
@@ -74,11 +81,13 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const organizationJsonLd = buildOrganizationJsonLd(deploymentOrigin);
+
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const visibility = await getPageVisibility();
-  
+
   return (
     <html
       lang="en"
