@@ -12,6 +12,13 @@ import { PageTransitionGate } from "@/components/layout/PageTransitionGate";
 import { MarketingChromeGate } from "@/components/layout/MarketingChromeGate";
 import { organizationJsonLd } from "@/lib/seo/jsonld";
 import { getPageVisibility } from "@/lib/cms";
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_URL,
+} from "@/lib/seo/site";
+import { defaultOpenGraph, defaultTwitter, siteIcons } from "@/lib/seo/social";
 
 // Manrope — body / UI (per brand guidelines)
 const manrope = Manrope({
@@ -37,16 +44,13 @@ const monoSans = Inter({
   display: "swap",
 });
 
-const SITE_URL = "https://www.lineamode.com";
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Lineamode Apparel — From Idea to Execution",
-    template: "%s · Lineamode Apparel",
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    template: `%s · ${SITE_NAME}`,
   },
-  description:
-    "Lineamode Apparel is an end-to-end clothing manufacturer with specializations in knitwear garments made of performance polyesters. Design support, product development, and agile manufacturing for global fashion brands.",
+  description: SITE_DESCRIPTION,
   keywords: [
     "Lineamode",
     "apparel manufacturer",
@@ -56,23 +60,11 @@ export const metadata: Metadata = {
     "low MOQ apparel",
     "Pakistan apparel manufacturer",
   ],
-  authors: [{ name: "Lineamode Apparel" }],
-  creator: "Lineamode Apparel",
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: SITE_URL,
-    siteName: "Lineamode Apparel",
-    title: "Lineamode Apparel — From Idea to Execution",
-    description:
-      "End-to-end clothing manufacturer specializing in knitwear and performance polyesters. Design support, prototyping, and agile production for global fashion brands.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Lineamode Apparel — From Idea to Execution",
-    description:
-      "End-to-end clothing manufacturer specializing in knitwear and performance polyesters.",
-  },
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  icons: siteIcons,
+  openGraph: defaultOpenGraph,
+  twitter: defaultTwitter,
   robots: { index: true, follow: true },
 };
 

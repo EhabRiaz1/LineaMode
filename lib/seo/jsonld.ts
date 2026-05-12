@@ -1,11 +1,13 @@
+import { SITE_NAME, SITE_TAGLINE, SITE_URL, SQUARE_LOGO_PATH } from "@/lib/seo/site";
+
 export const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Lineamode Apparel",
+  name: SITE_NAME,
   alternateName: "Lineamode",
-  url: "https://www.lineamode.com",
-  logo: "https://www.lineamode.com/brand/lineamode-wordmark.png",
-  slogan: "From Idea to Execution",
+  url: SITE_URL,
+  logo: `${SITE_URL}${SQUARE_LOGO_PATH}`,
+  slogan: SITE_TAGLINE,
   description:
     "End-to-end clothing manufacturer with specializations in knitwear garments made of performance polyesters. Design support, product development, and agile manufacturing for global fashion brands.",
   foundingDate: "2024",
