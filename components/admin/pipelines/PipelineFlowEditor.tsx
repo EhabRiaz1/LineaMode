@@ -1,14 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { motion, AnimatePresence, Reorder } from "motion/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, Reorder } from "motion/react";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { adminFetch } from "@/lib/admin/api";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionModal } from "./QuestionModal";
 import type { PipelineType } from "@/lib/pipelines/types";
+import { normalizePipelineFields, REQUIRED_PHONE_FIELD, type LetterField } from "@/lib/start/schema";
 import type { PipelineQuestion, PipelineRow } from "@/app/api/admin/pipelines/route";
-import { cn } from "@/lib/utils";
 
 type Props = {
   pipelineType: PipelineType;
@@ -34,6 +34,7 @@ const DEFAULT_QUESTIONS: Record<PipelineType, PipelineQuestion[]> = {
       path: "email",
       required: true,
     },
+    phoneQuestion(),
     {
       id: "goals",
       eyebrow: "Brief",
@@ -61,6 +62,7 @@ const DEFAULT_QUESTIONS: Record<PipelineType, PipelineQuestion[]> = {
       path: "email",
       required: true,
     },
+    phoneQuestion(),
     {
       id: "requirements",
       eyebrow: "Brief",
@@ -87,6 +89,7 @@ const DEFAULT_QUESTIONS: Record<PipelineType, PipelineQuestion[]> = {
       path: "email",
       required: true,
     },
+    phoneQuestion(),
     {
       id: "cadLinks",
       eyebrow: "Brief",
@@ -99,6 +102,18 @@ const DEFAULT_QUESTIONS: Record<PipelineType, PipelineQuestion[]> = {
   ],
 };
 
+function phoneQuestion(): PipelineQuestion {
+  const { step: _step, ...question } = REQUIRED_PHONE_FIELD;
+  return question;
+}
+
+function normalizeQuestionsForEditor(pipelineType: PipelineType, questions: PipelineQuestion[]) {
+  return normalizePipelineFields(
+    pipelineType,
+    questions.map((question, index) => ({ ...question, step: index + 1 }) as LetterField),
+  ).map(({ step: _step, ...question }) => question);
+}
+
 export function PipelineFlowEditor({ pipelineType }: Props) {
   const { authHeaders, status } = useAdminSession();
   const [pipeline, setPipeline] = useState<PipelineRow | null>(null);
@@ -109,6 +124,7 @@ export function PipelineFlowEditor({ pipelineType }: Props) {
   const [success, setSuccess] = useState<string | null>(null);
   const [editingQuestion, setEditingQuestion] = useState<PipelineQuestion | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
+  const duplicateCounterRef = useRef(0);
 
   const load = useCallback(async () => {
     if (status !== "authenticated") return;
@@ -123,9 +139,9 @@ export function PipelineFlowEditor({ pipelineType }: Props) {
       setPipeline(res.data.pipeline);
       const savedQuestions = res.data.pipeline?.questions;
       if (savedQuestions && savedQuestions.length > 0) {
-        setQuestions(savedQuestions);
+        setQuestions(normalizeQuestionsForEditor(pipelineType, savedQuestions));
       } else {
-        setQuestions(DEFAULT_QUESTIONS[pipelineType] || []);
+        setQuestions(normalizeQuestionsForEditor(pipelineType, DEFAULT_QUESTIONS[pipelineType] || []));
       }
     } else {
       setError(res.error);
@@ -134,7 +150,8 @@ export function PipelineFlowEditor({ pipelineType }: Props) {
   }, [authHeaders, status, pipelineType]);
 
   useEffect(() => {
-    void load();
+    const id = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(id);
   }, [load]);
 
   const saveQuestions = useCallback(async (newQuestions: PipelineQuestion[]) => {
@@ -177,12 +194,13 @@ export function PipelineFlowEditor({ pipelineType }: Props) {
   };
 
   const handleAddQuestion = () => {
+    const nextId = duplicateCounterRef.current++;
     setEditingQuestion({
-      id: `question_${Date.now()}`,
+      id: `question_${nextId}`,
       eyebrow: "New",
       prompt: "Your question here",
       field: { kind: "text", placeholder: "Type here..." },
-      path: `custom.field_${Date.now()}`,
+      path: `custom.field_${nextId}`,
       required: false,
     });
     setIsAddingNew(true);
@@ -215,7 +233,7 @@ export function PipelineFlowEditor({ pipelineType }: Props) {
   const handleDuplicateQuestion = (question: PipelineQuestion) => {
     const duplicate: PipelineQuestion = {
       ...question,
-      id: `${question.id}_copy_${Date.now()}`,
+      id: `${question.id}_copy_${duplicateCounterRef.current++}`,
       path: `${question.path}_copy`,
     };
     const index = questions.findIndex((q) => q.id === question.id);

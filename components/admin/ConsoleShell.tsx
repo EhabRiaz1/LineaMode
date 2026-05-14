@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { Sidebar } from "@/components/admin/Sidebar";
+import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import { Topbar } from "@/components/admin/Topbar";
 import { cn } from "@/lib/utils";
 
@@ -26,12 +27,15 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
   // Restore the collapsed preference once mounted so SSR markup matches the
   // default (expanded) state and we never flash.
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored === "true") setCollapsed(true);
-    } catch {
-      // ignore — private mode / disabled storage
-    }
+    const id = window.setTimeout(() => {
+      try {
+        const stored = window.localStorage.getItem(STORAGE_KEY);
+        if (stored === "true") setCollapsed(true);
+      } catch {
+        // ignore — private mode / disabled storage
+      }
+    }, 0);
+    return () => window.clearTimeout(id);
   }, []);
 
   useEffect(() => {
@@ -53,6 +57,9 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
       >
         <Topbar />
         <main className="px-8 py-8">{children}</main>
+      </div>
+      <div className="fixed bottom-5 right-5 z-40">
+        <ThemeToggle floating />
       </div>
     </ShellContext.Provider>
   );

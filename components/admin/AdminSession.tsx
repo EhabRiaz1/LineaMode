@@ -80,5 +80,21 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
     };
   }, [router, session, status, supabase.auth]);
 
-  return <AdminSessionContext.Provider value={value}>{children}</AdminSessionContext.Provider>;
+  const shouldRenderChildren = status === "authenticated" || pathname?.startsWith("/admin/login");
+
+  return (
+    <AdminSessionContext.Provider value={value}>
+      {shouldRenderChildren ? children : <AdminAuthGate status={status} />}
+    </AdminSessionContext.Provider>
+  );
+}
+
+function AdminAuthGate({ status }: { status: Status }) {
+  return (
+    <div className="min-h-screen bg-stone text-ink flex items-center justify-center">
+      <div className="rounded-2xl border border-[var(--hairline)] bg-stone px-5 py-4 text-label text-ink/55">
+        {status === "anonymous" ? "Redirecting to sign in..." : "Checking admin session..."}
+      </div>
+    </div>
+  );
 }

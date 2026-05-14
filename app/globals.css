@@ -78,10 +78,34 @@
   --sidebar-bg: var(--color-stone-veil);
   --sidebar-text: var(--color-carbon-ink);
   --sidebar-text-muted: rgba(32, 28, 29, 0.55);
+  --sidebar-text-faint: rgba(32, 28, 29, 0.35);
   --sidebar-hover: rgba(32, 28, 29, 0.05);
+  --sidebar-active-bg: var(--color-carbon-ink);
+  --sidebar-active-text: var(--color-stone-veil);
+  --sidebar-active-muted: rgba(225, 225, 220, 0.72);
+}
+
+.admin-light {
+  --color-stone-veil: #e1e1dc;
+  --color-carbon-ink: #201c1d;
+  --background: var(--color-stone-veil);
+  --foreground: var(--color-carbon-ink);
+  --hairline: rgba(32, 28, 29, 0.18);
+  --hairline-strong: rgba(32, 28, 29, 0.4);
+  --muted: rgba(32, 28, 29, 0.6);
+  --sidebar-bg: rgba(225, 225, 220, 0.95);
+  --sidebar-text: #201c1d;
+  --sidebar-text-muted: rgba(32, 28, 29, 0.55);
+  --sidebar-text-faint: rgba(32, 28, 29, 0.35);
+  --sidebar-hover: rgba(32, 28, 29, 0.05);
+  --sidebar-active-bg: #201c1d;
+  --sidebar-active-text: #e1e1dc;
+  --sidebar-active-muted: rgba(225, 225, 220, 0.72);
 }
 
 .admin-dark {
+  --color-stone-veil: #181818;
+  --color-carbon-ink: #ededed;
   --background: #1a1a1a;
   --foreground: #e5e5e5;
   --hairline: rgba(255, 255, 255, 0.12);
@@ -90,17 +114,28 @@
   --sidebar-bg: #141414;
   --sidebar-text: #e5e5e5;
   --sidebar-text-muted: rgba(229, 229, 229, 0.55);
+  --sidebar-text-faint: rgba(229, 229, 229, 0.32);
   --sidebar-hover: rgba(255, 255, 255, 0.05);
+  --sidebar-active-bg: #e5e5e5;
+  --sidebar-active-text: #141414;
+  --sidebar-active-muted: rgba(20, 20, 20, 0.62);
 }
 
+.admin-dark .admin-sidebar-logo {
+  filter: brightness(0) invert(1);
+}
+
+.admin-light .bg-stone,
 .admin-dark .bg-stone {
   background-color: var(--background);
 }
 
+.admin-light .text-ink,
 .admin-dark .text-ink {
   color: var(--foreground);
 }
 
+.admin-light .border-\[var\(--hairline\)\],
 .admin-dark .border-\[var\(--hairline\)\] {
   border-color: var(--hairline);
 }

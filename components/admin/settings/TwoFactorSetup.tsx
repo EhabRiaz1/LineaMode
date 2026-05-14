@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import QRCodeGenerator from "qrcode";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { adminFetch } from "@/lib/admin/api";
 import { cn } from "@/lib/utils";
@@ -35,7 +36,8 @@ export function TwoFactorSetup() {
   }, [authHeaders, status]);
 
   useEffect(() => {
-    void loadStatus();
+    const id = window.setTimeout(() => void loadStatus(), 0);
+    return () => window.clearTimeout(id);
   }, [loadStatus]);
 
   const startSetup = async () => {
@@ -336,15 +338,34 @@ export function TwoFactorSetup() {
 }
 
 function QRCode({ data, size = 160 }: { data: string; size?: number }) {
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [svg, setSvg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!data) return;
-    const url = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(data)}`;
-    setQrUrl(url);
+    if (!data) {
+      const id = window.setTimeout(() => setSvg(null), 0);
+      return () => window.clearTimeout(id);
+    }
+
+    let cancelled = false;
+    QRCodeGenerator.toString(data, {
+      type: "svg",
+      width: size,
+      margin: 1,
+      errorCorrectionLevel: "M",
+    })
+      .then((nextSvg) => {
+        if (!cancelled) setSvg(nextSvg);
+      })
+      .catch(() => {
+        if (!cancelled) setSvg(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [data, size]);
 
-  if (!qrUrl) {
+  if (!svg) {
     return (
       <div
         style={{ width: size, height: size }}
@@ -354,12 +375,12 @@ function QRCode({ data, size = 160 }: { data: string; size?: number }) {
   }
 
   return (
-    <img
-      src={qrUrl}
-      alt="QR Code for 2FA setup"
-      width={size}
-      height={size}
+    <div
+      aria-label="QR Code for 2FA setup"
+      role="img"
       className="rounded"
+      style={{ width: size, height: size }}
+      dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
 }

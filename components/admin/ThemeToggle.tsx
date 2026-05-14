@@ -5,16 +5,19 @@ import { cn } from "@/lib/utils";
 
 type Theme = "light" | "dark" | "system";
 
-export function ThemeToggle() {
+export function ThemeToggle({ floating = false }: { floating?: boolean }) {
   const [theme, setTheme] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem("admin-theme") as Theme | null;
-    if (stored && ["light", "dark", "system"].includes(stored)) {
-      setTheme(stored);
-    }
+    const id = window.setTimeout(() => {
+      setMounted(true);
+      const stored = localStorage.getItem("admin-theme") as Theme | null;
+      if (stored && ["light", "dark", "system"].includes(stored)) {
+        setTheme(stored);
+      }
+    }, 0);
+    return () => window.clearTimeout(id);
   }, []);
 
   useEffect(() => {
@@ -34,6 +37,10 @@ export function ThemeToggle() {
     root.classList.remove("admin-light", "admin-dark");
     root.classList.add(`admin-${resolvedTheme}`);
     localStorage.setItem("admin-theme", theme);
+
+    return () => {
+      root.classList.remove("admin-light", "admin-dark");
+    };
   }, [theme, mounted]);
 
   useEffect(() => {
@@ -65,7 +72,12 @@ export function ThemeToggle() {
     return (
       <button
         type="button"
-        className="flex items-center gap-2 rounded-lg px-3 py-2 text-label text-ink/55"
+        className={cn(
+          "flex items-center gap-2 px-3 py-2 text-label text-ink/55",
+          floating
+            ? "rounded-full border border-[var(--hairline)] bg-stone shadow-lg"
+            : "rounded-lg",
+        )}
         aria-label="Toggle theme"
       >
         <span className="w-4 h-4" />
@@ -78,7 +90,12 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={cycleTheme}
-      className="flex items-center gap-2 rounded-lg px-3 py-2 text-label text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text)] transition-colors"
+      className={cn(
+        "flex items-center gap-2 px-3 py-2 text-label transition-colors",
+        floating
+          ? "rounded-full border border-[var(--hairline)] bg-stone text-ink/70 shadow-lg hover:bg-ink hover:text-stone"
+          : "rounded-lg text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text)]",
+      )}
       aria-label={`Current theme: ${theme}. Click to change.`}
     >
       <ThemeIcon theme={theme} />

@@ -66,7 +66,9 @@ export function LetterField({ field, state, onChange, onSubmit }: Props) {
           placeholder={"placeholder" in field.field ? field.field.placeholder : undefined}
           onChange={(event) => onChange(field.path, event.target.value)}
           onKeyDown={onKeyDown}
-          autoComplete={field.field.kind === "email" ? "email" : "off"}
+          autoComplete={
+            field.field.kind === "email" ? "email" : field.field.kind === "tel" ? "tel" : "off"
+          }
           className="w-full bg-transparent border-b border-ink/15 text-h2 leading-tight text-ink placeholder:text-ink/30 outline-none focus:border-ink/55 transition-colors py-3"
         />
       );
@@ -123,7 +125,7 @@ export function LetterField({ field, state, onChange, onSubmit }: Props) {
       );
     }
     case "files": {
-      const list = (value as { name: string; size?: number }[] | undefined) ?? [];
+      const list = (value as { name: string; size?: number; file?: File }[] | undefined) ?? [];
       return (
         <div className="space-y-3">
           <label className="inline-flex cursor-pointer items-center rounded-full border border-ink/20 bg-stone px-5 py-3 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors">
@@ -136,7 +138,7 @@ export function LetterField({ field, state, onChange, onSubmit }: Props) {
               onChange={(event) => {
                 const files = Array.from(event.target.files ?? []);
                 if (!files.length) return;
-                const meta = files.map((f) => ({ name: f.name, type: f.type, size: f.size }));
+                const meta = files.map((f) => ({ name: f.name, type: f.type, size: f.size, file: f }));
                 onChange(field.path, [...list, ...meta]);
               }}
             />

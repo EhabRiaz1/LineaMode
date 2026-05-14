@@ -53,13 +53,4 @@ export type ProjectDetail = {
     created_at: string;
     updated_at: string;
   }[];
-  project_emails: {
-    id: string;
-    to_address: string;
-    subject: string;
-    body: string;
-    status: string;
-    sent_at: string | null;
-    created_at: string;
-  }[];
 };

@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { useConsoleShell } from "@/components/admin/ConsoleShell";
-import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 type Section = {
@@ -56,7 +55,7 @@ export function Sidebar() {
     <aside
       data-collapsed={collapsed}
       className={cn(
-        "fixed inset-y-0 left-0 z-30 flex flex-col border-r border-[var(--hairline)] bg-stone/95 backdrop-blur-sm",
+        "fixed inset-y-0 left-0 z-30 flex flex-col border-r border-[var(--hairline)] bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] backdrop-blur-sm",
         "transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         collapsed ? "w-[72px]" : "w-[240px]",
       )}
@@ -66,14 +65,14 @@ export function Sidebar() {
           {collapsed ? (
             <span className="text-h3 text-ink leading-none font-mono font-bold">L</span>
           ) : (
-            <BrandLogo context="light" className="h-3.5" priority />
+            <BrandLogo context="light" className="admin-sidebar-logo h-3.5" priority />
           )}
         </Link>
         <button
           type="button"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           onClick={() => setCollapsed((v) => !v)}
-          className="size-7 inline-flex items-center justify-center rounded-full border border-[var(--hairline)] text-ink/70 hover:text-ink hover:bg-ink/5 transition-colors"
+          className="size-7 inline-flex items-center justify-center rounded-full border border-[var(--hairline)] text-[var(--sidebar-text-muted)] hover:text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)] transition-colors"
         >
           <span aria-hidden className="block h-px w-3 bg-current" />
         </button>
@@ -83,7 +82,7 @@ export function Sidebar() {
         {SECTIONS.map((section) => (
           <div key={section.heading}>
             {!collapsed && (
-              <p className="px-3 mb-2 text-eyebrow text-ink/45">{section.heading}</p>
+              <p className="px-3 mb-2 text-eyebrow text-[var(--sidebar-text-muted)]">{section.heading}</p>
             )}
             <ul className="flex flex-col gap-px">
               {section.items.map((item) => {
@@ -97,21 +96,21 @@ export function Sidebar() {
                       className={cn(
                         "group flex items-center gap-3 rounded-xl px-3 py-2 text-label transition-colors",
                         active
-                          ? "bg-ink text-stone"
-                          : "text-ink/65 hover:text-ink hover:bg-ink/5",
+                          ? "bg-[var(--sidebar-active-bg)] text-[var(--sidebar-active-text)]"
+                          : "text-[var(--sidebar-text-muted)] hover:text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)]",
                       )}
                     >
                       <span
                         className={cn(
                           "tabular-nums text-[10px] tracking-[0.18em]",
-                          active ? "text-stone/70" : "text-ink/35",
+                          active ? "text-[var(--sidebar-active-muted)]" : "text-[var(--sidebar-text-faint)]",
                         )}
                       >
                         {item.number}
                       </span>
                       {!collapsed && <span className="truncate">{item.label}</span>}
                       {active && !collapsed && (
-                        <span aria-hidden className="ml-auto block size-1.5 rounded-full bg-stone" />
+                        <span aria-hidden className="ml-auto block size-1.5 rounded-full bg-[var(--sidebar-active-text)]" />
                       )}
                     </Link>
                   </li>
@@ -123,19 +122,18 @@ export function Sidebar() {
       </nav>
 
       <div className="border-t border-[var(--hairline)] px-3 py-3 space-y-3">
-        {!collapsed && <ThemeToggle />}
         {!collapsed ? (
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-eyebrow text-ink/45">Admin</p>
-              <p className="text-label text-ink/85 truncate" title={email ?? undefined}>
+              <p className="text-eyebrow text-[var(--sidebar-text-muted)]">Admin</p>
+              <p className="text-label text-[var(--sidebar-text)] truncate" title={email ?? undefined}>
                 {email ?? "—"}
               </p>
             </div>
             <button
               type="button"
               onClick={() => void signOut()}
-              className="text-label text-ink/60 hover:text-ink hover:underline"
+              className="text-label text-[var(--sidebar-text-muted)] hover:text-[var(--sidebar-text)] hover:underline"
             >
               Sign out
             </button>
@@ -145,7 +143,7 @@ export function Sidebar() {
             type="button"
             onClick={() => void signOut()}
             aria-label="Sign out"
-            className="size-9 inline-flex items-center justify-center rounded-full border border-[var(--hairline)] text-ink/65 hover:text-ink hover:bg-ink/5"
+            className="size-9 inline-flex items-center justify-center rounded-full border border-[var(--hairline)] text-[var(--sidebar-text-muted)] hover:text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)]"
           >
             <span aria-hidden>↩</span>
           </button>

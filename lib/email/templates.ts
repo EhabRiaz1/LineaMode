@@ -62,6 +62,7 @@ export function adminNotification(payload: IntakePayload, projectId: string) {
     `Pipeline: ${PIPELINE_LABELS[payload.pipelineType]}`,
     `Name: ${payload.name}`,
     `Email: ${payload.email}`,
+    `Phone: ${payload.phone}`,
     payload.company ? `Company: ${payload.company}` : null,
     payload.country ? `Country: ${payload.country}` : null,
     payload.timeline ? `Timeline: ${payload.timeline}` : null,
@@ -87,6 +88,7 @@ export function adminNotification(payload: IntakePayload, projectId: string) {
       </h1>
       <table style="border-collapse: collapse; width: 100%;">
         <tr><td style="padding: 4px 0; color: #888;">Email</td><td>${escapeHtml(payload.email)}</td></tr>
+        <tr><td style="padding: 4px 0; color: #888;">Phone</td><td>${escapeHtml(payload.phone)}</td></tr>
         ${payload.company ? `<tr><td style="padding: 4px 0; color: #888;">Company</td><td>${escapeHtml(payload.company)}</td></tr>` : ""}
         ${payload.country ? `<tr><td style="padding: 4px 0; color: #888;">Country</td><td>${escapeHtml(payload.country)}</td></tr>` : ""}
         ${payload.timeline ? `<tr><td style="padding: 4px 0; color: #888;">Timeline</td><td>${escapeHtml(payload.timeline)}</td></tr>` : ""}

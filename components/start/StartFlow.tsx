@@ -8,6 +8,7 @@ import { LetterCompletion } from "./LetterCompletion";
 import {
   getLetterFields,
   initialFormState,
+  normalizePipelineFields,
   startPayloadSchema,
   toIntakePayload,
   type LetterField,
@@ -55,6 +56,36 @@ function getPath(state: StartFormState, path: string): unknown {
   }, state);
 }
 
+async function uploadPendingFiles(files: StartFormState["files"]) {
+  const pending = files.filter((file) => file.file && !file.path);
+  if (pending.length === 0) {
+    return files.map(({ file: _file, ...meta }) => meta);
+  }
+
+  const formData = new FormData();
+  pending.forEach((file) => {
+    if (file.file) formData.append("files", file.file);
+  });
+
+  const res = await fetch("/api/public/intake/uploads", {
+    method: "POST",
+    body: formData,
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(body?.error ?? "File upload failed.");
+  }
+
+  const uploaded = (body?.data?.files ?? []) as { name: string; type?: string; size?: number; path: string }[];
+  let uploadedIndex = 0;
+
+  return files.map(({ file: _file, ...meta }) => {
+    if (meta.path) return meta;
+    const next = uploaded[uploadedIndex++];
+    return next ?? meta;
+  });
+}
+
 export function StartFlow() {
   const [phase, setPhase] = useState<Phase>("reel");
   const [step, setStep] = useState(0);
@@ -81,10 +112,13 @@ export function StartFlow() {
         if (!Array.isArray(questions) || questions.length === 0) {
           return [type, [] as LetterField[]] as const;
         }
-        const mapped: LetterField[] = questions.map((q, i) => ({
-          ...(q as Omit<LetterField, "step">),
-          step: i + 1,
-        }));
+        const mapped: LetterField[] = normalizePipelineFields(
+          type,
+          questions.map((q, i) => ({
+            ...(q as Omit<LetterField, "step">),
+            step: i + 1,
+          })),
+        );
         return [type, mapped] as const;
       }),
     ).then((results) => {
@@ -156,6 +190,13 @@ export function StartFlow() {
         return;
       }
     }
+    if ((field.id === "phone" || field.path === "phone") && typeof value === "string") {
+      const digitCount = value.replace(/\D/g, "").length;
+      if (digitCount < 7) {
+        setError("That phone number looks too short.");
+        return;
+      }
+    }
 
     trackStart("letter_step_complete", {
       step: step + 1,
@@ -172,8 +213,10 @@ export function StartFlow() {
     setSubmitting(true);
     setError(null);
     try {
+      const uploadedFiles = await uploadPendingFiles(form.files);
       const enriched: StartFormState = {
         ...form,
+        files: uploadedFiles,
         // attribution + device captured client-side at submit time.
       };
       const payload = toIntakePayload(enriched);

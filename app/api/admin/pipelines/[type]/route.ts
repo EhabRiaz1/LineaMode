@@ -1,6 +1,7 @@
 import { respond } from "@/lib/api/responses";
 import { getServiceRoleClient, requireAdminUser, UnauthorizedError } from "@/lib/supabase/client";
 import { PIPELINE_TYPES, type PipelineType } from "@/lib/pipelines/types";
+import { normalizePipelineFields, type LetterField } from "@/lib/start/schema";
 import type { PipelineQuestion } from "../route";
 
 type Context = { params: Promise<{ type: string }> };
@@ -25,7 +26,17 @@ export async function GET(request: Request, context: Context) {
       return respond.serverError("Unable to fetch pipeline", error.message);
     }
 
-    return respond.ok({ pipeline: data });
+    const pipeline = data
+      ? {
+          ...data,
+          questions: Array.isArray(data.questions)
+            ? normalizePipelineFields(type as PipelineType, data.questions as LetterField[])
+                .map(({ step: _step, ...question }) => question)
+            : [],
+        }
+      : data;
+
+    return respond.ok({ pipeline });
   } catch (error) {
     if (error instanceof UnauthorizedError) return respond.unauthorized(error.message);
     return respond.serverError(
@@ -65,7 +76,10 @@ export async function PUT(request: Request, context: Context) {
     };
 
     if (questions !== undefined) {
-      updates.questions = questions;
+      updates.questions = normalizePipelineFields(
+        type as PipelineType,
+        questions.map((question, index) => ({ ...question, step: index + 1 }) as LetterField),
+      ).map(({ step: _step, ...question }) => question);
       updates.version = (existing?.version ?? 0) + 1;
     }
 

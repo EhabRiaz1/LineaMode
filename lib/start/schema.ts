@@ -31,7 +31,11 @@ const sharedContact = z.object({
   name: z.string().min(2, "Tell us how to address you."),
   email: z.string().email("That doesn't look like a valid email."),
   company: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .trim()
+    .min(7, "Add a phone number we can reach you on.")
+    .refine((value) => value.replace(/\D/g, "").length >= 7, "That phone number looks too short."),
   country: z.string().optional(),
   timeline: z.string().optional(),
   budgetRange: z.string().optional(),
@@ -43,13 +47,13 @@ const sharedNotes = z.object({
 });
 
 const ideaBrief = z.object({
-  goals: z.string().min(5, "A few words on what you’re chasing."),
+  goals: z.string().min(1, "A few words on what you’re chasing."),
   inspirations: z.array(z.string().min(1)).max(10).optional(),
   constraints: z.string().optional(),
 });
 
 const scratchBrief = z.object({
-  requirements: z.string().min(8, "What does the spec ask for?"),
+  requirements: z.string().min(1, "What does the spec ask for?"),
   brandAssets: z.string().optional(),
   specs: z.string().optional(),
   collaboration: z.string().optional(),
@@ -150,8 +154,18 @@ const COMMON_OPENING: LetterField[] = [
     required: true,
   },
   {
-    id: "company",
+    id: "phone",
     step: 3,
+    eyebrow: "Contact",
+    prompt: "What's the best phone number to reach you on?",
+    helper: "Include your country code if you are outside Pakistan.",
+    field: { kind: "tel" },
+    path: "phone",
+    required: true,
+  },
+  {
+    id: "company",
+    step: 4,
     eyebrow: "Context",
     prompt: "Which company or brand is this for?",
     helper: "You can skip this for personal projects.",
@@ -159,6 +173,70 @@ const COMMON_OPENING: LetterField[] = [
     path: "company",
   },
 ];
+
+export const REQUIRED_PHONE_FIELD: LetterField = {
+  id: "phone",
+  step: 3,
+  eyebrow: "Contact",
+  prompt: "What's the best phone number to reach you on?",
+  helper: "Include your country code if you are outside Pakistan.",
+  field: { kind: "tel" },
+  path: "phone",
+  required: true,
+};
+
+export function ensurePhoneField(fields: LetterField[]): LetterField[] {
+  const hasPhone = fields.some((field) => field.path === "phone" || field.id === "phone");
+  if (hasPhone) {
+    return fields.map((field) =>
+      field.path === "phone" || field.id === "phone" ? { ...field, required: true } : field,
+    );
+  }
+
+  const emailIndex = fields.findIndex((field) => field.path === "email" || field.id === "email");
+  const insertIndex = emailIndex >= 0 ? emailIndex + 1 : Math.min(1, fields.length);
+  return [
+    ...fields.slice(0, insertIndex),
+    REQUIRED_PHONE_FIELD,
+    ...fields.slice(insertIndex),
+  ];
+}
+
+function ensureField(fields: LetterField[], field: LetterField, afterIds: string[]) {
+  const hasField = fields.some((entry) => entry.id === field.id || entry.path === field.path);
+  if (hasField) return fields;
+
+  const afterIndex = fields.findLastIndex((entry) => afterIds.includes(entry.id) || afterIds.includes(entry.path));
+  const insertIndex = afterIndex >= 0 ? afterIndex + 1 : fields.length;
+
+  return [...fields.slice(0, insertIndex), field, ...fields.slice(insertIndex)];
+}
+
+function canonicalizeField(
+  pipeline: (typeof PIPELINE_TYPES)[number],
+  field: LetterField,
+): LetterField {
+  const id = field.id;
+  const path = field.path;
+
+  if (id === "phone" || path === "phone") {
+    return { ...field, id: "phone", path: "phone", field: { kind: "tel" }, required: true };
+  }
+
+  if (pipeline === "design_idea" && (id === "goals" || path === "goals")) {
+    return { ...field, id: "goals", path: "brief.goals", required: true };
+  }
+
+  if (pipeline === "design_scratch" && (id === "requirements" || path === "requirements")) {
+    return { ...field, id: "requirements", path: "brief.requirements", required: true };
+  }
+
+  if (pipeline === "manufacture_existing" && (id === "cadLinks" || path === "cadLinks")) {
+    return { ...field, id: "cadLinks", path: "brief.cadLinks", required: true };
+  }
+
+  return field;
+}
 
 /** Lean signals: stage, scale, timing (season/drops go in the timeline line). */
 const COMMON_SIGNALS: LetterField[] = [
@@ -323,6 +401,26 @@ const MANUFACTURE_BRIEF: LetterField[] = [
   },
 ];
 
+export function normalizePipelineFields(
+  pipeline: (typeof PIPELINE_TYPES)[number],
+  fields: LetterField[],
+): LetterField[] {
+  const primaryBrief =
+    pipeline === "design_idea"
+      ? IDEA_BRIEF[0]
+      : pipeline === "design_scratch"
+        ? SCRATCH_BRIEF[0]
+        : MANUFACTURE_BRIEF[0];
+
+  const normalized = ensureField(
+    ensurePhoneField(fields.map((field) => canonicalizeField(pipeline, field))),
+    primaryBrief,
+    ["company", "phone", "email"],
+  );
+
+  return normalized.map((field, index) => ({ ...field, step: index + 1 }));
+}
+
 export function getLetterFields(
   pipeline: (typeof PIPELINE_TYPES)[number],
 ): LetterField[] {
@@ -332,9 +430,12 @@ export function getLetterFields(
       : pipeline === "design_scratch"
         ? SCRATCH_BRIEF
         : MANUFACTURE_BRIEF;
-  return [...COMMON_OPENING, ...brief, ...COMMON_SIGNALS, ...COMMON_CLOSING].map(
-    (field, index) => ({ ...field, step: index + 1 }),
-  );
+  return normalizePipelineFields(pipeline, [
+    ...COMMON_OPENING,
+    ...brief,
+    ...COMMON_SIGNALS,
+    ...COMMON_CLOSING,
+  ]);
 }
 
 /**
@@ -351,7 +452,7 @@ export type StartFormState = {
   timeline: string;
   budgetRange: string;
   notes: string;
-  files: { name: string; type?: string; size?: number; path?: string }[];
+  files: { name: string; type?: string; size?: number; path?: string; file?: File }[];
   brief: {
     goals?: string;
     constraints?: string;

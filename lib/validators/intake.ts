@@ -52,7 +52,11 @@ const baseContact = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   company: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .trim()
+    .min(7)
+    .refine((value) => value.replace(/\D/g, "").length >= 7, "Phone number is too short"),
   country: z.string().optional(),
   timeline: z.string().optional(),
   budgetRange: z.string().optional(),

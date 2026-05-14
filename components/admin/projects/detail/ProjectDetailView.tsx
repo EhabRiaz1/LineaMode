@@ -12,14 +12,12 @@ import { BriefTab } from "./BriefTab";
 import { FilesTab } from "./FilesTab";
 import { TimelineTab } from "./TimelineTab";
 import { NotesTab } from "./NotesTab";
-import { EmailTab } from "./EmailTab";
 
 const TABS = [
   { id: "brief", label: "Brief" },
   { id: "files", label: "Files" },
   { id: "timeline", label: "Timeline" },
   { id: "notes", label: "Notes" },
-  { id: "email", label: "Email" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -48,7 +46,8 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
   }, [authHeaders, projectId, status]);
 
   useEffect(() => {
-    void load();
+    const id = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(id);
   }, [load]);
 
   const updateStatus = async (next: ProjectStatus) => {
@@ -161,11 +160,10 @@ export function ProjectDetailView({ projectId }: { projectId: string }) {
       </header>
 
       <section>
-        {tab === "brief" && <BriefTab project={project} />}
+        {tab === "brief" && <BriefTab project={project} onChange={load} />}
         {tab === "files" && <FilesTab project={project} onChange={load} />}
         {tab === "timeline" && <TimelineTab project={project} onChange={load} />}
         {tab === "notes" && <NotesTab project={project} onChange={load} />}
-        {tab === "email" && <EmailTab project={project} onChange={load} />}
       </section>
     </div>
   );

@@ -30,8 +30,7 @@ export async function GET(request: Request, { params }: { params: Params }) {
         enquiries (id, intake, notes, created_at),
         attachments (id, file_name, file_type, file_size_bytes, storage_path, created_at),
         pipeline_steps (id, label, state, note, actor_id, actor_role, created_at),
-        project_notes (id, body, author_id, created_at, updated_at),
-        project_emails (id, to_address, subject, body, status, sent_at, created_at)
+        project_notes (id, body, author_id, created_at, updated_at)
       `
       )
       .eq("id", id)
@@ -64,7 +63,7 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
     }
 
     const payload = parsed.data;
-    if (!payload.status && !payload.currentStep && !payload.note && !payload.stepState) {
+    if (!payload.status && !payload.currentStep && !payload.note && !payload.stepState && !payload.customer) {
       return respond.badRequest("No changes provided");
     }
 
@@ -81,6 +80,46 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
 
     if (projectError || !project) {
       return respond.serverError("Unable to update project", projectError?.message);
+    }
+
+    if (payload.customer) {
+      const customerUpdate = Object.fromEntries(
+        Object.entries(payload.customer).filter(([, value]) => value !== undefined),
+      );
+
+      if (Object.keys(customerUpdate).length > 0) {
+        const { error: customerError } = await supabase
+          .from("customers")
+          .update(customerUpdate)
+          .eq("id", project.customer_id);
+
+        if (customerError) {
+          return respond.serverError("Project updated, but failed to update customer", customerError.message);
+        }
+
+        const { data: enquiries, error: enquiriesError } = await supabase
+          .from("enquiries")
+          .select("id, intake")
+          .eq("project_id", project.id);
+
+        if (enquiriesError) {
+          return respond.serverError("Customer updated, but failed to load intake snapshots", enquiriesError.message);
+        }
+
+        const intakeUpdates = await Promise.all(
+          (enquiries ?? []).map((enquiry) => {
+            const intake =
+              enquiry.intake && typeof enquiry.intake === "object" && !Array.isArray(enquiry.intake)
+                ? { ...(enquiry.intake as Record<string, unknown>), ...customerUpdate }
+                : customerUpdate;
+            return supabase.from("enquiries").update({ intake }).eq("id", enquiry.id);
+          }),
+        );
+        const intakeError = intakeUpdates.find((result) => result.error)?.error;
+        if (intakeError) {
+          return respond.serverError("Customer updated, but failed to sync intake snapshots", intakeError.message);
+        }
+      }
     }
 
     if (payload.note || payload.status || payload.stepState) {

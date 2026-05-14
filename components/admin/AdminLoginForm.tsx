@@ -13,6 +13,8 @@ export function AdminLoginForm() {
   const supabase = getBrowserSupabaseClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [requiresTotp, setRequiresTotp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,11 +22,46 @@ export function AdminLoginForm() {
     event.preventDefault();
     setLoading(true);
     setError(null);
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+    const res = await fetch("/api/admin/auth/login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        code: requiresTotp ? code : undefined,
+      }),
+    });
+    const body = await res.json().catch(() => ({}));
+    const data = body?.data ?? {};
+
+    if (!res.ok) {
+      setError(body?.error ?? "Unable to sign in");
+      setLoading(false);
+      return;
+    }
+
+    if (data.requiresTotp) {
+      setRequiresTotp(true);
+      setCode("");
+      setLoading(false);
+      return;
+    }
+
+    if (!data.session?.access_token || !data.session?.refresh_token) {
+      setError("Sign-in did not return a session.");
+      setLoading(false);
+      return;
+    }
+
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    });
     setLoading(false);
 
-    if (authError) {
-      setError(authError.message);
+    if (sessionError) {
+      setError(sessionError.message);
       return;
     }
 
@@ -40,7 +77,7 @@ export function AdminLoginForm() {
             <p className="text-eyebrow text-ink/70">Admin</p>
             <h1 className="text-h1">Sign in</h1>
             <p className="text-body text-ink/80">
-              Use your admin email and password. We can add 2FA in the next phase.
+              Use your admin email and password. If two-factor authentication is enabled, you’ll be asked for your authenticator code next.
             </p>
           </header>
 
@@ -69,14 +106,36 @@ export function AdminLoginForm() {
               />
             </label>
 
+            {requiresTotp && (
+              <label className="block space-y-2">
+                <span className="text-label text-ink/80">Authenticator code</span>
+                <input
+                  className={`${inputClass} text-center font-mono text-2xl tracking-[0.45em]`}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  required
+                  autoComplete="one-time-code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                />
+              </label>
+            )}
+
             {error && (
               <p className="rounded-2xl border border-[var(--hairline-strong)] bg-[var(--color-terracotta)]/10 text-terracotta px-4 py-3 text-body">
                 {error}
               </p>
             )}
 
-            <Button type="submit" variant="primary" size="md" disabled={loading}>
-              {loading ? "Signing in…" : "Sign in"}
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              disabled={loading || (requiresTotp && code.length !== 6)}
+            >
+              {loading ? "Signing in…" : requiresTotp ? "Verify code" : "Continue"}
             </Button>
           </form>
         </div>
