@@ -25,24 +25,19 @@ const SECTIONS: Section[] = [
     items: [
       { number: "01", label: "Inbox", href: "/admin/inbox" },
       { number: "02", label: "Projects", href: "/admin/projects" },
-      { number: "03", label: "Pipelines", href: "/admin/pipelines" },
-      { number: "04", label: "Clients", href: "/admin/clients" },
+      { number: "03", label: "Clients", href: "/admin/clients" },
     ],
   },
   {
     heading: "Content",
     items: [
       { number: "05", label: "Pages", href: "/admin/content/pages" },
-      { number: "06", label: "Journal", href: "/admin/content/journal" },
-      { number: "07", label: "Media", href: "/admin/content/media" },
+      { number: "06", label: "Media", href: "/admin/content/media" },
     ],
   },
   {
     heading: "Studio",
-    items: [
-      { number: "08", label: "Insights", href: "/admin/insights" },
-      { number: "09", label: "Settings", href: "/admin/settings" },
-    ],
+    items: [{ number: "08", label: "Settings", href: "/admin/settings" }],
   },
 ];
 
@@ -71,7 +66,7 @@ export function Sidebar() {
           {collapsed ? (
             <span className="text-h3 text-ink leading-none font-mono font-bold">L</span>
           ) : (
-            <BrandLogo context="light" className="h-3.5" />
+            <BrandLogo context="light" className="h-3.5" priority />
           )}
         </Link>
         <button

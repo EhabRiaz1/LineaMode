@@ -10,6 +10,7 @@ import {
   initialFormState,
   startPayloadSchema,
   toIntakePayload,
+  type LetterField,
   type StartFormState,
 } from "@/lib/start/schema";
 import { trackStart } from "@/lib/start/analytics";
@@ -65,9 +66,43 @@ export function StartFlow() {
   // initial render of a Client Component without a Suspense boundary.
   const stepStartRef = useRef<number>(0);
 
+  // Pre-fetch all pipeline question sets from DB on mount so they're
+  // ready when the user picks a pipeline. Falls back to the hardcoded
+  // schema if the fetch fails or returns nothing.
+  const [dbFields, setDbFields] = useState<Partial<Record<string, LetterField[]>>>({});
+  useEffect(() => {
+    const types = ["design_idea", "design_scratch", "manufacture_existing"] as const;
+    Promise.allSettled(
+      types.map(async (type) => {
+        const res = await fetch(`/api/public/pipelines/${type}`);
+        if (!res.ok) return [type, []] as const;
+        const json = await res.json().catch(() => ({}));
+        const questions: unknown[] = json?.data?.questions ?? json?.questions ?? [];
+        if (!Array.isArray(questions) || questions.length === 0) return [type, []] as const;
+        const mapped: LetterField[] = questions.map((q, i) => ({
+          ...(q as Omit<LetterField, "step">),
+          step: i + 1,
+        }));
+        return [type, mapped] as const;
+      }),
+    ).then((results) => {
+      const map: Partial<Record<string, LetterField[]>> = {};
+      for (const r of results) {
+        if (r.status === "fulfilled") {
+          const [type, fields] = r.value;
+          if (fields.length > 0) map[type] = fields;
+        }
+      }
+      setDbFields(map);
+    });
+  }, []);
+
   const fields = useMemo(
-    () => (form.pipelineType ? getLetterFields(form.pipelineType) : []),
-    [form.pipelineType],
+    () =>
+      form.pipelineType
+        ? (dbFields[form.pipelineType] ?? getLetterFields(form.pipelineType))
+        : [],
+    [form.pipelineType, dbFields],
   );
 
   useEffect(() => {

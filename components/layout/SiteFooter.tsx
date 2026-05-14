@@ -9,28 +9,45 @@ const NAV = [
     heading: "Studio",
     links: [
       { href: "/about", label: "About" },
-      { href: "/capabilities", label: "Capabilities" },
-      { href: "/design", label: "Design" },
       { href: "/products", label: "Products" },
-      { href: "/sustainability", label: "Sustainability" },
+      { href: "/capabilities", label: "Services" },
     ],
   },
   {
     heading: "Library",
     links: [
       // { href: "/lookbook", label: "Lookbook '26" },
-      { href: "/journal", label: "Journal" },
+      { href: "/journal", label: "Newsletter" },
     ],
   },
   {
-    heading: "Connect",
+    heading: "Contact",
     links: [
-      { href: "mailto:saif@lineamode.com", label: "saif@lineamode.com" },
-      { href: "tel:+923001234567", label: "+92 300 1234567" },
-      { href: "https://www.linkedin.com/company/lineamode-apparel", label: "LinkedIn" },
+      { href: "/contact", label: "Contact" },
+      { href: "/start", label: "Start a project" },
     ],
   },
 ];
+
+function FooterNavColumn({ col }: { col: (typeof NAV)[number] }) {
+  return (
+    <div>
+      <p className="text-eyebrow text-stone/60 mb-5">{col.heading}</p>
+      <ul className="space-y-3">
+        {col.links.map((link) => (
+          <li key={link.href}>
+            <Link
+              href={link.href}
+              className="text-body text-stone/85 hover:text-stone transition-colors"
+            >
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export function SiteFooter() {
   return (
@@ -40,9 +57,9 @@ export function SiteFooter() {
         disruption
       />
 
-      <div className="shell relative pt-28 pb-8">
+      <div className="shell relative pt-16 md:pt-20 pb-8">
         {/* Tagline — single line, smaller, italic accent matches the hero. */}
-        <div className="border-y border-stone/15 py-12 my-12 text-center">
+        <div className="border-y border-stone/15 py-10 my-8 md:my-10 text-center">
           <p className="text-eyebrow text-stone/60 mb-6">Lineamode 2026</p>
           <p className="text-h1 leading-[0.95]">
             From Idea
@@ -66,24 +83,20 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <div className="md:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-8">
-            {NAV.map((col) => (
-              <div key={col.heading}>
-                <p className="text-eyebrow text-stone/60 mb-5">{col.heading}</p>
-                <ul className="space-y-3">
-                  {col.links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-body text-stone/85 hover:text-stone transition-colors"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+          <div className="md:col-span-8">
+            <div className="grid grid-cols-2 gap-8 md:hidden">
+              <FooterNavColumn col={NAV[0]} />
+              <div className="space-y-8">
+                <FooterNavColumn col={NAV[1]} />
+                <FooterNavColumn col={NAV[2]} />
               </div>
-            ))}
+            </div>
+
+            <div className="hidden md:grid md:grid-cols-3 gap-8">
+              {NAV.map((col) => (
+                <FooterNavColumn key={col.heading} col={col} />
+              ))}
+            </div>
           </div>
         </div>
 

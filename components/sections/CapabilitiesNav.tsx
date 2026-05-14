@@ -38,14 +38,10 @@ export function CapabilitiesNav() {
   }, []);
 
   // Position behaviour:
-  //   — While the placeholder (the spot reserved under the hero) is
-  //     in the bottom half of the viewport, the nav rides with it so
-  //     it appears in its natural in-flow position.
-  //   — Once the placeholder scrolls above a small top threshold, the
-  //     nav docks at REST_GAP from the bottom of the viewport.
-  //   — While the placeholder is still below the viewport (user is in
-  //     the hero), the nav travels with it off-screen, so it doesn't
-  //     pre-render docked while the hero is showing.
+  //   — The nav follows the reserved in-flow placeholder while it enters.
+  //   — As the placeholder moves toward the top of the viewport, we blend
+  //     the nav down into its bottom dock instead of switching instantly.
+  //   — Before the placeholder enters, the nav rides off-screen with it.
   useEffect(() => {
     const placeholder = placeholderRef.current;
     if (!placeholder) return;
@@ -63,15 +59,19 @@ export function CapabilitiesNav() {
 
       let next: number;
       if (placeholderCenter <= TOP_THRESHOLD) {
-        // Placeholder has scrolled past the top → dock to the bottom.
         next = REST_GAP;
       } else if (placeholderCenter > vh) {
-        // Placeholder is below the viewport → ride with it off-screen.
         next = naturalBottom;
       } else {
-        // Placeholder is in the viewport → follow it, but never travel
-        // below the dock line.
-        next = Math.max(REST_GAP, naturalBottom);
+        const DOCK_START = vh * 0.56;
+        if (placeholderCenter >= DOCK_START) {
+          next = Math.max(REST_GAP, naturalBottom);
+        } else {
+          const progress =
+            (DOCK_START - placeholderCenter) / (DOCK_START - TOP_THRESHOLD);
+          const eased = 1 - Math.pow(1 - Math.min(1, Math.max(0, progress)), 3);
+          next = naturalBottom + (REST_GAP - naturalBottom) * eased;
+        }
       }
       setBottomPx(next);
     };

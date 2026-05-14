@@ -15,6 +15,17 @@ import { cacheTag } from "next/cache";
 import * as local from "./local";
 import { cmsTags } from "./cache-tags";
 import type { Page } from "./blocks";
+import { HOME_CONTENT_DEFAULTS, type HomeContent } from "./home-schema";
+import {
+  CAPABILITIES_CONTENT_DEFAULTS,
+  type CapabilitiesContent,
+} from "./capabilities-schema";
+export type { CapabilitiesContent };
+import { CONTACT_CONTENT_DEFAULTS, type ContactContent } from "./contact-schema";
+import { FOUNDERS_CONTENT_DEFAULTS, type FoundersContent } from "./founders-schema";
+import { PRODUCTS_CONTENT_DEFAULTS, type ProductsContent } from "./products-schema";
+import { JOURNAL_INTRO_DEFAULTS, type JournalIntroContent } from "./journal-intro-schema";
+import { ABOUT_CONTENT_DEFAULTS, type AboutContent } from "./about-schema";
 
 export type JournalSummary = {
   slug: string;
@@ -42,6 +53,13 @@ export type CmsProvider = {
   getJournalEntry(slug: string): Promise<JournalEntry | null>;
   getPage(slug: string): Promise<Page | null>;
   getSetting<T = unknown>(key: string): Promise<T | null>;
+  getHomeContent(): Promise<HomeContent>;
+  getCapabilitiesContent(): Promise<CapabilitiesContent>;
+  getContactContent(): Promise<ContactContent>;
+  getFoundersContent(): Promise<FoundersContent>;
+  getProductsContent(): Promise<ProductsContent>;
+  getJournalIntro(): Promise<JournalIntroContent>;
+  getAboutContent(): Promise<AboutContent>;
 };
 
 const localProvider: CmsProvider = {
@@ -49,6 +67,13 @@ const localProvider: CmsProvider = {
   getJournalEntry: local.getJournalEntry,
   getPage: async () => null,
   getSetting: async () => null,
+  getHomeContent: async () => HOME_CONTENT_DEFAULTS,
+  getCapabilitiesContent: async () => CAPABILITIES_CONTENT_DEFAULTS,
+  getContactContent: async () => CONTACT_CONTENT_DEFAULTS,
+  getFoundersContent: async () => FOUNDERS_CONTENT_DEFAULTS,
+  getProductsContent: async () => PRODUCTS_CONTENT_DEFAULTS,
+  getJournalIntro: async () => JOURNAL_INTRO_DEFAULTS,
+  getAboutContent: async () => ABOUT_CONTENT_DEFAULTS,
 };
 
 function isSupabaseConfigured(): boolean {
@@ -70,6 +95,13 @@ async function resolveProvider(): Promise<CmsProvider> {
       getJournalEntry: supabase.getJournalEntry,
       getPage: supabase.getPage,
       getSetting: supabase.getSetting,
+      getHomeContent: supabase.getHomeContent,
+      getCapabilitiesContent: supabase.getCapabilitiesContent,
+      getContactContent: supabase.getContactContent,
+      getFoundersContent: supabase.getFoundersContent,
+      getProductsContent: supabase.getProductsContent,
+      getJournalIntro: supabase.getJournalIntro,
+      getAboutContent: supabase.getAboutContent,
     } satisfies CmsProvider;
   } else {
     providerCache = localProvider;
@@ -112,6 +144,55 @@ export const getSetting = async <T = unknown>(key: string): Promise<T | null> =>
 const DEFAULT_VISIBILITY: PageVisibility = {
   lookbook: { navbar: true, homepage: true },
   journal: { navbar: true, homepage: true },
+};
+
+export const getContactContent = async (): Promise<ContactContent> => {
+  "use cache";
+  cacheTag(cmsTags.contactContent());
+  const provider = await resolveProvider();
+  return provider.getContactContent();
+};
+
+export const getFoundersContent = async (): Promise<FoundersContent> => {
+  "use cache";
+  cacheTag(cmsTags.foundersContent());
+  const provider = await resolveProvider();
+  return provider.getFoundersContent();
+};
+
+export const getProductsContent = async (): Promise<ProductsContent> => {
+  "use cache";
+  cacheTag(cmsTags.productsContent());
+  const provider = await resolveProvider();
+  return provider.getProductsContent();
+};
+
+export const getAboutContent = async (): Promise<AboutContent> => {
+  "use cache";
+  cacheTag(cmsTags.aboutContent());
+  const provider = await resolveProvider();
+  return provider.getAboutContent();
+};
+
+export const getJournalIntro = async (): Promise<JournalIntroContent> => {
+  "use cache";
+  cacheTag(cmsTags.journalIntro());
+  const provider = await resolveProvider();
+  return provider.getJournalIntro();
+};
+
+export const getCapabilitiesContent = async (): Promise<CapabilitiesContent> => {
+  "use cache";
+  cacheTag(cmsTags.capabilitiesContent());
+  const provider = await resolveProvider();
+  return provider.getCapabilitiesContent();
+};
+
+export const getHomeContent = async (): Promise<HomeContent> => {
+  "use cache";
+  cacheTag(cmsTags.homeContent());
+  const provider = await resolveProvider();
+  return provider.getHomeContent();
 };
 
 export const getPageVisibility = async (): Promise<PageVisibility> => {

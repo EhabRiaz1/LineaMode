@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { ButtonLink } from "@/components/ui/Button";
 import { getJournalEntry, listJournal } from "@/lib/cms";
 import { pageMetadata } from "@/lib/seo/metadata";
 
@@ -65,16 +64,14 @@ export default async function JournalPostPage({
         </div>
       </header>
 
-      <div className="shell pb-24">
-        <div className="aspect-[16/9] overflow-hidden ring-1 ring-ink/10">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={post.cover}
-            alt={post.title}
-            className="w-full h-full object-cover"
-          />
+      {post.cover && (
+        <div className="shell pb-24">
+          <div className="aspect-[16/9] overflow-hidden ring-1 ring-ink/10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={post.cover} alt={post.title} className="w-full h-full object-cover" />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="shell pb-32">
         <div className="grid grid-cols-12 gap-6">
@@ -113,9 +110,10 @@ export default async function JournalPostPage({
               {next.excerpt}
             </p>
             <div className="mt-12">
-              <ButtonLink href={`/journal/${next.slug}`} variant="ink">
+              {/* Span styled as button — cannot nest <a> inside <a> */}
+              <span className="inline-flex items-center gap-3 rounded-full bg-ink text-stone px-6 py-3 text-label transition-colors group-hover/next:bg-ink/85">
                 Read entry
-              </ButtonLink>
+              </span>
             </div>
           </Link>
         </div>

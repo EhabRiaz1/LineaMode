@@ -12,5 +12,12 @@ export const cmsTags = {
   journalIndex: () => "cms:journal",
   setting: (key: string) => `cms:setting:${key}`,
   settingsIndex: () => "cms:settings",
+  homeContent: () => "cms:home-content",
+  capabilitiesContent: () => "cms:capabilities-content",
+  contactContent: () => "cms:contact-content",
+  foundersContent: () => "cms:founders-content",
+  productsContent: () => "cms:products-content",
+  journalIntro: () => "cms:journal-intro",
+  aboutContent: () => "cms:about-content",
   media: () => "cms:media",
 };

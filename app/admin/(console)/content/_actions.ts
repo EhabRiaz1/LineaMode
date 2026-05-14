@@ -4,6 +4,13 @@ import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { blocks as blocksSchema, seoSchema } from "@/lib/cms/blocks";
 import { cmsTags } from "@/lib/cms/cache-tags";
+import { homeContentSchema } from "@/lib/cms/home-schema";
+import { capabilitiesContentSchema } from "@/lib/cms/capabilities-schema";
+import { contactContentSchema } from "@/lib/cms/contact-schema";
+import { foundersContentSchema } from "@/lib/cms/founders-schema";
+import { productsContentSchema } from "@/lib/cms/products-schema";
+import { journalIntroSchema } from "@/lib/cms/journal-intro-schema";
+import { aboutContentSchema } from "@/lib/cms/about-schema";
 import {
   getServiceRoleClient,
   requireAdminUser,
@@ -134,6 +141,278 @@ export async function discardPageDraft(
     .eq("slug", slug);
   if (error) return { ok: false, error: error.message };
   return { ok: true, data: undefined };
+}
+
+export async function saveHomeContentDraft(
+  token: string | null,
+  content: unknown,
+): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+
+  const parsed = homeContentSchema.safeParse(content);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues.map((i) => i.message).join(", ") };
+  }
+
+  const supabase = getServiceRoleClient();
+  const { error } = await supabase.from("cms_settings").upsert(
+    { key: "home_content_draft", value: parsed.data, updated_by: auth.id },
+    { onConflict: "key" },
+  );
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, data: undefined };
+}
+
+export async function publishHomeContent(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+
+  const supabase = getServiceRoleClient();
+
+  const [{ data: draftRow }, { data: pubRow }] = await Promise.all([
+    supabase.from("cms_settings").select("value").eq("key", "home_content_draft").maybeSingle(),
+    supabase.from("cms_settings").select("value").eq("key", "home_content").maybeSingle(),
+  ]);
+
+  const contentToPublish = draftRow?.value ?? pubRow?.value ?? {};
+
+  const { error: pubError } = await supabase.from("cms_settings").upsert(
+    { key: "home_content", value: contentToPublish, updated_by: auth.id },
+    { onConflict: "key" },
+  );
+  if (pubError) return { ok: false, error: pubError.message };
+
+  await supabase.from("cms_settings").delete().eq("key", "home_content_draft");
+
+  revalidateTag(cmsTags.homeContent(), "max");
+  return { ok: true, data: undefined };
+}
+
+export async function discardHomeContentDraft(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+
+  const supabase = getServiceRoleClient();
+  await supabase.from("cms_settings").delete().eq("key", "home_content_draft");
+  return { ok: true, data: undefined };
+}
+
+export async function saveCapabilitiesContentDraft(
+  token: string | null,
+  content: unknown,
+): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+
+  const parsed = capabilitiesContentSchema.safeParse(content);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues.map((i) => i.message).join(", ") };
+  }
+
+  const supabase = getServiceRoleClient();
+  const { error } = await supabase.from("cms_settings").upsert(
+    { key: "capabilities_content_draft", value: parsed.data, updated_by: auth.id },
+    { onConflict: "key" },
+  );
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, data: undefined };
+}
+
+export async function publishCapabilitiesContent(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+
+  const supabase = getServiceRoleClient();
+  const [{ data: draftRow }, { data: pubRow }] = await Promise.all([
+    supabase
+      .from("cms_settings")
+      .select("value")
+      .eq("key", "capabilities_content_draft")
+      .maybeSingle(),
+    supabase
+      .from("cms_settings")
+      .select("value")
+      .eq("key", "capabilities_content")
+      .maybeSingle(),
+  ]);
+
+  const contentToPublish = draftRow?.value ?? pubRow?.value ?? {};
+
+  const { error: pubError } = await supabase.from("cms_settings").upsert(
+    { key: "capabilities_content", value: contentToPublish, updated_by: auth.id },
+    { onConflict: "key" },
+  );
+  if (pubError) return { ok: false, error: pubError.message };
+
+  await supabase.from("cms_settings").delete().eq("key", "capabilities_content_draft");
+
+  revalidateTag(cmsTags.capabilitiesContent(), "max");
+  return { ok: true, data: undefined };
+}
+
+export async function discardCapabilitiesContentDraft(
+  token: string | null,
+): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+
+  const supabase = getServiceRoleClient();
+  await supabase.from("cms_settings").delete().eq("key", "capabilities_content_draft");
+  return { ok: true, data: undefined };
+}
+
+// ─── Generic helper for the save/publish/discard pattern ────────────────────
+
+async function saveContentDraft(
+  auth: { id: string },
+  key: string,
+  value: unknown,
+  supabase: ReturnType<typeof getServiceRoleClient>,
+) {
+  const { error } = await supabase
+    .from("cms_settings")
+    .upsert({ key: `${key}_draft`, value, updated_by: auth.id }, { onConflict: "key" });
+  if (error) return { ok: false, error: error.message } as const;
+  return { ok: true, data: undefined } as const;
+}
+
+async function publishContent(
+  auth: { id: string },
+  key: string,
+  supabase: ReturnType<typeof getServiceRoleClient>,
+  cacheTagKey: string,
+) {
+  const [{ data: draftRow }, { data: pubRow }] = await Promise.all([
+    supabase.from("cms_settings").select("value").eq("key", `${key}_draft`).maybeSingle(),
+    supabase.from("cms_settings").select("value").eq("key", key).maybeSingle(),
+  ]);
+  const content = draftRow?.value ?? pubRow?.value ?? {};
+  const { error } = await supabase
+    .from("cms_settings")
+    .upsert({ key, value: content, updated_by: auth.id }, { onConflict: "key" });
+  if (error) return { ok: false, error: error.message } as const;
+  await supabase.from("cms_settings").delete().eq("key", `${key}_draft`);
+  revalidateTag(cacheTagKey, "max");
+  return { ok: true, data: undefined } as const;
+}
+
+async function discardContentDraft(
+  auth: { id: string },
+  key: string,
+  supabase: ReturnType<typeof getServiceRoleClient>,
+) {
+  await supabase.from("cms_settings").delete().eq("key", `${key}_draft`);
+  return { ok: true, data: undefined } as const;
+}
+
+// ─── Contact ────────────────────────────────────────────────────────────────
+
+export async function saveContactContentDraft(token: string | null, content: unknown): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  const parsed = contactContentSchema.safeParse(content);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues.map((i) => i.message).join(", ") };
+  return saveContentDraft(auth, "contact_content", parsed.data, getServiceRoleClient());
+}
+export async function publishContactContent(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return publishContent(auth, "contact_content", getServiceRoleClient(), cmsTags.contactContent());
+}
+export async function discardContactContentDraft(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return discardContentDraft(auth, "contact_content", getServiceRoleClient());
+}
+
+// ─── Founders ───────────────────────────────────────────────────────────────
+
+export async function saveFoundersContentDraft(token: string | null, content: unknown): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  const parsed = foundersContentSchema.safeParse(content);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues.map((i) => i.message).join(", ") };
+  return saveContentDraft(auth, "founders_content", parsed.data, getServiceRoleClient());
+}
+export async function publishFoundersContent(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return publishContent(auth, "founders_content", getServiceRoleClient(), cmsTags.foundersContent());
+}
+export async function discardFoundersContentDraft(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return discardContentDraft(auth, "founders_content", getServiceRoleClient());
+}
+
+// ─── Products ───────────────────────────────────────────────────────────────
+
+export async function saveProductsContentDraft(token: string | null, content: unknown): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  const parsed = productsContentSchema.safeParse(content);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues.map((i) => i.message).join(", ") };
+  return saveContentDraft(auth, "products_content", parsed.data, getServiceRoleClient());
+}
+export async function publishProductsContent(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return publishContent(auth, "products_content", getServiceRoleClient(), cmsTags.productsContent());
+}
+export async function discardProductsContentDraft(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return discardContentDraft(auth, "products_content", getServiceRoleClient());
+}
+
+// ─── About ───────────────────────────────────────────────────────────────────
+
+export async function saveAboutContentDraft(token: string | null, content: unknown): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  const parsed = aboutContentSchema.safeParse(content);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues.map((i) => i.message).join(", ") };
+  return saveContentDraft(auth, "about_content", parsed.data, getServiceRoleClient());
+}
+export async function publishAboutContent(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return publishContent(auth, "about_content", getServiceRoleClient(), cmsTags.aboutContent());
+}
+export async function discardAboutContentDraft(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return discardContentDraft(auth, "about_content", getServiceRoleClient());
+}
+
+// ─── Journal cache refresh ───────────────────────────────────────────────────
+
+export async function revalidateJournalCache(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  revalidateTag(cmsTags.journalIndex(), "max");
+  return { ok: true, data: undefined };
+}
+
+// ─── Journal intro ───────────────────────────────────────────────────────────
+
+export async function saveJournalIntro(token: string | null, content: unknown): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  const parsed = journalIntroSchema.safeParse(content);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues.map((i) => i.message).join(", ") };
+  return saveContentDraft(auth, "journal_intro", parsed.data, getServiceRoleClient());
+}
+export async function publishJournalIntro(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return publishContent(auth, "journal_intro", getServiceRoleClient(), cmsTags.journalIntro());
+}
+export async function discardJournalIntroDraft(token: string | null): Promise<ActionResult> {
+  const auth = await authenticate(token);
+  if ("error" in auth) return { ok: false, error: auth.error };
+  return discardContentDraft(auth, "journal_intro", getServiceRoleClient());
 }
 
 const journalSchema = z.object({

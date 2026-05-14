@@ -28,12 +28,12 @@ export async function POST(request: Request) {
       title: entry.title,
       category: entry.category,
       excerpt: entry.excerpt,
-      cover_url: entry.cover,
+      // Note: cover images for migrated entries are stored externally (Unsplash).
+      // cover_media_id is left null; admins can add a proper cover via the media picker.
       published_at: new Date().toISOString(),
       status: "published" as const,
       body_mdx: entry.body,
       read_time: entry.readTime,
-      created_by: admin.id,
       updated_by: admin.id,
     }));
 

@@ -98,7 +98,7 @@ export async function POST(request: Request) {
       actor_role: "system",
     });
 
-    // Funnel close-out event so /admin/insights can compute time-to-submit.
+    // Funnel close-out event for intake analytics.
     await supabase.from("intake_events").insert({
       session_id: payload.attribution?.session_id ?? null,
       customer_id: customer.id,

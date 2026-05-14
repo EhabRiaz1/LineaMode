@@ -8,20 +8,42 @@ import { homeProducts } from "@/content/home-products";
 import { easeBrand } from "@/lib/motion/easings";
 import { cn } from "@/lib/utils";
 
-export function ProductPreview() {
+type ProductsCms = {
+  headline?: string;
+  headlineItalic?: string;
+  body?: string;
+  tiles?: Array<{ title: string; caption: string; poster: string; imageAlt: string }>;
+};
+
+export function ProductPreview({ cms }: { cms?: ProductsCms } = {}) {
+  const headline = cms?.headline ?? "We cover a full range of products";
+  const headlineItalic =
+    cms?.headlineItalic ?? "designed to meet performance and lifestyle needs";
+  const body =
+    cms?.body ??
+    "From everyday essentials to performance-led ranges, we build product lines with the right fabric, fit, and finish for the market they need to serve.";
+
+  const displayProducts: HomeProductTile[] = homeProducts.map((p, i) => ({
+    ...p,
+    title: cms?.tiles?.[i]?.title ?? p.title,
+    caption: cms?.tiles?.[i]?.caption ?? p.caption,
+    poster: cms?.tiles?.[i]?.poster || p.poster,
+    imageAlt: cms?.tiles?.[i]?.imageAlt ?? p.imageAlt,
+  }));
+
   const [active, setActive] = useState(0);
 
   const onSelect = (index: number) => {
     setActive(index);
   };
 
-  const activeProduct = homeProducts[active] ?? homeProducts[0];
+  const activeProduct = displayProducts[active] ?? displayProducts[0];
 
   return (
     <section className="relative min-h-[48rem] bg-ink py-32 text-stone md:min-h-[min(94vh,940px)] md:py-44">
-      <motion.div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <motion.div className="pointer-events-none absolute inset-0 overflow-hidden">
         <motion.div className="absolute inset-0">
-        {homeProducts.map((product, index) => (
+        {displayProducts.map((product, index) => (
           <Image
             key={product.slug}
             src={product.poster}
@@ -64,19 +86,17 @@ export function ProductPreview() {
           >
             <Eyebrow number="03">Products</Eyebrow>
             <h2 className="mt-6 max-w-full font-[family-name:var(--font-display)] text-[clamp(2.35rem,4.4vw,4.9rem)] font-light leading-[1.02] tracking-[-0.045em] text-stone text-balance">
-              We cover a full range of products
+              {headline}
               <span className="block italic font-extralight">
-                designed to meet performance and lifestyle needs
+                {headlineItalic}
               </span>
             </h2>
             <p className="mt-7 max-w-full text-body leading-relaxed text-stone/78 text-pretty md:max-w-xl">
-              From everyday essentials to performance-led ranges, we build
-              product lines with the right fabric, fit, and finish for the
-              market they need to serve.
+              {body}
             </p>
             {/* Mobile buttons: narrower, centered under the copy */}
             <div className="mt-8 flex flex-col items-center gap-3 md:hidden">
-              {homeProducts.map((product, index) => {
+              {displayProducts.map((product, index) => {
                 const isActive = index === active;
                 return (
                   <button
@@ -102,7 +122,7 @@ export function ProductPreview() {
 
           <motion.div className="hidden md:col-span-5 md:block lg:col-start-10 lg:col-span-3">
             <div className="flex max-w-xs flex-col gap-3 md:ml-auto">
-              {homeProducts.map((product, index) => {
+              {displayProducts.map((product, index) => {
                 const isActive = index === active;
 
                 return (

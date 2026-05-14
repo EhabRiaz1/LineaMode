@@ -8,6 +8,7 @@ import { ContactEditor } from "@/components/admin/content/ContactEditor";
 import { FoundersEditor } from "@/components/admin/content/FoundersEditor";
 import { ProductsEditor } from "@/components/admin/content/ProductsEditor";
 import { JournalPagesEditor } from "@/components/admin/content/JournalPagesEditor";
+import { AboutEditor } from "@/components/admin/content/AboutEditor";
 import { PipelineFlowEditor } from "@/components/admin/pipelines/PipelineFlowEditor";
 import { PIPELINE_TYPES, type PipelineType } from "@/lib/pipelines/types";
 
@@ -38,6 +39,7 @@ async function ResolvedEditor({ params }: { params: Params }) {
   if (slug === "founders") return <FoundersEditor />;
   if (slug === "products") return <ProductsEditor />;
   if (slug === "journal") return <JournalPagesEditor />;
+  if (slug === "about") return <AboutEditor />;
 
   if (slug.startsWith("pipeline-")) {
     const pipelineType = slug.replace("pipeline-", "") as PipelineType;

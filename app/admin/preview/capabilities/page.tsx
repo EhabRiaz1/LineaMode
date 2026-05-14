@@ -1,0 +1,184 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { getServiceRoleClient } from "@/lib/supabase/client";
+import {
+  parseCapabilitiesContent,
+  CAPABILITY_DEFAULT_IMAGES,
+  DEFAULT_PROCESS_STEPS,
+} from "@/lib/cms/capabilities-schema";
+import { capabilities as staticCapabilities } from "@/content/capabilities";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { SplitText } from "@/components/ui/SplitText";
+import { ButtonLink } from "@/components/ui/Button";
+import { GridPattern } from "@/components/ui/GridPattern";
+import { CapabilitiesNav } from "@/components/sections/CapabilitiesNav";
+
+async function CapabilitiesPreviewContent() {
+  await connection();
+
+  const sb = getServiceRoleClient();
+  const [{ data: draftRow }, { data: pubRow }] = await Promise.all([
+    sb
+      .from("cms_settings")
+      .select("value")
+      .eq("key", "capabilities_content_draft")
+      .maybeSingle(),
+    sb.from("cms_settings").select("value").eq("key", "capabilities_content").maybeSingle(),
+  ]);
+
+  const cms = parseCapabilitiesContent(draftRow?.value ?? pubRow?.value);
+
+  const displayCaps =
+    cms.capabilities.length > 0
+      ? cms.capabilities
+      : staticCapabilities.map((c, i) => ({
+          title: c.title,
+          short: c.short,
+          description: c.description,
+          bullets: c.bullets,
+          image: CAPABILITY_DEFAULT_IMAGES[i] ?? "",
+        }));
+
+  const displaySteps =
+    cms.process.steps.length > 0 ? cms.process.steps : DEFAULT_PROCESS_STEPS;
+
+  return (
+    <>
+      <div
+        style={{ zIndex: 9999 }}
+        className="fixed top-0 left-0 right-0 bg-yellow-400/95 backdrop-blur-sm text-ink text-center py-1.5 text-[11px] tracking-[0.18em] uppercase font-medium pointer-events-none"
+      >
+        Draft Preview · {draftRow ? "Unsaved draft" : "Published content"}
+      </div>
+      <div className="pt-9">
+        {/* Intro */}
+        <section className="relative pt-40 pb-24 overflow-hidden">
+          <GridPattern
+            className="absolute inset-0 text-ink opacity-[0.05]"
+            density={28}
+            disruption
+          />
+          <div className="shell relative grid grid-cols-12 gap-6 items-end">
+            <div className="col-span-12 md:col-span-3">
+              <Eyebrow number="00">{cms.intro.eyebrow}</Eyebrow>
+            </div>
+            <div className="col-span-12 md:col-span-9">
+              <h1 className="text-display leading-[0.95]">
+                <span className="block">
+                  <SplitText by="word" stagger={0.05} duration={1}>
+                    {cms.intro.headlineLine1}
+                  </SplitText>
+                </span>
+                <span className="block italic font-extralight">
+                  <SplitText by="word" stagger={0.05} duration={1} delay={0.2}>
+                    {cms.intro.headlineLine2}
+                  </SplitText>
+                </span>
+              </h1>
+              <p className="text-body text-ink/70 max-w-md mt-10">{cms.intro.body}</p>
+            </div>
+          </div>
+        </section>
+
+        <CapabilitiesNav />
+
+        {/* Capability detail blocks */}
+        {displayCaps.map((cap, i) => (
+          <section
+            key={i}
+            id={staticCapabilities[i]?.slug ?? `cap-${i}`}
+            className="relative py-24 md:py-32 border-b hairline"
+          >
+            <div className="shell grid grid-cols-12 gap-6 md:gap-12 items-start">
+              <div className={`col-span-12 md:col-span-7 ${i % 2 === 1 ? "md:order-2" : ""}`}>
+                <div className="aspect-[5/4] overflow-hidden ring-1 ring-ink/15 bg-ink/5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={cap.image || CAPABILITY_DEFAULT_IMAGES[i] || ""}
+                    alt={cap.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              <div
+                className={`col-span-12 md:col-span-5 sticky top-32 ${i % 2 === 1 ? "md:order-1" : ""}`}
+              >
+                <div className="flex justify-between text-label text-ink/55 mb-6">
+                  <span>/ {String(i + 1).padStart(2, "0")}</span>
+                  <span>Discipline</span>
+                </div>
+                <h2 className="text-h1 mb-6">{cap.title}</h2>
+                <p className="text-body text-ink/80 max-w-md mb-4">{cap.short}</p>
+                <p className="text-body text-ink/65 max-w-md">{cap.description}</p>
+                <ul className="mt-10 grid grid-cols-1 gap-3 text-body text-ink/80">
+                  {cap.bullets.map((b, bi) => (
+                    <li
+                      key={bi}
+                      className="flex gap-3 border-t hairline pt-3 first:border-t-0 first:pt-0"
+                    >
+                      <span className="text-ink/40">—</span>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
+        ))}
+
+        {/* Process */}
+        <section className="relative bg-[var(--color-graphite-blue)] text-stone py-24 md:py-32 overflow-hidden">
+          <GridPattern
+            className="absolute inset-0 text-stone opacity-[0.07]"
+            density={48}
+            disruption
+          />
+          <div className="shell relative">
+            <div className="grid grid-cols-12 gap-6 mb-12">
+              <div className="col-span-12 md:col-span-5">
+                <Eyebrow number="06" className="text-stone/70">
+                  {cms.process.eyebrow}
+                </Eyebrow>
+                <h2 className="text-h1 mt-6">
+                  {cms.process.headlineLine1}
+                  <br />
+                  <span className="italic font-extralight">{cms.process.headlineLine2}</span>
+                </h2>
+              </div>
+              <div className="col-span-12 md:col-span-5 md:col-start-8 self-end">
+                <p className="text-body text-stone/75 max-w-md">{cms.process.body}</p>
+              </div>
+            </div>
+
+            <ol className="grid grid-cols-1 md:grid-cols-5 gap-px bg-stone/15">
+              {displaySteps.map((step) => (
+                <li
+                  key={step.step}
+                  className="bg-[var(--color-graphite-blue)] p-6 md:p-7 flex flex-col gap-3 md:min-h-44"
+                >
+                  <span className="text-label text-stone/60">/ {step.step}</span>
+                  <span className="text-h2">{step.title}</span>
+                  <span className="text-body text-stone/70">{step.note}</span>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-12 flex justify-end">
+              <ButtonLink href={cms.process.ctaHref} variant="ink">
+                {cms.process.ctaLabel}
+              </ButtonLink>
+            </div>
+          </div>
+        </section>
+      </div>
+    </>
+  );
+}
+
+export default function CapabilitiesPreviewPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-stone"><p className="text-label text-ink/55">Loading preview…</p></div>}>
+      <CapabilitiesPreviewContent />
+    </Suspense>
+  );
+}

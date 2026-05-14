@@ -17,22 +17,29 @@ import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { easeBrand } from "@/lib/motion/easings";
 
-/**
- * Hero photo. Lineamode is a B2B partner to luxury fashion houses, so the
- * hero must read as "design-led" rather than industrial. This frame:
- *   — sits exactly on the brand palette (Chalk Sand cream, Carbon Ink, a
- *     single touch of Terracotta on the rose),
- *   — leaves headroom on the top-left for the display type and on the
- *     right for the glass card,
- *   — and the lone red detail mirrors the deck's "controlled disruption"
- *     principle: a precise framework, one intentional break.
- *
- * Easy to swap — see IMAGE_NOTES.md.
- */
-const HERO_IMAGE =
+const HERO_IMAGE_DEFAULT =
   "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85";
 
-export function Hero() {
+type HeroCms = {
+  eyebrow?: string;
+  headlineLine1?: string;
+  headlineLine2?: string;
+  description?: string;
+  bottomLabel?: string;
+  image?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+};
+
+export function Hero({ cms }: { cms?: HeroCms } = {}) {
+  const image = cms?.image || HERO_IMAGE_DEFAULT;
+  const eyebrow = cms?.eyebrow ?? "Lineamode Apparel · Est. Islamabad";
+  const headlineLine1 = cms?.headlineLine1 ?? "From Idea";
+  const headlineLine2 = cms?.headlineLine2 ?? "to Execution.";
+  const description = cms?.description ?? "Knitwear · Performance Polyester · Soft Wovens";
+  const bottomLabel = cms?.bottomLabel ?? "Design / Development / Manufacture";
+  const primaryCta = cms?.primaryCta ?? { label: "What we do", href: "/capabilities" };
+  const secondaryCta = cms?.secondaryCta ?? { label: "Start a project", href: "/start" };
   const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -100,7 +107,7 @@ export function Hero() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={HERO_IMAGE}
+            src={image}
             alt="Editorial garment study — Lineamode Apparel"
             className="h-full w-full object-cover object-[center_25%]"
             draggable={false}
@@ -142,10 +149,10 @@ export function Hero() {
           className="flex items-start justify-between gap-6 text-stone"
         >
           <Eyebrow number="01" className="text-stone/85">
-            Lineamode Apparel · Est. Islamabad
+            {eyebrow}
           </Eyebrow>
           <p className="hidden md:block text-label text-stone/65">
-            Knitwear · Performance Polyester · Soft Wovens
+            {description}
           </p>
         </motion.div>
 
@@ -156,12 +163,12 @@ export function Hero() {
           <h1 className="text-display leading-[0.92] max-w-5xl">
             <span className="block">
               <SplitText by="word" stagger={0.06} duration={1.1}>
-                From Idea
+                {headlineLine1}
               </SplitText>
             </span>
             <span className="block italic font-extralight">
               <SplitText by="word" stagger={0.06} duration={1.1} delay={0.25}>
-                to Execution.
+                {headlineLine2}
               </SplitText>
             </span>
           </h1>
@@ -176,20 +183,20 @@ export function Hero() {
                 with a literal class so it never inherits the section's
                 `text-stone` default. */}
             <ButtonLink
-              href="/capabilities"
+              href={primaryCta.href}
               variant="ink"
               className="!text-ink bg-stone hover:bg-stone/90"
             >
-              What we do
+              {primaryCta.label}
             </ButtonLink>
 
             {/* Secondary — outlined pill on stone hairline, stone text. */}
             <ButtonLink
-              href="/start"
+              href={secondaryCta.href}
               variant="ghost"
               className="!text-stone ring-stone/45 hover:bg-stone/10"
             >
-              Start a project
+              {secondaryCta.label}
             </ButtonLink>
           </motion.div>
         </div>
@@ -201,7 +208,7 @@ export function Hero() {
           transition={{ duration: 0.8, ease: easeBrand, delay: 1.4 }}
           className="flex items-end justify-between text-label text-stone/65"
         >
-          <span>Design / Development / Manufacture</span>
+          <span>{bottomLabel}</span>
           <span className="hidden md:flex items-center gap-2">
             Scroll
             <span className="block h-px w-12 bg-stone/40" />

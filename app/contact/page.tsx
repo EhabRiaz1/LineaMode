@@ -3,38 +3,37 @@ import { SplitText } from "@/components/ui/SplitText";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { ContactForm } from "@/components/sections/ContactForm";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { getContactContent } from "@/lib/cms";
 
 export const metadata = pageMetadata({
-    title: "Contact",
-    description:
-      "Brief the studio. Tell us what you're making and we'll reply inside two working days with fabric, costing and an indicative critical path.",
-    path: "/contact",
+  title: "Contact",
+  description:
+    "Brief the studio. Tell us what you're making and we'll reply inside two working days with fabric, costing and an indicative critical path.",
+  path: "/contact",
 });
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const cms = await getContactContent();
+
   return (
     <>
       {/* Intro */}
       <section className="relative pt-40 pb-16 overflow-hidden">
-        <GridPattern
-          className="absolute inset-0 text-ink opacity-[0.05]"
-          density={28}
-          disruption
-        />
+        <GridPattern className="absolute inset-0 text-ink opacity-[0.05]" density={28} disruption />
         <div className="shell relative grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-3">
-            <Eyebrow number="00">Contact</Eyebrow>
+            <Eyebrow number="00">{cms.intro.eyebrow}</Eyebrow>
           </div>
           <div className="col-span-12 md:col-span-9">
             <h1 className="text-display leading-[0.95]">
               <span className="block">
                 <SplitText by="word" stagger={0.05} duration={1}>
-                  Brief the studio.
+                  {cms.intro.headlineLine1}
                 </SplitText>
               </span>
               <span className="block italic font-extralight">
                 <SplitText by="word" stagger={0.05} duration={1} delay={0.2}>
-                  We answer in two days.
+                  {cms.intro.headlineLine2}
                 </SplitText>
               </span>
             </h1>
@@ -51,48 +50,41 @@ export default function ContactPage() {
               <div>
                 <p className="text-eyebrow text-ink/55 mb-3">/ 01 Email</p>
                 <a
-                  href="mailto:saif@lineamode.com"
+                  href={`mailto:${cms.details.email}`}
                   className="text-h2 leading-tight hover:underline underline-offset-4"
                 >
-                  saif@lineamode.com
+                  {cms.details.email}
                 </a>
               </div>
               <div>
                 <p className="text-eyebrow text-ink/55 mb-3">/ 02 Phone</p>
                 <a
-                  href="tel:+923001234567"
+                  href={`tel:${cms.details.phone.replace(/\s/g, "")}`}
                   className="text-h2 leading-tight hover:underline underline-offset-4"
                 >
-                  +92 300 1234567
+                  {cms.details.phone}
                 </a>
               </div>
               <div>
                 <p className="text-eyebrow text-ink/55 mb-3">/ 03 Studio</p>
-                <address className="not-italic text-body text-ink/85 leading-relaxed">
-                  1st Floor, NESPAK House,
-                  <br />
-                  G-5/2, Attaturk Avenue,
-                  <br />
-                  Islamabad, Pakistan.
+                <address className="not-italic text-body text-ink/85 leading-relaxed whitespace-pre-line">
+                  {cms.details.address}
                 </address>
               </div>
               <div>
                 <p className="text-eyebrow text-ink/55 mb-3">/ 04 Hours</p>
-                <p className="text-body text-ink/85">
-                  Mon — Fri · 09:00 to 18:00 PKT
-                </p>
+                <p className="text-body text-ink/85">{cms.details.hours}</p>
               </div>
             </div>
           </div>
 
           {/* Form */}
           <div className="col-span-12 md:col-span-8">
-            <p className="text-eyebrow text-ink/55 mb-6">/ Project Brief</p>
+            <p className="text-eyebrow text-ink/55 mb-6">/ {cms.details.formSectionLabel}</p>
             <ContactForm />
           </div>
         </div>
       </section>
-
     </>
   );
 }

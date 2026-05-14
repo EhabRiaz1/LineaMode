@@ -1,7 +1,25 @@
 import { respond } from "@/lib/api/responses";
+import { revalidateTag } from "next/cache";
+import { cmsTags } from "@/lib/cms/cache-tags";
 import { getServiceRoleClient, requireAdminUser, UnauthorizedError } from "@/lib/supabase/client";
 
 type Params = Promise<{ slug: string }>;
+
+export async function DELETE(request: Request, { params }: { params: Params }) {
+  try {
+    await requireAdminUser(request.headers.get("authorization") ?? undefined);
+    const { slug } = await params;
+    const supabase = getServiceRoleClient();
+    const { error } = await supabase.from("cms_journal").delete().eq("slug", slug);
+    if (error) return respond.serverError("Failed to delete entry", error.message);
+    revalidateTag(cmsTags.journalIndex(), "max");
+    revalidateTag(cmsTags.journalEntry(slug), "max");
+    return respond.ok({ deleted: slug });
+  } catch (error) {
+    if (error instanceof UnauthorizedError) return respond.unauthorized(error.message);
+    return respond.serverError("Failed to delete entry", error instanceof Error ? error.message : String(error));
+  }
+}
 
 export async function GET(request: Request, { params }: { params: Params }) {
   try {

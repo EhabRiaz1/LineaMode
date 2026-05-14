@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { ConsoleHeader } from "@/components/admin/ConsoleHeader";
 import { PipelineFlowEditor } from "@/components/admin/pipelines/PipelineFlowEditor";
@@ -17,7 +18,15 @@ export async function generateMetadata({ params }: Props) {
   return { title: info ? `${info.title} · Pipelines · Admin` : "Pipeline · Admin" };
 }
 
-export default async function PipelineEditorPage({ params }: Props) {
+export default function PipelineEditorPage({ params }: Props) {
+  return (
+    <Suspense>
+      <ResolvedEditor params={params} />
+    </Suspense>
+  );
+}
+
+async function ResolvedEditor({ params }: Props) {
   const { type } = await params;
 
   if (!PIPELINE_TYPES.includes(type as (typeof PIPELINE_TYPES)[number])) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   motion,
@@ -16,8 +16,11 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
  * FounderCard — scroll-driven flipping business card.
  *
  *   — A 3D flip is mapped to scroll progress through the section. The
- *     card travels a hair up-and-to-the-left as it flips, so the motion
- *     never feels mechanically locked to a single point.
+ *     card travels a hair up-and-to-the-left as it flips (desktop only),
+ *     so the motion never feels mechanically locked to a single point.
+ *     Below the md breakpoint, horizontal drift is disabled so the
+ *     card stays centered; the back face uses a taller aspect and
+ *     tighter type so content fits.
  *   — Front face: cream/grey panel carrying the LINEAMODE wordmark
  *     (modelled on the supplied business card photograph).
  *   — Back face: ink-black panel with the founder's name, role and
@@ -37,6 +40,15 @@ export function FounderCard({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const [narrow, setNarrow] = useState(false);
+
+  useLayoutEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const sync = () => setNarrow(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -48,9 +60,19 @@ export function FounderCard({
   // in the viewport (it would otherwise be exiting at the top before
   // the user ever sees the back face). The drift in x/y uses the same
   // range so the card lands at its final offset alongside the flip.
+  // On narrow viewports, skip horizontal drift so mx-auto centering is
+  // not visibly pulled left; keep a light vertical drift only.
   const rotateY = useTransform(scrollYProgress, [0.12, 0.45], [0, 180]);
-  const x = useTransform(scrollYProgress, [0.12, 0.45], [0, -28]);
-  const y = useTransform(scrollYProgress, [0.12, 0.45], [0, -32]);
+  const x = useTransform(
+    scrollYProgress,
+    [0.12, 0.45],
+    narrow ? [0, 0] : [0, -28],
+  );
+  const y = useTransform(
+    scrollYProgress,
+    [0.12, 0.45],
+    narrow ? [0, -18] : [0, -32],
+  );
 
   return (
     <section
@@ -66,7 +88,7 @@ export function FounderCard({
         >
           <div className="md:sticky md:top-32 [perspective:2000px] py-12">
             <motion.div
-              className="relative aspect-[1.7/1] w-full max-w-[560px] mx-auto"
+              className="relative aspect-[1.28/1] md:aspect-[1.7/1] w-full max-w-[560px] mx-auto"
               style={
                 reduce
                   ? undefined
@@ -112,29 +134,29 @@ export function FounderCard({
 
               {/* Back face — ink black with founder details */}
               <div
-                className="absolute inset-0 rounded-[2px] bg-ink text-stone shadow-[0_30px_60px_-30px_rgba(15,15,12,0.65)] p-8 md:p-10 flex flex-col justify-between"
+                className="absolute inset-0 rounded-[2px] bg-ink text-stone shadow-[0_30px_60px_-30px_rgba(15,15,12,0.65)] p-4 sm:p-6 md:p-10 flex flex-col justify-between gap-3 min-h-0"
                 style={{
                   backfaceVisibility: "hidden",
                   WebkitBackfaceVisibility: "hidden",
                   transform: "rotateY(180deg)",
                 }}
               >
-                <div>
-                  <p className="text-h2 font-sans font-semibold leading-[0.95]">
+                <div className="min-h-0 shrink">
+                  <p className="text-lg sm:text-xl md:text-h2 font-sans font-semibold leading-[0.98] tracking-tight">
                     {founder.name}
                   </p>
-                  <p className="text-h3 font-sans font-semibold leading-[1] mt-0.5">
+                  <p className="text-sm sm:text-base md:text-h3 font-sans font-semibold leading-tight mt-0.5">
                     {founder.role}
                   </p>
 
-                  <div className="mt-6 space-y-1 text-label text-stone/85">
+                  <div className="mt-3 md:mt-6 space-y-0.5 md:space-y-1 text-[10px] sm:text-[11px] md:text-label text-stone/85 normal-case sm:uppercase tracking-normal sm:tracking-[0.12em] break-words">
                     <p>
                       <span className="text-stone/55">M:</span> {founder.phone}
                     </p>
                     <p>
                       <Link
                         href={`mailto:${founder.email}`}
-                        className="hover:underline underline-offset-4"
+                        className="hover:underline underline-offset-4 break-all"
                       >
                         {founder.email}
                       </Link>
@@ -143,12 +165,15 @@ export function FounderCard({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-[1fr_auto] items-end gap-4">
-                  <p className="text-label text-stone/70 max-w-[28ch] leading-relaxed">
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-start md:items-end gap-2 md:gap-4 shrink-0">
+                  <p className="text-[10px] sm:text-[11px] md:text-label text-stone/70 max-w-none md:max-w-[28ch] leading-snug md:leading-relaxed normal-case md:uppercase tracking-normal md:tracking-[0.12em]">
                     <span className="text-stone font-semibold">Address: </span>
                     {founder.address}
                   </p>
-                  <span aria-hidden className="flex flex-col gap-1.5">
+                  <span
+                    aria-hidden
+                    className="hidden md:flex flex-col gap-1.5 self-end"
+                  >
                     <span className="block h-px w-8 bg-stone/70" />
                     <span className="block h-px w-8 bg-stone/70" />
                     <span className="block h-px w-8 bg-stone/70" />

@@ -6,7 +6,23 @@ import { useRef } from "react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { easeBrand } from "@/lib/motion/easings";
 
-export function IdentitySection() {
+type IdentityCms = {
+  eyebrow?: string;
+  headline?: string;
+  headlineItalic?: string;
+  body?: string;
+  image?: string;
+};
+
+export function IdentitySection({ cms }: { cms?: IdentityCms } = {}) {
+  const eyebrow = cms?.eyebrow ?? "Our Identity";
+  const headline = cms?.headline ?? "Decades in the studio,";
+  const headlineItalic = cms?.headlineItalic ?? "one disciplined line.";
+  const body =
+    cms?.body ??
+    "Lineamode Apparel is a design-led manufacturing partner shaped by years on the floor and in the field — from trend and textile to production and merchandising. We work with global fashion brands that need technical competence, operational agility, and a studio that treats every collection as a long-term collaboration.";
+  const image = cms?.image || "/images/home/identity-office.jpg";
+
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -21,7 +37,7 @@ export function IdentitySection() {
     >
       <motion.div className="absolute inset-0 scale-105" style={{ y }}>
         <Image
-          src="/images/home/identity-office.jpg"
+          src={image}
           alt="Lineamode studio office"
           fill
           sizes="100vw"
@@ -50,8 +66,8 @@ export function IdentitySection() {
             className="col-span-12 md:col-span-6 lg:col-span-7 md:col-start-7 md:justify-self-end md:text-right"
           >
             <h2 className="max-w-2xl font-[family-name:var(--font-display)] font-light tracking-[-0.02em] leading-[1.04] text-[clamp(2.35rem,4.2vw,4.35rem)] md:ml-auto">
-              Decades in the studio,{" "}
-              <span className="italic font-extralight">one disciplined line.</span>
+              {headline}{" "}
+              <span className="italic font-extralight">{headlineItalic}</span>
             </h2>
           </motion.div>
         </div>
@@ -64,14 +80,10 @@ export function IdentitySection() {
           className="max-w-xl"
         >
           <Eyebrow number="04" className="text-stone/70">
-            Our Identity
+            {eyebrow}
           </Eyebrow>
           <p className="text-body text-stone/80 max-w-xl mt-8">
-            Lineamode Apparel is a design-led manufacturing partner shaped by
-            years on the floor and in the field — from trend and textile to
-            production and merchandising. We work with global fashion brands that
-            need technical competence, operational agility, and a studio that
-            treats every collection as a long-term collaboration.
+            {body}
           </p>
         </motion.div>
       </div>

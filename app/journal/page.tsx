@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SplitText } from "@/components/ui/SplitText";
 import { GridPattern } from "@/components/ui/GridPattern";
-import { listJournal } from "@/lib/cms";
+import { listJournal, getJournalIntro } from "@/lib/cms";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
@@ -13,7 +13,7 @@ export const metadata = pageMetadata({
 });
 
 export default async function JournalPage() {
-  const posts = await listJournal();
+  const [posts, intro] = await Promise.all([listJournal(), getJournalIntro()]);
   const featured = posts[0];
   const rest = posts.slice(1);
 
@@ -28,18 +28,18 @@ export default async function JournalPage() {
         />
         <div className="shell relative grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-3">
-            <Eyebrow number="00" className="text-stone/80">Journal</Eyebrow>
+            <Eyebrow number="00" className="text-stone/80">{intro.eyebrow}</Eyebrow>
           </div>
           <div className="col-span-12 md:col-span-9">
             <h1 className="text-display leading-[0.95]">
               <span className="block">
                 <SplitText by="word" stagger={0.05} duration={1}>
-                  Notes from
+                  {intro.headlineLine1}
                 </SplitText>
               </span>
               <span className="block italic font-extralight">
                 <SplitText by="word" stagger={0.05} duration={1} delay={0.2}>
-                  the studio.
+                  {intro.headlineLine2}
                 </SplitText>
               </span>
             </h1>
@@ -55,13 +55,19 @@ export default async function JournalPage() {
             className="shell grid grid-cols-12 gap-6 md:gap-12 items-end group/featured"
           >
             <div className="col-span-12 md:col-span-7">
-              <div className="aspect-[16/10] overflow-hidden ring-1 ring-ink/10">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={featured.cover}
-                  alt={featured.title}
-                  className="w-full h-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/featured:scale-105"
-                />
+              <div className="aspect-[16/10] overflow-hidden ring-1 ring-ink/10 bg-ink/5">
+                {featured.cover ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={featured.cover}
+                    alt={featured.title}
+                    className="w-full h-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/featured:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-ink/8 flex items-end p-8">
+                    <p className="text-body text-ink/40 max-w-xs">{featured.title}</p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="col-span-12 md:col-span-5">
@@ -95,12 +101,18 @@ export default async function JournalPage() {
                   <span>{p.category}</span>
                 </div>
                 <div className="aspect-[5/4] overflow-hidden ring-1 ring-ink/10 bg-ink/5">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={p.cover}
-                    alt={p.title}
-                    className="w-full h-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/post:scale-105"
-                  />
+                  {p.cover ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.cover}
+                      alt={p.title}
+                      className="w-full h-full object-cover transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/post:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-ink/8 flex items-end p-5">
+                      <p className="text-label text-ink/40 line-clamp-2">{p.title}</p>
+                    </div>
+                  )}
                 </div>
                 <h3 className="text-h2 leading-snug max-w-[24ch]">{p.title}</h3>
                 <p className="text-body text-ink/70 max-w-md">{p.excerpt}</p>

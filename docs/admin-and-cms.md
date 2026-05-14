@@ -21,7 +21,7 @@ group:
 
 - `app/admin/(console)/layout.tsx` — auth gate + sidebar/topbar shell.
 - `app/admin/(console)/page.tsx` — redirects to `/admin/inbox`.
-- `inbox/`, `projects/`, `pipeline/`, `clients/`, `content/`, `insights/`,
+- `inbox/`, `projects/`, `pipeline/`, `clients/`, `content/`,
   `settings/` — top-level sections.
 
 Marketing chrome (header, footer, smooth scroll, intro loader, custom

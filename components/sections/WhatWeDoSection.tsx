@@ -9,7 +9,30 @@ import { cn } from "@/lib/utils";
 
 const CYCLE_MS = 5000;
 
-export function WhatWeDoSection() {
+type WhatWeDoCms = {
+  eyebrow?: string;
+  headlineLine1?: string;
+  headlineLine2?: string;
+};
+
+type CapabilityItem = { title: string; short: string; image?: string };
+
+export function WhatWeDoSection({
+  cms,
+  capabilityItems,
+}: {
+  cms?: WhatWeDoCms;
+  capabilityItems?: CapabilityItem[];
+} = {}) {
+  const eyebrow = cms?.eyebrow ?? "Services";
+  const headlineLine1 = cms?.headlineLine1 ?? "What we can do";
+  const headlineLine2 = cms?.headlineLine2 ?? "for your fashion brand";
+
+  const displayCapabilities = capabilities.map((c, i) => ({
+    ...c,
+    title: capabilityItems?.[i]?.title ?? c.title,
+    short: capabilityItems?.[i]?.short ?? c.short,
+  }));
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { margin: "-15% 0px -15% 0px" });
 
@@ -32,7 +55,7 @@ export function WhatWeDoSection() {
     setCycleKey((k) => k + 1);
   };
 
-  const item = capabilities[active];
+  const item = displayCapabilities[active];
 
   return (
     <section
@@ -42,11 +65,11 @@ export function WhatWeDoSection() {
       <div className="shell">
         <div className="grid grid-cols-12 gap-6 mb-12">
           <div className="col-span-12 md:col-span-5">
-            <Eyebrow number="02">Services</Eyebrow>
+            <Eyebrow number="02">{eyebrow}</Eyebrow>
             <h2 className="mt-6 font-[family-name:var(--font-display)] text-[clamp(2.25rem,4.5vw,4.75rem)] font-light leading-[1.02] tracking-[-0.02em]">
-              <span className="block whitespace-nowrap">What we can do</span>
+              <span className="block whitespace-nowrap">{headlineLine1}</span>
               <span className="block whitespace-nowrap italic font-extralight">
-                for your fashion brand
+                {headlineLine2}
               </span>
             </h2>
           </div>
@@ -54,7 +77,7 @@ export function WhatWeDoSection() {
 
         <div className="grid grid-cols-12 gap-4 md:gap-12">
             <ul className="col-span-12 md:col-span-5 flex flex-col">
-              {capabilities.map((c, i) => (
+              {displayCapabilities.map((c, i) => (
                 <li key={c.slug} className="relative">
                   <button
                     type="button"

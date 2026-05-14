@@ -23,7 +23,6 @@ const SECTION_TITLES: Record<string, string> = {
   pages: "Pages",
   journal: "Journal",
   media: "Media",
-  insights: "Insights",
   settings: "Settings",
 };
 
