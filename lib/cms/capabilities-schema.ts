@@ -27,7 +27,7 @@ export const capabilitiesContentSchema = z.object({
           "Each capability is owned by a senior in-house team — not outsourced and not relabelled. The work moves between them without changing partner.",
         ),
     })
-    .default({}),
+    .prefault({}),
 
   capabilities: z.array(capabilityItemSchema).default([]),
 
@@ -46,7 +46,7 @@ export const capabilitiesContentSchema = z.object({
       ctaLabel: z.string().max(80).default("Brief the studio"),
       ctaHref: z.string().max(2048).default("/contact"),
     })
-    .default({}),
+    .prefault({}),
 });
 
 export type CapabilitiesContent = z.infer<typeof capabilitiesContentSchema>;

@@ -22,7 +22,7 @@ export const homeContentSchema = z.object({
       primaryCta: ctaSchema.default({ label: "What we do", href: "/capabilities" }),
       secondaryCta: ctaSchema.default({ label: "Start a project", href: "/start" }),
     })
-    .default({}),
+    .prefault({}),
 
   whatWeDo: z
     .object({
@@ -31,7 +31,7 @@ export const homeContentSchema = z.object({
       headlineLine1: z.string().max(120).default("What we can do"),
       headlineLine2: z.string().max(120).default("for your fashion brand"),
     })
-    .default({}),
+    .prefault({}),
 
   products: z
     .object({
@@ -58,7 +58,7 @@ export const homeContentSchema = z.object({
         )
         .default([]),
     })
-    .default({}),
+    .prefault({}),
 
   identity: z
     .object({
@@ -74,7 +74,7 @@ export const homeContentSchema = z.object({
         ),
       image: z.string().max(2048).default("/images/home/identity-office.jpg"),
     })
-    .default({}),
+    .prefault({}),
 
   journal: z
     .object({
@@ -94,7 +94,7 @@ export const homeContentSchema = z.object({
       ctaLabel: z.string().max(80).default("Read the journal"),
       ctaHref: z.string().max(2048).default("/journal"),
     })
-    .default({}),
+    .prefault({}),
 
   contactCta: z
     .object({
@@ -114,7 +114,7 @@ export const homeContentSchema = z.object({
       primaryCta: ctaSchema.default({ label: "Brief the studio", href: "/start" }),
       secondaryCta: ctaSchema.default({ label: "Contact", href: "/contact" }),
     })
-    .default({}),
+    .prefault({}),
 
   capabilities: z
     .object({
@@ -131,7 +131,7 @@ export const homeContentSchema = z.object({
         )
         .default([]),
     })
-    .default({}),
+    .prefault({}),
 });
 
 export type HomeContent = z.infer<typeof homeContentSchema>;

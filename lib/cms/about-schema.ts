@@ -12,7 +12,7 @@ export const aboutContentSchema = z.object({
       headlineLine1: z.string().max(120).default("A studio for brands"),
       headlineLine2: z.string().max(120).default("that move fast."),
     })
-    .default({}),
+    .prefault({}),
 
   manifesto: z
     .object({
@@ -38,7 +38,7 @@ export const aboutContentSchema = z.object({
           "There is a constant pressure to be efficient and reduce cost without compromising on the brand — and this is becoming more difficult in a consumer landscape that is always evolving with new trends.",
         ]),
     })
-    .default({}),
+    .prefault({}),
 
   foundersCta: z
     .object({
@@ -59,7 +59,7 @@ export const aboutContentSchema = z.object({
         ),
       cta: ctaSchema.default({ label: "Meet the founders →", href: "/founders" }),
     })
-    .default({}),
+    .prefault({}),
 
   hq: z
     .object({
@@ -83,7 +83,7 @@ export const aboutContentSchema = z.object({
           "https://images.unsplash.com/photo-1565793298595-6a879b1d9492?auto=format&fit=crop&w=1600&q=80",
         ),
     })
-    .default({}),
+    .prefault({}),
 });
 
 export type AboutContent = z.infer<typeof aboutContentSchema>;

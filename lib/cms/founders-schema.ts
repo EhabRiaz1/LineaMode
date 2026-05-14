@@ -26,7 +26,7 @@ export const foundersContentSchema = z.object({
           "Lineamode is run by two founders with overlapping but complementary remits — commercial and operational, strategy and floor. Scroll to flip each card and meet them.",
         ),
     })
-    .default({}),
+    .prefault({}),
 
   founders: z.array(founderSchema).default([]),
 
@@ -44,7 +44,7 @@ export const foundersContentSchema = z.object({
       ctaLabel: z.string().max(80).default("Open the brief form"),
       ctaHref: z.string().max(2048).default("/contact"),
     })
-    .default({}),
+    .prefault({}),
 });
 
 export type FounderItem = z.infer<typeof founderSchema>;

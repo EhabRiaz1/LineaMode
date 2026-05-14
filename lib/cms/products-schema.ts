@@ -22,7 +22,7 @@ export const productsContentSchema = z.object({
       eyebrow: z.string().max(80).default("Products"),
       headline: z.string().max(120).default("Our products"),
     })
-    .default({}),
+    .prefault({}),
 
   products: z.array(productItemSchema).default([]),
 
@@ -39,7 +39,7 @@ export const productsContentSchema = z.object({
       primaryCta: ctaSchema.default({ label: "Start a project", href: "/start" }),
       secondaryCta: ctaSchema.default({ label: "Contact us", href: "/contact" }),
     })
-    .default({}),
+    .prefault({}),
 });
 
 export type ProductItem = z.infer<typeof productItemSchema>;

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { homeProducts } from "@/content/home-products";
+import { homeProducts, type HomeProductTile } from "@/content/home-products";
 import { easeBrand } from "@/lib/motion/easings";
 import { cn } from "@/lib/utils";
 

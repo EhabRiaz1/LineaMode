@@ -75,10 +75,12 @@ export function StartFlow() {
     Promise.allSettled(
       types.map(async (type) => {
         const res = await fetch(`/api/public/pipelines/${type}`);
-        if (!res.ok) return [type, []] as const;
+        if (!res.ok) return [type, [] as LetterField[]] as const;
         const json = await res.json().catch(() => ({}));
         const questions: unknown[] = json?.data?.questions ?? json?.questions ?? [];
-        if (!Array.isArray(questions) || questions.length === 0) return [type, []] as const;
+        if (!Array.isArray(questions) || questions.length === 0) {
+          return [type, [] as LetterField[]] as const;
+        }
         const mapped: LetterField[] = questions.map((q, i) => ({
           ...(q as Omit<LetterField, "step">),
           step: i + 1,

@@ -7,7 +7,7 @@ export const contactContentSchema = z.object({
       headlineLine1: z.string().max(120).default("Brief the studio."),
       headlineLine2: z.string().max(120).default("We answer in two days."),
     })
-    .default({}),
+    .prefault({}),
 
   details: z
     .object({
@@ -20,7 +20,7 @@ export const contactContentSchema = z.object({
       hours: z.string().max(120).default("Mon — Fri · 09:00 to 18:00 PKT"),
       formSectionLabel: z.string().max(80).default("Project Brief"),
     })
-    .default({}),
+    .prefault({}),
 });
 
 export type ContactContent = z.infer<typeof contactContentSchema>;
