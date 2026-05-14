@@ -1,41 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useAdminSession } from "@/components/admin/AdminSession";
-import { adminFetch } from "@/lib/admin/api";
+import type { DashboardStats } from "@/components/admin/dashboard/DashboardGrid";
 import { cn } from "@/lib/utils";
 
-type Stats = {
-  total_intakes: number;
-  this_week: number;
-  pending_review: number;
-  active_projects: number;
-};
-
-export function QuickStatsWidget({ size }: { size: string }) {
-  const { authHeaders, status } = useAdminSession();
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    if (status !== "authenticated") return;
-    
-    // In a real app, this would fetch from a stats API
-    // For now, using mock data
-    setTimeout(() => {
-      setStats({
-        total_intakes: 127,
-        this_week: 12,
-        pending_review: 5,
-        active_projects: 8,
-      });
-      setLoading(false);
-    }, 500);
-  }, [status]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+export function QuickStatsWidget({
+  size,
+  data,
+  loading,
+  error,
+}: {
+  size: string;
+  data: DashboardStats | null;
+  loading: boolean;
+  error: string | null;
+}) {
+  const stats = data?.quickStats;
 
   if (loading) {
     return (
@@ -58,6 +37,7 @@ export function QuickStatsWidget({ size }: { size: string }) {
   return (
     <div className="p-6">
       <h3 className="text-eyebrow text-ink/45 mb-4">Quick Stats</h3>
+      {error && <p className="mb-4 text-label text-terracotta">{error}</p>}
       <div
         className={cn(
           "grid gap-6",

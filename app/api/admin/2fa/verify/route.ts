@@ -9,8 +9,9 @@ export async function POST(request: Request) {
     
     const body = await request.json();
     const { code } = body as { code: string };
+    const normalizedCode = code?.trim();
     
-    if (!code || code.length !== 6) {
+    if (!normalizedCode || !/^\d{6}$/.test(normalizedCode)) {
       return respond.badRequest("Invalid verification code");
     }
     
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     }
     
     // Verify the code
-    const isValid = verifyTOTP(currentAdmin.totp_secret, code);
+    const isValid = verifyTOTP(currentAdmin.totp_secret, normalizedCode);
     
     if (!isValid) {
       return respond.badRequest("Invalid verification code. Please try again.");

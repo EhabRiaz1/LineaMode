@@ -1,41 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { useAdminSession } from "@/components/admin/AdminSession";
+import type { DashboardStats } from "@/components/admin/dashboard/DashboardGrid";
 import { cn } from "@/lib/utils";
 
-type FunnelData = {
-  stage: string;
-  count: number;
-  color: string;
-};
+export function IntakeFunnelWidget({
+  data,
+  loading,
+  error,
+}: {
+  size: string;
+  data: DashboardStats | null;
+  loading: boolean;
+  error: string | null;
+}) {
+  const funnel = data?.intakeFunnel ?? [];
 
-export function IntakeFunnelWidget({ size }: { size: string }) {
-  const { status } = useAdminSession();
-  const [data, setData] = useState<FunnelData[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    if (status !== "authenticated") return;
-    
-    setTimeout(() => {
-      setData([
-        { stage: "Started", count: 245, color: "bg-ink/15" },
-        { stage: "Completed", count: 127, color: "bg-ink/30" },
-        { stage: "Reviewed", count: 89, color: "bg-ink/50" },
-        { stage: "Quoted", count: 45, color: "bg-terracotta/60" },
-        { stage: "Converted", count: 23, color: "bg-terracotta" },
-      ]);
-      setLoading(false);
-    }, 600);
-  }, [status]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const maxCount = Math.max(...data.map((d) => d.count), 1);
+  const maxCount = Math.max(...funnel.map((d) => d.count), 1);
 
   if (loading) {
     return (
@@ -55,8 +36,9 @@ export function IntakeFunnelWidget({ size }: { size: string }) {
   return (
     <div className="p-6">
       <h3 className="text-eyebrow text-ink/45 mb-4">Intake Funnel</h3>
+      {error && <p className="mb-4 text-label text-terracotta">{error}</p>}
       <div className="space-y-3">
-        {data.map((item, index) => (
+        {funnel.map((item, index) => (
           <div key={item.stage} className="flex items-center gap-4">
             <span className="text-label text-ink/55 w-20 flex-shrink-0">{item.stage}</span>
             <div className="flex-1 h-8 bg-ink/5 rounded-lg overflow-hidden">

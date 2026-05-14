@@ -2,22 +2,44 @@ import { createHmac, randomBytes } from "crypto";
 
 const BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
-export function generateSecret(length = 20): string {
-  const bytes = randomBytes(length);
-  let secret = "";
-  for (let i = 0; i < bytes.length; i++) {
-    secret += BASE32_CHARS[bytes[i] % 32];
+function base32Encode(buffer: Buffer): string {
+  let bits = 0;
+  let value = 0;
+  let encoded = "";
+
+  for (const byte of buffer) {
+    value = (value << 8) | byte;
+    bits += 8;
+
+    while (bits >= 5) {
+      encoded += BASE32_CHARS[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
   }
-  return secret;
+
+  if (bits > 0) {
+    encoded += BASE32_CHARS[(value << (5 - bits)) & 31];
+  }
+
+  return encoded;
+}
+
+export function generateSecret(byteLength = 20): string {
+  return base32Encode(randomBytes(byteLength));
 }
 
 function base32Decode(encoded: string): Buffer {
   let bits = "";
-  for (const char of encoded.toUpperCase()) {
+  const normalized = encoded.toUpperCase().replace(/[\s=-]/g, "");
+
+  for (const char of normalized) {
     const val = BASE32_CHARS.indexOf(char);
-    if (val === -1) continue;
+    if (val === -1) {
+      throw new Error("Invalid Base32 secret");
+    }
     bits += val.toString(2).padStart(5, "0");
   }
+
   const bytes: number[] = [];
   for (let i = 0; i + 8 <= bits.length; i += 8) {
     bytes.push(parseInt(bits.substr(i, 8), 2));
@@ -29,8 +51,8 @@ function generateHOTP(secret: string, counter: number): string {
   const decodedSecret = base32Decode(secret);
   const buffer = Buffer.alloc(8);
   for (let i = 7; i >= 0; i--) {
-    buffer[i] = counter & 0xff;
-    counter = counter >> 8;
+    buffer[i] = counter % 256;
+    counter = Math.floor(counter / 256);
   }
 
   const hmac = createHmac("sha1", decodedSecret);
@@ -54,12 +76,21 @@ export function generateTOTP(secret: string): string {
 
 export function verifyTOTP(secret: string, token: string, window = 1): boolean {
   const counter = Math.floor(Date.now() / 1000 / 30);
+  const normalizedToken = token.trim();
+
+  if (!/^\d{6}$/.test(normalizedToken)) {
+    return false;
+  }
   
-  for (let i = -window; i <= window; i++) {
-    const expectedToken = generateHOTP(secret, counter + i);
-    if (expectedToken === token) {
-      return true;
+  try {
+    for (let i = -window; i <= window; i++) {
+      const expectedToken = generateHOTP(secret, counter + i);
+      if (expectedToken === normalizedToken) {
+        return true;
+      }
     }
+  } catch {
+    return false;
   }
   
   return false;

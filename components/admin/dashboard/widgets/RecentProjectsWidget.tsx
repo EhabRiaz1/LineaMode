@@ -1,48 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useAdminSession } from "@/components/admin/AdminSession";
+import type { DashboardStats } from "@/components/admin/dashboard/DashboardGrid";
 import { cn } from "@/lib/utils";
 
-type Project = {
-  id: string;
-  name: string;
-  client: string;
-  stage: string;
-  updated: string;
-};
-
-export function RecentProjectsWidget({ size }: { size: string }) {
-  const { status } = useAdminSession();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    if (status !== "authenticated") return;
-    
-    setTimeout(() => {
-      setProjects([
-        { id: "1", name: "SS27 Knitwear", client: "Nordic Threads", stage: "sampling", updated: "2h ago" },
-        { id: "2", name: "Performance Line", client: "ActiveWear Co", stage: "production", updated: "4h ago" },
-        { id: "3", name: "Eco Collection", client: "Green Label", stage: "quoted", updated: "1d ago" },
-        { id: "4", name: "Basics Restock", client: "Essentials", stage: "completed", updated: "2d ago" },
-      ]);
-      setLoading(false);
-    }, 700);
-  }, [status]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+export function RecentProjectsWidget({
+  size,
+  data,
+  loading,
+  error,
+}: {
+  size: string;
+  data: DashboardStats | null;
+  loading: boolean;
+  error: string | null;
+}) {
+  const projects = data?.recentProjects ?? [];
 
   const displayCount = size === "small" ? 3 : size === "medium" ? 4 : 5;
 
   const stageColors: Record<string, string> = {
-    sampling: "bg-yellow-500/10 text-yellow-600",
-    production: "bg-moss/10 text-moss",
+    draft: "bg-ink/10 text-ink/60",
+    reviewing: "bg-yellow-500/10 text-yellow-600",
     quoted: "bg-terracotta/10 text-terracotta",
-    completed: "bg-ink/10 text-ink/60",
+    in_progress: "bg-moss/10 text-moss",
+    delivered: "bg-graphite/10 text-graphite",
+    archived: "bg-ink/10 text-ink/45",
   };
 
   if (loading) {
@@ -74,7 +57,13 @@ export function RecentProjectsWidget({ size }: { size: string }) {
           View all →
         </Link>
       </div>
+      {error && <p className="mb-4 text-label text-terracotta">{error}</p>}
       <div className="space-y-3">
+        {projects.length === 0 && (
+          <p className="rounded-2xl border border-dashed border-[var(--hairline)] px-4 py-8 text-center text-body text-ink/55">
+            No projects yet.
+          </p>
+        )}
         {projects.slice(0, displayCount).map((project) => (
           <Link
             key={project.id}
@@ -91,7 +80,7 @@ export function RecentProjectsWidget({ size }: { size: string }) {
                 stageColors[project.stage] || "bg-ink/10 text-ink/60"
               )}
             >
-              {project.stage}
+              {project.stage.replaceAll("_", " ")}
             </span>
             <span className="text-label text-ink/45 flex-shrink-0">
               {project.updated}

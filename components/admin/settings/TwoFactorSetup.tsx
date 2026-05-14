@@ -20,6 +20,7 @@ export function TwoFactorSetup() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const formattedSecret = secret?.match(/.{1,4}/g)?.join(" ") ?? "";
 
   const loadStatus = useCallback(async () => {
     if (status !== "authenticated") return;
@@ -237,7 +238,7 @@ export function TwoFactorSetup() {
                   Or enter this secret manually:
                 </p>
                 <code className="block bg-ink/5 rounded-xl px-4 py-3 text-body font-mono text-ink break-all">
-                  {secret}
+                  {formattedSecret}
                 </code>
               </div>
 

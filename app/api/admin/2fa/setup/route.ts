@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     
     // Generate a new secret
     const secret = generateSecret();
-    const otpAuthUrl = generateOtpAuthUrl(secret, currentAdmin.email);
+    const otpAuthUrl = generateOtpAuthUrl(secret, currentAdmin.email ?? admin.email);
     
     // Store the secret (but don't enable yet)
     const { error: updateError } = await supabase

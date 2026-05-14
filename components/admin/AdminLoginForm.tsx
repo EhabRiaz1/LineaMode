@@ -65,8 +65,7 @@ export function AdminLoginForm() {
       return;
     }
 
-    router.push("/admin");
-    router.refresh();
+    router.replace("/admin/dashboard");
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, Reorder } from "motion/react";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { adminFetch } from "@/lib/admin/api";
@@ -19,7 +19,44 @@ export type WidgetConfig = {
   size: "small" | "medium" | "large";
 };
 
-const WIDGET_COMPONENTS: Record<WidgetType, React.ComponentType<{ size: string }>> = {
+export type DashboardStats = {
+  quickStats: {
+    total_intakes: number;
+    this_week: number;
+    pending_review: number;
+    active_projects: number;
+  };
+  intakeFunnel: {
+    stage: string;
+    count: number;
+    color: string;
+  }[];
+  pipelineDistribution: {
+    type: string;
+    label: string;
+    count: number;
+    percentage: number;
+    color: string;
+  }[];
+  recentProjects: {
+    id: string;
+    name: string;
+    client: string;
+    stage: string;
+    pipeline: string;
+    updated: string;
+    updated_at: string;
+  }[];
+};
+
+type WidgetProps = {
+  size: string;
+  data: DashboardStats | null;
+  loading: boolean;
+  error: string | null;
+};
+
+const WIDGET_COMPONENTS: Record<WidgetType, React.ComponentType<WidgetProps>> = {
   quick_stats: QuickStatsWidget,
   intake_funnel: IntakeFunnelWidget,
   recent_projects: RecentProjectsWidget,
@@ -56,7 +93,11 @@ export function DashboardGrid() {
   const [widgets, setWidgets] = useState<WidgetConfig[]>(DEFAULT_LAYOUT);
   const [isEditing, setIsEditing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [layoutLoading, setLayoutLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState<string | null>(null);
+  const widgetCounterRef = useRef(0);
 
   const loadLayout = useCallback(async () => {
     if (status !== "authenticated") return;
@@ -72,12 +113,35 @@ export function DashboardGrid() {
     } catch {
       // Use default layout
     }
-    setLoading(false);
+    setLayoutLoading(false);
   }, [status]);
 
   useEffect(() => {
-    void loadLayout();
+    const id = window.setTimeout(() => void loadLayout(), 0);
+    return () => window.clearTimeout(id);
   }, [loadLayout]);
+
+  const loadStats = useCallback(async () => {
+    if (status !== "authenticated") return;
+    setStatsLoading(true);
+    setStatsError(null);
+
+    const res = await adminFetch<DashboardStats>("/api/admin/dashboard", {
+      authHeaders: authHeaders(),
+    });
+
+    setStatsLoading(false);
+    if (res.ok) {
+      setStats(res.data);
+      return;
+    }
+    setStatsError(res.error);
+  }, [authHeaders, status]);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => void loadStats(), 0);
+    return () => window.clearTimeout(id);
+  }, [loadStats]);
 
   const saveLayout = useCallback((newLayout: WidgetConfig[]) => {
     setWidgets(newLayout);
@@ -90,7 +154,7 @@ export function DashboardGrid() {
 
   const handleAddWidget = (type: WidgetType, size: "small" | "medium" | "large") => {
     const newWidget: WidgetConfig = {
-      id: `${type}_${Date.now()}`,
+      id: `${type}_${widgetCounterRef.current++}`,
       type,
       size,
     };
@@ -106,7 +170,7 @@ export function DashboardGrid() {
     saveLayout(widgets.map((w) => (w.id === id ? { ...w, size } : w)));
   };
 
-  if (loading) {
+  if (layoutLoading) {
     return (
       <div className="text-center py-12">
         <p className="text-body text-ink/55">Loading dashboard...</p>
@@ -226,7 +290,12 @@ export function DashboardGrid() {
                       </button>
                     </div>
                   )}
-                  <WidgetComponent size={widget.size} />
+                  <WidgetComponent
+                    size={widget.size}
+                    data={stats}
+                    loading={statsLoading}
+                    error={statsError}
+                  />
                 </motion.div>
               </Reorder.Item>
             );
