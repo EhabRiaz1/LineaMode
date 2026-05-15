@@ -5,7 +5,9 @@
  * call with the auth headers from <AdminSessionProvider> and surfaces
  * structured errors so individual pages can stay focussed on rendering.
  */
-export type AdminFetchResult<T> = { ok: true; data: T } | { ok: false; error: string };
+export type AdminFetchResult<T> =
+  | { ok: true; data: T }
+  | { ok: false; error: string; status?: number };
 
 export async function adminFetch<T = unknown>(
   url: string,
@@ -23,7 +25,7 @@ export async function adminFetch<T = unknown>(
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
-      return { ok: false, error: json?.error ?? `Request failed (${res.status})` };
+      return { ok: false, error: json?.error ?? `Request failed (${res.status})`, status: res.status };
     }
     return { ok: true, data: (json.data ?? json) as T };
   } catch (error) {

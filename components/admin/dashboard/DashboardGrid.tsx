@@ -89,7 +89,7 @@ const DEFAULT_LAYOUT: WidgetConfig[] = [
 ];
 
 export function DashboardGrid() {
-  const { authHeaders, status } = useAdminSession();
+  const { signOut, status, token } = useAdminSession();
   const [widgets, setWidgets] = useState<WidgetConfig[]>(DEFAULT_LAYOUT);
   const [isEditing, setIsEditing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -122,12 +122,12 @@ export function DashboardGrid() {
   }, [loadLayout]);
 
   const loadStats = useCallback(async () => {
-    if (status !== "authenticated") return;
+    if (status !== "authenticated" || !token) return;
     setStatsLoading(true);
     setStatsError(null);
 
     const res = await adminFetch<DashboardStats>("/api/admin/dashboard", {
-      authHeaders: authHeaders(),
+      authHeaders: { Authorization: `Bearer ${token}` },
     });
 
     setStatsLoading(false);
@@ -135,8 +135,12 @@ export function DashboardGrid() {
       setStats(res.data);
       return;
     }
+    if (res.status === 401) {
+      await signOut();
+      return;
+    }
     setStatsError(res.error);
-  }, [authHeaders, status]);
+  }, [signOut, status, token]);
 
   useEffect(() => {
     const id = window.setTimeout(() => void loadStats(), 0);

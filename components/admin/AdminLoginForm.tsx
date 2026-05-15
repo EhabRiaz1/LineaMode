@@ -22,18 +22,29 @@ export function AdminLoginForm() {
   const goToDashboard = useCallback(() => {
     setRedirecting(true);
     router.replace("/admin/dashboard");
-    router.refresh();
   }, [router]);
 
   useEffect(() => {
     let mounted = true;
 
     void supabase.auth.getSession().then(({ data }) => {
-      if (mounted && data.session) goToDashboard();
+      const session = data.session;
+      if (!session?.access_token || (session.expires_at && session.expires_at <= Math.floor(Date.now() / 1000))) {
+        return;
+      }
+
+      void supabase.auth.getUser(session.access_token).then(({ data: userData, error }) => {
+        if (mounted && !error && userData.user) goToDashboard();
+      });
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
-      if (next) goToDashboard();
+      if (!next?.access_token || (next.expires_at && next.expires_at <= Math.floor(Date.now() / 1000))) {
+        return;
+      }
+      void supabase.auth.getUser(next.access_token).then(({ data: userData, error }) => {
+        if (mounted && !error && userData.user) goToDashboard();
+      });
     });
 
     return () => {

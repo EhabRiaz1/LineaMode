@@ -91,38 +91,17 @@ export async function GET(request: Request) {
     await requireAdminUser(request.headers.get("authorization") ?? undefined);
     const supabase = getServiceRoleClient();
 
-    const totalIntakes = await countProjects(supabase);
-    const thisWeek = await countProjects(supabase, { since: startOfWeek() });
-    const pendingReview = await countProjects(supabase, {
-      filter: { column: "status", values: ["draft", "reviewing"] },
-    });
-    const activeProjects = await countProjects(supabase, {
-      filter: { column: "status", values: ["quoted", "in_progress"] },
-    });
-
-    const pipelineCounts = await Promise.all(
-      PIPELINE_TYPES.map(async (type) => ({
-        type,
-        label: PIPELINE_LABELS[type],
-        count: await countProjects(supabase, { filter: { column: "pipeline_type", values: [type] } }),
-        color: PIPELINE_COLORS[type],
-      })),
-    );
-    const pipelineTotal = pipelineCounts.reduce((sum, item) => sum + item.count, 0);
-
-    const statusCounts = await Promise.all(
-      PROJECT_STATUSES.map(async (status) => ({
-        status,
-        count: await countProjects(supabase, { filter: { column: "status", values: [status] } }),
-      })),
-    );
-    const byStatus = Object.fromEntries(statusCounts.map((item) => [item.status, item.count])) as Record<ProjectStatus, number>;
-    const started = Math.max(
-      await countUniqueEventSessions(supabase, ["landed", "pipeline_chosen", "letter_started"]),
-      totalIntakes,
-    );
-
-    const { data: recentRows, error: recentError } = await supabase
+    const pipelineCountTasks = PIPELINE_TYPES.map(async (type) => ({
+      type,
+      label: PIPELINE_LABELS[type],
+      count: await countProjects(supabase, { filter: { column: "pipeline_type", values: [type] } }),
+      color: PIPELINE_COLORS[type],
+    }));
+    const statusCountTasks = PROJECT_STATUSES.map(async (status) => ({
+      status,
+      count: await countProjects(supabase, { filter: { column: "status", values: [status] } }),
+    }));
+    const recentProjectsTask = supabase
       .from("projects")
       .select(
         `
@@ -138,9 +117,34 @@ export async function GET(request: Request) {
       .order("updated_at", { ascending: false })
       .limit(5);
 
-    if (recentError) throw new Error(recentError.message);
+    const [
+      totalIntakes,
+      thisWeek,
+      pendingReview,
+      activeProjects,
+      pipelineCounts,
+      statusCounts,
+      startedSessions,
+      recentResult,
+    ] = await Promise.all([
+      countProjects(supabase),
+      countProjects(supabase, { since: startOfWeek() }),
+      countProjects(supabase, { filter: { column: "status", values: ["draft", "reviewing"] } }),
+      countProjects(supabase, { filter: { column: "status", values: ["quoted", "in_progress"] } }),
+      Promise.all(pipelineCountTasks),
+      Promise.all(statusCountTasks),
+      countUniqueEventSessions(supabase, ["landed", "pipeline_chosen", "letter_started"]),
+      recentProjectsTask,
+    ]);
 
-    const recentProjects = ((recentRows ?? []) as unknown as RecentProjectRow[]).map((project) => {
+    const pipelineTotal = pipelineCounts.reduce((sum, item) => sum + item.count, 0);
+
+    const byStatus = Object.fromEntries(statusCounts.map((item) => [item.status, item.count])) as Record<ProjectStatus, number>;
+    const started = Math.max(startedSessions, totalIntakes);
+
+    if (recentResult.error) throw new Error(recentResult.error.message);
+
+    const recentProjects = ((recentResult.data ?? []) as unknown as RecentProjectRow[]).map((project) => {
       const customer = Array.isArray(project.customers) ? project.customers[0] : project.customers;
       return {
         id: project.id,
