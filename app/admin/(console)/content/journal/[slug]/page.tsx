@@ -7,13 +7,10 @@ type Params = Promise<{ slug: string }>;
 
 export default function EditJournalEntryPage({ params }: { params: Params }) {
   return (
-    <Suspense>
-      <ResolvedEditor params={params} />
+    <Suspense fallback={<p className="text-body text-ink/55">Loading editor…</p>}>
+      {params.then(({ slug }) => (
+        <JournalEditor slug={slug} />
+      ))}
     </Suspense>
   );
-}
-
-async function ResolvedEditor({ params }: { params: Params }) {
-  const { slug } = await params;
-  return <JournalEditor slug={slug} />;
 }

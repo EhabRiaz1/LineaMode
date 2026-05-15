@@ -7,13 +7,10 @@ type Params = Promise<{ id: string }>;
 
 export default function ProjectDetailPage({ params }: { params: Params }) {
   return (
-    <Suspense>
-      <ResolvedView params={params} />
+    <Suspense fallback={<p className="text-body text-ink/55">Loading project…</p>}>
+      {params.then(({ id }) => (
+        <ProjectDetailView projectId={id} />
+      ))}
     </Suspense>
   );
-}
-
-async function ResolvedView({ params }: { params: Params }) {
-  const { id } = await params;
-  return <ProjectDetailView projectId={id} />;
 }

@@ -24,15 +24,15 @@ const PIPELINE_INFO: Record<string, { number: string; title: string }> = {
 
 export default function ContentPageEditorPage({ params }: { params: Params }) {
   return (
-    <Suspense>
-      <ResolvedEditor params={params} />
+    <Suspense fallback={<p className="text-body text-ink/55">Loading editor…</p>}>
+      {params.then(({ slug }) => (
+        <ResolvedEditor slug={slug} />
+      ))}
     </Suspense>
   );
 }
 
-async function ResolvedEditor({ params }: { params: Params }) {
-  const { slug } = await params;
-
+function ResolvedEditor({ slug }: { slug: string }) {
   if (slug === "home") return <HomeEditor />;
   if (slug === "capabilities") return <CapabilitiesEditor />;
   if (slug === "contact") return <ContactEditor />;

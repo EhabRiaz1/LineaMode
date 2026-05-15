@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
@@ -16,7 +16,31 @@ export function AdminLoginForm() {
   const [code, setCode] = useState("");
   const [requiresTotp, setRequiresTotp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const goToDashboard = useCallback(() => {
+    setRedirecting(true);
+    router.replace("/admin/dashboard");
+    router.refresh();
+  }, [router]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (mounted && data.session) goToDashboard();
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
+      if (next) goToDashboard();
+    });
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [goToDashboard, supabase.auth]);
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -58,15 +82,27 @@ export function AdminLoginForm() {
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,
     });
-    setLoading(false);
 
     if (sessionError) {
+      setLoading(false);
       setError(sessionError.message);
       return;
     }
 
-    router.replace("/admin/dashboard");
+    goToDashboard();
   };
+
+  if (redirecting) {
+    return (
+      <section className="relative min-h-[70vh] py-16 lg:py-24">
+        <div className="shell max-w-2xl">
+          <div className="rounded-3xl border border-[var(--hairline)] bg-stone/70 p-8 md:p-10">
+            <p className="text-body text-ink/70">Opening admin dashboard...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative min-h-[70vh] py-16 lg:py-24">

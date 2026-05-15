@@ -20,15 +20,15 @@ export async function generateMetadata({ params }: Props) {
 
 export default function PipelineEditorPage({ params }: Props) {
   return (
-    <Suspense>
-      <ResolvedEditor params={params} />
+    <Suspense fallback={<p className="text-body text-ink/55">Loading pipeline…</p>}>
+      {params.then(({ type }) => (
+        <ResolvedEditor type={type} />
+      ))}
     </Suspense>
   );
 }
 
-async function ResolvedEditor({ params }: Props) {
-  const { type } = await params;
-
+function ResolvedEditor({ type }: { type: string }) {
   if (!PIPELINE_TYPES.includes(type as (typeof PIPELINE_TYPES)[number])) {
     notFound();
   }
