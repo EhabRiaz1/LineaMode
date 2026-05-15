@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
@@ -9,7 +8,6 @@ const inputClass =
   "w-full rounded-2xl border border-[var(--hairline)] bg-stone px-4 py-3 text-body text-ink placeholder:text-ink/50 focus:outline-none focus:ring-2 focus:ring-ink/20";
 
 export function AdminLoginForm() {
-  const router = useRouter();
   const supabase = getBrowserSupabaseClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,8 +19,8 @@ export function AdminLoginForm() {
 
   const goToDashboard = useCallback(() => {
     setRedirecting(true);
-    router.replace("/admin/dashboard");
-  }, [router]);
+    window.location.replace("/admin/dashboard");
+  }, []);
 
   useEffect(() => {
     let mounted = true;
