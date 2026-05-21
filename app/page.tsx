@@ -1,6 +1,5 @@
 import { Hero } from "@/components/sections/Hero";
 import { WhatWeDoSection } from "@/components/sections/WhatWeDoSection";
-import { CapabilitiesRail } from "@/components/sections/CapabilitiesRail";
 import { ProductPreview } from "@/components/sections/ProductPreview";
 import { IdentitySection } from "@/components/sections/IdentitySection";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
@@ -23,9 +22,6 @@ export default async function HomePage() {
       {cms.identity.enabled && <IdentitySection cms={cms.identity} />}
       {showJournal && <JournalTeaser cms={cms.journal} />}
       {cms.contactCta.enabled && <ContactCTA cms={cms.contactCta} />}
-      {cms.capabilities.enabled && (
-        <CapabilitiesRail cms={cms.capabilities} items={cms.capabilities.items} />
-      )}
     </>
   );
 }

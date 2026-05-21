@@ -2,7 +2,6 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SplitText } from "@/components/ui/SplitText";
 import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
-import { CapabilitiesNav } from "@/components/sections/CapabilitiesNav";
 import { capabilities as staticCapabilities } from "@/content/capabilities";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { getCapabilitiesContent } from "@/lib/cms";
@@ -11,10 +10,17 @@ import {
   DEFAULT_PROCESS_STEPS,
 } from "@/lib/cms/capabilities-schema";
 
+function capabilityBlurb(short: string) {
+  const normalized = short.replace(/\s+/g, " ").trim();
+  const firstSentence = normalized.split(/(?<=[.!?])\s+/)[0]?.trim() || normalized;
+  if (firstSentence.length <= 130) return firstSentence;
+  return `${firstSentence.slice(0, 127).trim()}…`;
+}
+
 export const metadata = pageMetadata({
   title: "Capabilities",
   description:
-    "Design support, product development, fabric sourcing, agile manufacturing and merchandising — five disciplines, one studio.",
+    "Design support, textile sourcing, agile manufacturing and merchandising — four disciplines, one studio.",
   path: "/capabilities",
 });
 
@@ -66,49 +72,55 @@ export default async function CapabilitiesPage() {
         </div>
       </section>
 
-      {/* Floating anchor-nav */}
-      <CapabilitiesNav />
-
       {/* Capability detail blocks */}
       {displayCaps.map((cap, i) => (
         <section
           key={i}
           id={staticCapabilities[i]?.slug ?? `cap-${i}`}
-          className="relative py-24 md:py-32 border-b hairline"
+          className="relative bg-stone py-4 md:py-6"
         >
-          <div className="shell grid grid-cols-12 gap-6 md:gap-12 items-start">
-            <div className={`col-span-12 md:col-span-7 ${i % 2 === 1 ? "md:order-2" : ""}`}>
-              <div className="aspect-[5/4] overflow-hidden ring-1 ring-ink/15 bg-ink/5">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={cap.image || CAPABILITY_DEFAULT_IMAGES[i] || ""}
-                  alt={cap.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-            <div
-              className={`col-span-12 md:col-span-5 sticky top-32 ${i % 2 === 1 ? "md:order-1" : ""}`}
+          <div className="mx-auto w-full max-w-[min(100%,1720px)] px-2 md:px-3 lg:px-4">
+            <article
+              className={`grid grid-cols-1 md:grid-cols-2 md:aspect-[12/5] lg:aspect-[14/5] xl:aspect-[3/1] gap-0 overflow-hidden ring-1 ${
+                i % 2 === 0
+                  ? "bg-ink text-stone ring-stone/10"
+                  : "bg-white text-ink ring-ink/10"
+              }`}
             >
-              <div className="flex justify-between text-label text-ink/55 mb-6">
-                <span>/ {String(i + 1).padStart(2, "0")}</span>
-                <span>Discipline</span>
+              <div
+                className={`flex min-w-0 flex-col justify-center px-7 py-8 md:px-10 lg:px-12 md:py-0 ${
+                  i % 2 === 1 ? "md:order-2" : ""
+                }`}
+              >
+                <p
+                  className={`text-eyebrow mb-3 md:mb-4 ${
+                    i % 2 === 0 ? "text-stone/55" : "text-ink/55"
+                  }`}
+                >
+                  / {String(i + 1).padStart(2, "0")}
+                </p>
+                <h2 className="font-[family-name:var(--font-display)] text-[clamp(1.65rem,2.2vw,2.35rem)] font-light leading-[1.05] tracking-[-0.02em] max-w-[14ch]">
+                  {cap.title}
+                </h2>
+                <p
+                  className={`mt-4 max-w-sm text-body leading-relaxed ${
+                    i % 2 === 0 ? "text-stone/75" : "text-ink/70"
+                  }`}
+                >
+                  {capabilityBlurb(cap.short)}
+                </p>
               </div>
-              <h2 className="text-h1 mb-6">{cap.title}</h2>
-              <p className="text-body text-ink/80 max-w-md mb-4">{cap.short}</p>
-              <p className="text-body text-ink/65 max-w-md">{cap.description}</p>
-              <ul className="mt-10 grid grid-cols-1 gap-3 text-body text-ink/80">
-                {cap.bullets.map((b, bi) => (
-                  <li
-                    key={bi}
-                    className="flex gap-3 border-t hairline pt-3 first:border-t-0 first:pt-0"
-                  >
-                    <span className="text-ink/40">—</span>
-                    {b}
-                  </li>
-                ))}
-              </ul>
-            </div>
+              <div className={`min-h-[14rem] min-w-0 md:min-h-0 md:h-full ${i % 2 === 1 ? "md:order-1" : ""}`}>
+                <div className="h-full overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={cap.image || CAPABILITY_DEFAULT_IMAGES[i] || ""}
+                    alt={cap.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </div>
+            </article>
           </div>
         </section>
       ))}

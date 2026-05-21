@@ -20,7 +20,7 @@ export const homeContentSchema = z.object({
           "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85",
         ),
       primaryCta: ctaSchema.default({ label: "What we do", href: "/capabilities" }),
-      secondaryCta: ctaSchema.default({ label: "Start a project", href: "/start" }),
+      secondaryCta: ctaSchema.default({ label: "Contact Us", href: "/contact" }),
     })
     .prefault({}),
 
@@ -111,14 +111,14 @@ export const homeContentSchema = z.object({
       email: z.string().max(200).default("saif@lineamode.com"),
       phone: z.string().max(80).default("+92 300 1234567"),
       studio: z.string().max(120).default("Islamabad, Pakistan"),
-      primaryCta: ctaSchema.default({ label: "Brief the studio", href: "/start" }),
+      primaryCta: ctaSchema.default({ label: "Contact Us", href: "/contact" }),
       secondaryCta: ctaSchema.default({ label: "Contact", href: "/contact" }),
     })
     .prefault({}),
 
   capabilities: z
     .object({
-      enabled: z.boolean().default(true),
+      enabled: z.boolean().default(false),
       headline: z.string().max(120).default("One studio."),
       headlineItalic: z.string().max(120).default("Every step in motion."),
       items: z
@@ -146,7 +146,7 @@ export const HOME_CONTENT_DEFAULTS: HomeContent = {
     image:
       "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85",
     primaryCta: { label: "What we do", href: "/capabilities" },
-    secondaryCta: { label: "Start a project", href: "/start" },
+    secondaryCta: { label: "Contact Us", href: "/contact" },
   },
   whatWeDo: {
     enabled: true,
@@ -187,11 +187,11 @@ export const HOME_CONTENT_DEFAULTS: HomeContent = {
     email: "saif@lineamode.com",
     phone: "+92 300 1234567",
     studio: "Islamabad, Pakistan",
-    primaryCta: { label: "Brief the studio", href: "/start" },
+    primaryCta: { label: "Contact Us", href: "/contact" },
     secondaryCta: { label: "Contact", href: "/contact" },
   },
   capabilities: {
-    enabled: true,
+    enabled: false,
     headline: "One studio.",
     headlineItalic: "Every step in motion.",
     items: [],

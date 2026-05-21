@@ -10,7 +10,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { FounderCard } from "@/components/sections/FounderCard";
 
-function cmsToFounder(f: { name: string; role: string; phone: string; email: string; website: string; address: string; bio: string[]; focus: string[]; pull: string; portrait: string }, index: number): Founder {
+function cmsToFounder(f: { name: string; role: string; phone: string; email: string; website: string; address: string; bio: string[]; focus: string[]; pull: string; portrait: string }, _index: number): Founder {
   return {
     slug: f.name.toLowerCase().replace(/\s+/g, "-"),
     name: f.name, role: f.role, phone: f.phone,
@@ -29,7 +29,10 @@ async function FoundersPreviewContent() {
   ]);
   const cms = parseFoundersContent(draftRow?.value ?? pubRow?.value);
   const displayFounders = cms.founders.length > 0
-    ? cms.founders.map(cmsToFounder)
+    ? [
+        ...cms.founders.map(cmsToFounder),
+        ...staticFounders.slice(cms.founders.length),
+      ]
     : staticFounders;
 
   return (

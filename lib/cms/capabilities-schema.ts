@@ -18,7 +18,7 @@ export const capabilitiesContentSchema = z.object({
   intro: z
     .object({
       eyebrow: z.string().max(80).default("Capabilities"),
-      headlineLine1: z.string().max(120).default("Five disciplines."),
+      headlineLine1: z.string().max(120).default("Four disciplines."),
       headlineLine2: z.string().max(120).default("One studio floor."),
       body: z
         .string()
@@ -70,7 +70,7 @@ export const DEFAULT_PROCESS_STEPS = [
 export const CAPABILITIES_CONTENT_DEFAULTS: CapabilitiesContent = {
   intro: {
     eyebrow: "Capabilities",
-    headlineLine1: "Five disciplines.",
+    headlineLine1: "Four disciplines.",
     headlineLine2: "One studio floor.",
     body: "Each capability is owned by a senior in-house team — not outsourced and not relabelled. The work moves between them without changing partner.",
   },

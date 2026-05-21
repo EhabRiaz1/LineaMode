@@ -9,6 +9,17 @@ import { cn } from "@/lib/utils";
 
 const CYCLE_MS = 5000;
 
+const CAPABILITY_IMAGES: Record<string, string> = {
+  "design-support":
+    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1400&q=80",
+  "textile-sourcing":
+    "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=1400&q=80",
+  production:
+    "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=1400&q=80",
+  merchandising:
+    "https://images.unsplash.com/photo-1485518882345-15568b007407?auto=format&fit=crop&w=1400&q=80",
+};
+
 type WhatWeDoCms = {
   eyebrow?: string;
   headlineLine1?: string;
@@ -32,6 +43,7 @@ export function WhatWeDoSection({
     ...c,
     title: capabilityItems?.[i]?.title ?? c.title,
     short: capabilityItems?.[i]?.short ?? c.short,
+    image: capabilityItems?.[i]?.image || CAPABILITY_IMAGES[c.slug] || "",
   }));
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { margin: "-15% 0px -15% 0px" });
@@ -43,11 +55,11 @@ export function WhatWeDoSection({
   useEffect(() => {
     if (!inView || hasManualSelection) return;
     const t = window.setTimeout(() => {
-      setActive((i) => (i + 1) % capabilities.length);
+      setActive((i) => (i + 1) % displayCapabilities.length);
       setCycleKey((k) => k + 1);
     }, CYCLE_MS);
     return () => window.clearTimeout(t);
-  }, [inView, cycleKey, active, hasManualSelection]);
+  }, [displayCapabilities.length, inView, cycleKey, active, hasManualSelection]);
 
   const onSelect = (i: number) => {
     setActive(i);
@@ -75,8 +87,8 @@ export function WhatWeDoSection({
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-4 md:gap-12">
-            <ul className="col-span-12 md:col-span-5 flex flex-col">
+        <div className="grid grid-cols-12 gap-8 md:gap-12 items-start">
+            <ul className="col-span-12 md:col-span-6 flex flex-col">
               {displayCapabilities.map((c, i) => (
                 <li key={c.slug} className="relative">
                   <button
@@ -113,15 +125,25 @@ export function WhatWeDoSection({
                   </button>
 
                   {active === i ? (
-                    <motion.p
-                      key={`mobile-${c.slug}`}
+                    <motion.div
+                      key={`details-${c.slug}`}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.45, ease: easeBrand }}
-                      className="text-h2 font-sans font-light leading-tight max-w-xl pb-6 md:hidden"
+                      className="pb-8"
                     >
-                      {c.short}
-                    </motion.p>
+                      <div className="md:hidden mb-6 aspect-square overflow-hidden bg-ink/5 ring-1 ring-ink/10">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={c.image}
+                          alt={c.title}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <p className="text-[clamp(1.45rem,1.55vw+0.95rem,2.2rem)] font-sans font-light leading-tight max-w-xl">
+                        {c.short}
+                      </p>
+                    </motion.div>
                   ) : null}
 
                   <span
@@ -146,7 +168,7 @@ export function WhatWeDoSection({
               ))}
             </ul>
 
-            <div className="hidden md:block col-span-12 md:col-span-6 md:col-start-7 relative">
+            <div className="hidden md:block col-span-12 md:col-span-5 md:col-start-8 relative">
               <motion.div
                 key={item.slug}
                 initial={{ opacity: 0, y: 12 }}
@@ -154,9 +176,14 @@ export function WhatWeDoSection({
                 transition={{ duration: 0.6, ease: easeBrand }}
                 className="md:sticky md:top-32"
               >
-                <p className="text-h2 font-sans font-light leading-tight max-w-xl">
-                  {item.short}
-                </p>
+                <div className="aspect-square overflow-hidden bg-ink/5 ring-1 ring-ink/10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
               </motion.div>
             </div>
         </div>

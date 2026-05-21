@@ -44,7 +44,14 @@ export function AboutEditor() {
       { authHeaders: authHeaders() },
     );
     if (res.ok) {
-      setContent(parseAboutContent(res.data.draft ?? res.data.published ?? ABOUT_CONTENT_DEFAULTS));
+      const parsed = parseAboutContent(res.data.draft ?? res.data.published ?? ABOUT_CONTENT_DEFAULTS);
+      if (!parsed.foundersCta.cards.length) {
+        parsed.foundersCta = {
+          ...parsed.foundersCta,
+          cards: ABOUT_CONTENT_DEFAULTS.foundersCta.cards,
+        };
+      }
+      setContent(parsed);
       setHasDraft(!!res.data.draft);
       setDirty(false);
     } else {
@@ -152,8 +159,45 @@ export function AboutEditor() {
           onChange={(v) => update({ ...content, foundersCta: { ...fcta, headlineLine2: v } })} />
         <Field label="Body" value={fcta.body} multiline rows={3}
           onChange={(v) => update({ ...content, foundersCta: { ...fcta, body: v } })} />
-        <ImagePickerField label="Photo" value={fcta.image}
-          onChange={(v) => update({ ...content, foundersCta: { ...fcta, image: v } })} />
+        <div className="space-y-3">
+          <p className="text-eyebrow text-ink/40">Founder preview cards</p>
+          {fcta.cards.map((card, i) => (
+            <div key={i} className="rounded-xl border border-[var(--hairline)] p-3 space-y-2">
+              <p className="text-label text-ink/60 font-medium">
+                Card {i + 1} — {card.name || "Untitled"}
+              </p>
+              <Field
+                label="Name"
+                value={card.name}
+                onChange={(v) => {
+                  const cards = [...fcta.cards];
+                  cards[i] = { ...cards[i], name: v };
+                  update({ ...content, foundersCta: { ...fcta, cards } });
+                }}
+              />
+              <Field
+                label="Brief description"
+                value={card.description}
+                multiline
+                rows={2}
+                onChange={(v) => {
+                  const cards = [...fcta.cards];
+                  cards[i] = { ...cards[i], description: v };
+                  update({ ...content, foundersCta: { ...fcta, cards } });
+                }}
+              />
+              <ImagePickerField
+                label="Photo"
+                value={card.portrait}
+                onChange={(v) => {
+                  const cards = [...fcta.cards];
+                  cards[i] = { ...cards[i], portrait: v };
+                  update({ ...content, foundersCta: { ...fcta, cards } });
+                }}
+              />
+            </div>
+          ))}
+        </div>
         <CtaField label="CTA button" value={fcta.cta}
           onChange={(v) => update({ ...content, foundersCta: { ...fcta, cta: v } })} />
       </SectionAccordion>

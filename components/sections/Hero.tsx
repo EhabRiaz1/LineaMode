@@ -39,7 +39,10 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
   const description = cms?.description ?? "Knitwear · Performance Polyester · Soft Wovens";
   const bottomLabel = cms?.bottomLabel ?? "Design / Development / Manufacture";
   const primaryCta = cms?.primaryCta ?? { label: "What we do", href: "/capabilities" };
-  const secondaryCta = cms?.secondaryCta ?? { label: "Start a project", href: "/start" };
+  const secondaryCta =
+    cms?.secondaryCta?.href === "/start"
+      ? { label: "Contact Us", href: "/contact" }
+      : (cms?.secondaryCta ?? { label: "Contact Us", href: "/contact" });
   const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -209,10 +212,6 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
           className="flex items-end justify-between text-label text-stone/65"
         >
           <span>{bottomLabel}</span>
-          <span className="hidden md:flex items-center gap-2">
-            Scroll
-            <span className="block h-px w-12 bg-stone/40" />
-          </span>
         </motion.div>
       </div>
     </section>

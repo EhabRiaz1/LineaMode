@@ -2,11 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Manrope, Fraunces, Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
-import { IntroLoaderGate } from "@/components/layout/IntroLoaderGate";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { GrainOverlay } from "@/components/layout/GrainOverlay";
-import { Cursor } from "@/components/layout/Cursor";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { PageTransitionGate } from "@/components/layout/PageTransitionGate";
 import { MarketingChromeGate } from "@/components/layout/MarketingChromeGate";
@@ -102,15 +100,9 @@ export default async function RootLayout({
       </head>
       <body className="bg-stone text-ink">
         <Suspense fallback={null}>
-          <IntroLoaderGate />
-        </Suspense>
-        <Suspense fallback={null}>
           <SmoothScroll />
         </Suspense>
         <GrainOverlay />
-        <Suspense fallback={null}>
-          <Cursor />
-        </Suspense>
         <Suspense fallback={null}>
           <SiteHeader visibility={visibility} />
         </Suspense>

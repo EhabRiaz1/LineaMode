@@ -22,10 +22,7 @@ const NAV = [
   },
   {
     heading: "Contact",
-    links: [
-      { href: "/contact", label: "Contact" },
-      { href: "/start", label: "Start a project" },
-    ],
+    links: [{ href: "/contact", label: "Contact Us" }],
   },
 ];
 
@@ -35,7 +32,7 @@ function FooterNavColumn({ col }: { col: (typeof NAV)[number] }) {
       <p className="text-eyebrow text-stone/60 mb-5">{col.heading}</p>
       <ul className="space-y-3">
         {col.links.map((link) => (
-          <li key={link.href}>
+          <li key={`${link.href}-${link.label}`}>
             <Link
               href={link.href}
               className="text-body text-stone/85 hover:text-stone transition-colors"
@@ -62,8 +59,8 @@ export function SiteFooter() {
         <div className="border-y border-stone/15 py-10 my-8 md:my-10 text-center">
           <p className="text-eyebrow text-stone/60 mb-6">Lineamode 2026</p>
           <p className="text-h1 leading-[0.95]">
-            From Idea
-            <span className="italic font-extralight"> to Execution.</span>
+            End to End
+            <span className="italic font-extralight"> Apparel Partners.</span>
           </p>
         </div>
 
@@ -75,11 +72,11 @@ export function SiteFooter() {
               Design, product development and manufacturing in one studio.
             </p>
             <p className="mt-6 text-label text-stone/60">
-              1st Floor, NESPAK House,
+              Intermoda Brands PVT Limited,
               <br />
-              G-5/2, Attaturk Avenue,
+              7.5 KM Main Raiwind Road,
               <br />
-              Islamabad, Pakistan.
+              Lahore, Pakistan.
             </p>
           </div>
 
@@ -102,7 +99,7 @@ export function SiteFooter() {
 
         <div className="mt-20 pt-8 border-t border-stone/15 flex flex-col md:flex-row gap-4 justify-between text-label text-stone/60">
           <p>© <CopyrightYear /> Lineamode Apparel. All rights reserved.</p>
-          <p>Design-led apparel manufacturing · Islamabad, Pakistan</p>
+          <p>Design-led apparel manufacturing · Lahore, Pakistan</p>
         </div>
       </div>
 

@@ -5,6 +5,12 @@ const ctaSchema = z.object({
   href: z.string().max(2048),
 });
 
+const founderPreviewCardSchema = z.object({
+  name: z.string().max(120),
+  description: z.string().max(300),
+  portrait: z.string().max(2048).default(""),
+});
+
 export const aboutContentSchema = z.object({
   intro: z
     .object({
@@ -43,8 +49,8 @@ export const aboutContentSchema = z.object({
   foundersCta: z
     .object({
       eyebrow: z.string().max(80).default("Founders"),
-      headlineLine1: z.string().max(120).default("Two founders."),
-      headlineLine2: z.string().max(120).default("One studio."),
+      headlineLine1: z.string().max(120).default("Four Founders."),
+      headlineLine2: z.string().max(120).default("One Studio."),
       body: z
         .string()
         .max(400)
@@ -57,6 +63,36 @@ export const aboutContentSchema = z.object({
         .default(
           "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1600&q=80",
         ),
+      cards: z.array(founderPreviewCardSchema).default([
+        {
+          name: "Saif Ahmed",
+          description:
+            "Commercial strategy, mill relationships, and long-term partnerships for growing apparel brands.",
+          portrait:
+            "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1200&q=80",
+        },
+        {
+          name: "Wasay Hasan",
+          description:
+            "Design, product development, and critical-path discipline from concept through production.",
+          portrait:
+            "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=1200&q=80",
+        },
+        {
+          name: "Founder Three",
+          description:
+            "Product and sourcing leadership across fabric development, vendor coordination, and quality.",
+          portrait:
+            "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80",
+        },
+        {
+          name: "Founder Four",
+          description:
+            "Operations and merchandising support that keeps timelines, costing, and delivery aligned.",
+          portrait:
+            "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=1200&q=80",
+        },
+      ]),
       cta: ctaSchema.default({ label: "Meet the founders →", href: "/founders" }),
     })
     .prefault({}),
@@ -108,12 +144,42 @@ export const ABOUT_CONTENT_DEFAULTS: AboutContent = {
   },
   foundersCta: {
     eyebrow: "Founders",
-    headlineLine1: "Two founders.",
-    headlineLine2: "One studio.",
+    headlineLine1: "Four Founders.",
+    headlineLine2: "One Studio.",
     body: "Three decades in the global textile industry — working alongside the most exacting brands and manufacturers in fashion — taught the studio one thing above all: brands grow when their partner owns the long-term, not just the next purchase order.",
     image:
       "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1600&q=80",
-    cta: { label: "Meet the founders →", href: "/founders" },
+    cards: [
+      {
+        name: "Saif Ahmed",
+        description:
+          "Commercial strategy, mill relationships, and long-term partnerships for growing apparel brands.",
+        portrait:
+          "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1200&q=80",
+      },
+      {
+        name: "Wasay Hasan",
+        description:
+          "Design, product development, and critical-path discipline from concept through production.",
+        portrait:
+          "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=1200&q=80",
+      },
+      {
+        name: "Founder Three",
+        description:
+          "Product and sourcing leadership across fabric development, vendor coordination, and quality.",
+        portrait:
+          "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80",
+      },
+      {
+        name: "Founder Four",
+        description:
+          "Operations and merchandising support that keeps timelines, costing, and delivery aligned.",
+        portrait:
+          "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=1200&q=80",
+      },
+    ],
+    cta: { label: "Learn more about us", href: "/founders" },
   },
   hq: {
     eyebrow: "Studio",

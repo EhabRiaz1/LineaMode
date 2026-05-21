@@ -11,7 +11,7 @@ import { getFoundersContent } from "@/lib/cms";
 export const metadata = pageMetadata({
   title: "Founders",
   description:
-    "Meet the founders of Lineamode Apparel — Saif Ahmed and Wasay Hasan. Three decades of textile know-how directing one studio.",
+    "Meet the founders of Lineamode Apparel. Textile, product, sourcing, and operations experience directing one studio.",
   path: "/founders",
 });
 
@@ -32,7 +32,12 @@ function cmsToFounder(f: {
 export default async function FoundersPage() {
   const cms = await getFoundersContent();
   const displayFounders: Founder[] =
-    cms.founders.length > 0 ? cms.founders.map(cmsToFounder) : staticFounders;
+    cms.founders.length > 0
+      ? [
+          ...cms.founders.map(cmsToFounder),
+          ...staticFounders.slice(cms.founders.length),
+        ]
+      : staticFounders;
 
   return (
     <>

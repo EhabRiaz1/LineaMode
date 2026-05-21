@@ -16,14 +16,31 @@ const ContactSchema = z.object({
 
 export type ContactState =
   | { status: "idle" }
-  | { status: "error"; errors: Partial<Record<keyof z.infer<typeof ContactSchema>, string>>; message?: string }
+  | {
+      status: "error";
+      errors: Partial<Record<keyof z.infer<typeof ContactSchema>, string>>;
+      message?: string;
+      values?: Record<string, string>;
+    }
   | { status: "success" };
+
+function formValuesFromRaw(raw: Record<string, FormDataEntryValue>) {
+  return {
+    name: String(raw.name ?? ""),
+    brand: String(raw.brand ?? ""),
+    email: String(raw.email ?? ""),
+    productType: String(raw.productType ?? ""),
+    moq: String(raw.moq ?? ""),
+    message: String(raw.message ?? ""),
+  };
+}
 
 export async function submitContact(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
   const raw = Object.fromEntries(formData.entries());
+  const values = formValuesFromRaw(raw);
   const parsed = ContactSchema.safeParse(raw);
 
   if (!parsed.success) {
@@ -32,7 +49,7 @@ export async function submitContact(
       const key = issue.path[0]?.toString();
       if (key && !errors[key]) errors[key] = issue.message;
     }
-    return { status: "error", errors };
+    return { status: "error", errors, values };
   }
 
   // Honeypot trip — silently succeed so bots don't learn anything.
@@ -78,6 +95,7 @@ export async function submitContact(
       status: "error",
       errors: {},
       message: "Something went wrong sending your brief. Please email saif@lineamode.com directly.",
+      values,
     };
   }
 }

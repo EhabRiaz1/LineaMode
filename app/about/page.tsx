@@ -4,6 +4,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { getAboutContent } from "@/lib/cms";
+import { ABOUT_CONTENT_DEFAULTS } from "@/lib/cms/about-schema";
 
 export const metadata = pageMetadata({
   title: "About",
@@ -14,6 +15,21 @@ export const metadata = pageMetadata({
 
 export default async function AboutPage() {
   const cms = await getAboutContent();
+  const founderCards = cms.foundersCta.cards.length
+    ? cms.foundersCta.cards
+    : ABOUT_CONTENT_DEFAULTS.foundersCta.cards;
+  const foundersCtaLabel = cms.foundersCta.cta.label.toLowerCase().includes("meet")
+    ? "Learn more about us"
+    : cms.foundersCta.cta.label;
+  const foundersHeadlineLine1 = cms.foundersCta.headlineLine1
+    .toLowerCase()
+    .includes("two founders")
+    ? "Four Founders."
+    : cms.foundersCta.headlineLine1;
+  const foundersHeadlineLine2 =
+    cms.foundersCta.headlineLine2.toLowerCase() === "one studio."
+      ? "One Studio."
+      : cms.foundersCta.headlineLine2;
 
   return (
     <>
@@ -69,39 +85,68 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Founders CTA */}
-      <section className="relative bg-[var(--color-graphite-blue)] text-stone overflow-hidden min-h-[70vh] flex items-center">
+      {/* Founders */}
+      <section className="relative bg-[var(--color-graphite-blue)] text-stone overflow-hidden">
         <GridPattern className="absolute inset-0 text-stone opacity-[0.07]" density={48} disruption />
         <div
           aria-hidden
           className="absolute -top-40 -left-32 h-[420px] w-[420px] rounded-full bg-stone/10 blur-3xl"
         />
-        <div className="shell relative grid grid-cols-12 gap-6 md:gap-12 items-center py-24 md:py-32 w-full">
-          <div className="col-span-12 md:col-span-5">
-            <div className="aspect-[4/5] overflow-hidden ring-1 ring-stone/15 [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={cms.foundersCta.image}
-                alt="The founders of Lineamode Apparel"
-                className="w-full h-full object-cover"
-              />
+        <div className="shell relative py-24 md:py-32">
+          <div className="grid grid-cols-12 gap-6 md:gap-10 items-end border-b border-stone/20 pb-10 md:pb-12">
+            <div className="col-span-12 md:col-span-5">
+              <Eyebrow number="03" className="text-stone/70">
+                {cms.foundersCta.eyebrow}
+              </Eyebrow>
+              <h2 className="mt-6 text-h1 leading-[1.02] md:text-[clamp(2rem,2.5vw,3.5rem)]">
+                <span className="block whitespace-nowrap">{foundersHeadlineLine1}</span>
+                <span className="block whitespace-nowrap italic font-extralight">
+                  {foundersHeadlineLine2}
+                </span>
+              </h2>
+            </div>
+            <div className="col-span-12 md:col-span-6 md:col-start-7">
+              <p className="text-body text-stone/80 max-w-md md:ml-auto">{cms.foundersCta.body}</p>
             </div>
           </div>
-          <div className="col-span-12 md:col-span-6 md:col-start-7">
-            <Eyebrow number="03" className="text-stone/70">
-              {cms.foundersCta.eyebrow}
-            </Eyebrow>
-            <h2 className="text-display leading-[0.95] mt-6">
-              {cms.foundersCta.headlineLine1}
-              <br />
-              <span className="italic font-extralight">{cms.foundersCta.headlineLine2}</span>
-            </h2>
-            <p className="text-body text-stone/80 max-w-md mt-8">{cms.foundersCta.body}</p>
-            <div className="mt-10">
-              <ButtonLink href={cms.foundersCta.cta.href} variant="ink">
-                {cms.foundersCta.cta.label}
-              </ButtonLink>
+
+          <div className="relative mt-12 md:mt-14 -mr-[var(--shell-pad-x)]">
+            <div className="overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex w-max gap-4 md:gap-5 pr-[var(--shell-pad-x)]">
+                {founderCards.map((founder, index) => (
+                  <article
+                    key={founder.name}
+                    className="group snap-start shrink-0 w-[min(68vw,240px)] sm:w-[260px] md:w-[300px] lg:w-[320px]"
+                  >
+                    <div className="relative aspect-square overflow-hidden bg-stone/10 ring-1 ring-stone/20 transition-[box-shadow,transform] duration-500 group-hover:-translate-y-1 group-hover:ring-stone/35 group-hover:shadow-[0_24px_60px_-40px_rgba(0,0,0,0.65)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={founder.portrait}
+                        alt={founder.name}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/90 via-ink/45 to-transparent px-4 pb-4 pt-16 md:px-5 md:pb-5 md:pt-20">
+                        <p className="text-eyebrow text-stone/50 mb-2">
+                          / {String(index + 1).padStart(2, "0")}
+                        </p>
+                        <h3 className="font-[family-name:var(--font-display)] text-[clamp(1.2rem,1.5vw,1.65rem)] font-light leading-[1.05] tracking-[-0.02em]">
+                          {founder.name}
+                        </h3>
+                        <p className="mt-2 font-[family-name:var(--font-display)] text-[clamp(0.82rem,0.95vw,0.95rem)] font-extralight italic leading-snug text-stone/85 line-clamp-2">
+                          {founder.description}
+                        </p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
+          </div>
+
+          <div className="mt-12 md:mt-14 flex justify-center md:justify-start">
+            <ButtonLink href={cms.foundersCta.cta.href} variant="ink">
+              {foundersCtaLabel}
+            </ButtonLink>
           </div>
         </div>
       </section>

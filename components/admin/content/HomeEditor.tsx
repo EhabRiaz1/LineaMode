@@ -686,25 +686,9 @@ export function HomeEditor() {
                   value={c.phone}
                   onChange={(v) => update({ ...content, contactCta: { ...c, phone: v } })}
                 />
-                <Field
-                  label="Studio location"
-                  value={c.studio}
-                  onChange={(v) => update({ ...content, contactCta: { ...c, studio: v } })}
-                />
-                <CtaField
-                  label="Primary CTA"
-                  value={c.primaryCta}
-                  onChange={(v) =>
-                    update({ ...content, contactCta: { ...c, primaryCta: v } })
-                  }
-                />
-                <CtaField
-                  label="Secondary CTA"
-                  value={c.secondaryCta}
-                  onChange={(v) =>
-                    update({ ...content, contactCta: { ...c, secondaryCta: v } })
-                  }
-                />
+                <p className="text-label text-ink/45">
+                  The live section embeds the contact form and opens email/phone in blur modals from the left column.
+                </p>
               </>
             )}
           </SectionAccordion>

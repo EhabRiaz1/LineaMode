@@ -8,7 +8,6 @@ import { ProductPreview } from "@/components/sections/ProductPreview";
 import { IdentitySection } from "@/components/sections/IdentitySection";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
 import { ContactCTA } from "@/components/sections/ContactCTA";
-import { CapabilitiesRail } from "@/components/sections/CapabilitiesRail";
 
 async function HomePreviewContent() {
   await connection();
@@ -38,9 +37,6 @@ async function HomePreviewContent() {
         {cms.identity.enabled && <IdentitySection cms={cms.identity} />}
         {cms.journal.enabled && <JournalTeaser cms={cms.journal} />}
         {cms.contactCta.enabled && <ContactCTA cms={cms.contactCta} />}
-        {cms.capabilities.enabled && (
-          <CapabilitiesRail cms={cms.capabilities} items={cms.capabilities.items} />
-        )}
       </div>
     </>
   );
