@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -5,11 +6,11 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { getJournalEntry, listJournal } from "@/lib/cms";
 import { pageMetadata } from "@/lib/seo/metadata";
 
-export async function generateStaticParams() {
-  const posts = await listJournal();
-  return posts.map((p) => ({ slug: p.slug }));
-}
-
+// Journal entries live entirely in Supabase and aren't known at build time,
+// so we don't enumerate them with `generateStaticParams` (which, under Cache
+// Components, must return at least one param). Instead the page renders a
+// static shell at build time and resolves the runtime `slug` inside a Suspense
+// boundary; resolved posts are persisted to disk after their first request.
 export async function generateMetadata({
   params,
 }: {
@@ -25,7 +26,38 @@ export async function generateMetadata({
   });
 }
 
-export default async function JournalPostPage({
+export default function JournalPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  return (
+    <Suspense fallback={<JournalPostFallback />}>
+      <JournalPostContent params={params} />
+    </Suspense>
+  );
+}
+
+function JournalPostFallback() {
+  return (
+    <article className="bg-stone text-ink min-h-screen">
+      <header className="relative pt-40 pb-24">
+        <div className="shell">
+          <div className="h-3 w-28 bg-ink/10 rounded mb-12 animate-pulse" />
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 md:col-span-8 space-y-6">
+              <div className="h-3 w-40 bg-ink/10 rounded animate-pulse" />
+              <div className="h-12 w-full max-w-2xl bg-ink/10 rounded animate-pulse" />
+              <div className="h-4 w-full max-w-xl bg-ink/10 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </header>
+    </article>
+  );
+}
+
+async function JournalPostContent({
   params,
 }: {
   params: Promise<{ slug: string }>;
