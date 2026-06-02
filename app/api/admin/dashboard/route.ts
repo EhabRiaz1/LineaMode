@@ -6,12 +6,14 @@ const PIPELINE_LABELS: Record<PipelineType, string> = {
   design_idea: "From an idea",
   design_scratch: "From scratch",
   manufacture_existing: "From a CAD",
+  contact_form: "Contact form",
 };
 
 const PIPELINE_COLORS: Record<PipelineType, string> = {
   design_idea: "bg-terracotta",
   design_scratch: "bg-moss",
   manufacture_existing: "bg-graphite",
+  contact_form: "bg-ink/40",
 };
 
 const FUNNEL_COLORS = ["bg-ink/15", "bg-ink/30", "bg-ink/50", "bg-terracotta/60", "bg-terracotta"];

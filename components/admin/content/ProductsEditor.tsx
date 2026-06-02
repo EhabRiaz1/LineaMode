@@ -4,14 +4,32 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { adminFetch } from "@/lib/admin/api";
 import {
-  PRODUCTS_CONTENT_DEFAULTS, parseProductsContent,
-  type ProductsContent, type ProductItem,
+  PRODUCTS_CONTENT_DEFAULTS,
+  parseProductsContent,
+  type ProductsContent,
+  type ProductCard,
 } from "@/lib/cms/products-schema";
-import { products as staticProducts } from "@/content/products";
 import {
-  saveProductsContentDraft, publishProductsContent, discardProductsContentDraft,
+  PRODUCT_CATEGORIES,
+  SEED_PRODUCT_CATALOG,
+  type ProductCategorySlug,
+} from "@/content/product-catalog";
+import {
+  saveProductsContentDraft,
+  publishProductsContent,
+  discardProductsContentDraft,
 } from "@/app/admin/(console)/content/_actions";
-import { Field, ImagePickerField, ListField, CtaField, SectionAccordion, EditorShell } from "./EditorFields";
+import {
+  Field,
+  ImagePickerField,
+  CtaField,
+  SectionAccordion,
+  EditorShell,
+} from "./EditorFields";
+
+function newProductId(category: ProductCategorySlug): string {
+  return `${category}-${crypto.randomUUID().slice(0, 8)}`;
+}
 
 export function ProductsEditor() {
   const { token, authHeaders, status } = useAdminSession();
@@ -31,18 +49,20 @@ export function ProductsEditor() {
   const load = useCallback(async () => {
     if (status !== "authenticated") return;
     const res = await adminFetch<{ published: ProductsContent | null; draft: ProductsContent | null }>(
-      "/api/admin/cms/products", { authHeaders: authHeaders() }
+      "/api/admin/cms/products",
+      { authHeaders: authHeaders() },
     );
     if (res.ok) {
       const parsed = parseProductsContent(res.data.draft ?? res.data.published ?? PRODUCTS_CONTENT_DEFAULTS);
-      if (!parsed.products.length) {
-        parsed.products = staticProducts.map(p => ({
-          title: p.title, tagline: p.tagline, description: p.description,
-          highlights: [...p.highlights], hero: p.hero, detail: p.detail,
-          moq: "From 200 pcs", leadTime: "45–60 days",
+      if (!parsed.catalog.length) {
+        parsed.catalog = SEED_PRODUCT_CATALOG.map((item) => ({
+          ...item,
+          featured: item.featured ?? false,
         }));
       }
-      setContent(parsed); setHasDraft(!!res.data.draft); setDirty(false);
+      setContent(parsed);
+      setHasDraft(!!res.data.draft);
+      setDirty(false);
     } else setError(res.error);
     setLoading(false);
   }, [authHeaders, status]);
@@ -59,44 +79,92 @@ export function ProductsEditor() {
       if (!token) return;
       setPreviewSaving(true);
       const r = await saveProductsContentDraft(token, content);
-      if (r.ok) { setHasDraft(true); setPreviewNonce(n => n + 1); }
+      if (r.ok) {
+        setHasDraft(true);
+        setPreviewNonce((n) => n + 1);
+      }
       setPreviewSaving(false);
     }, 700);
-    return () => { if (timer.current) clearTimeout(timer.current); };
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, dirty]);
 
-  const update = useCallback((next: ProductsContent) => { setContent(next); setDirty(true); }, []);
+  const update = useCallback((next: ProductsContent) => {
+    setContent(next);
+    setDirty(true);
+  }, []);
 
-  const updateProduct = (index: number, patch: Partial<ProductItem>) => {
-    const prods = [...content.products];
-    prods[index] = { ...prods[index], ...patch };
-    update({ ...content, products: prods });
+  const updateCatalogItem = (id: string, patch: Partial<ProductCard>) => {
+    const catalog = content.catalog.map((item) =>
+      item.id === id ? { ...item, ...patch } : item,
+    );
+    update({ ...content, catalog });
+  };
+
+  const addProduct = (category: ProductCategorySlug) => {
+    const catalog = [
+      ...content.catalog,
+      {
+        id: newProductId(category),
+        category,
+        title: "New product",
+        image: "",
+        hoverImage: "",
+        featured: false,
+      },
+    ];
+    update({ ...content, catalog });
+  };
+
+  const removeProduct = (id: string) => {
+    update({ ...content, catalog: content.catalog.filter((item) => item.id !== id) });
   };
 
   const onSaveDraft = async () => {
     if (timer.current) clearTimeout(timer.current);
-    setSaving(true); setError(null);
+    setSaving(true);
+    setError(null);
     const r = await saveProductsContentDraft(token, content);
     setSaving(false);
-    if (!r.ok) { setError(r.error); return; }
-    setDirty(false); setHasDraft(true); setPreviewNonce(n => n + 1);
+    if (!r.ok) {
+      setError(r.error);
+      return;
+    }
+    setDirty(false);
+    setHasDraft(true);
+    setPreviewNonce((n) => n + 1);
   };
 
   const onPublish = async () => {
     if (timer.current) clearTimeout(timer.current);
-    setPublishing(true); setError(null);
-    if (dirty) { const s = await saveProductsContentDraft(token, content); if (!s.ok) { setError(s.error); setPublishing(false); return; } }
+    setPublishing(true);
+    setError(null);
+    if (dirty) {
+      const s = await saveProductsContentDraft(token, content);
+      if (!s.ok) {
+        setError(s.error);
+        setPublishing(false);
+        return;
+      }
+    }
     const r = await publishProductsContent(token);
     setPublishing(false);
-    if (!r.ok) { setError(r.error); return; }
-    setDirty(false); setHasDraft(false); setPreviewNonce(n => n + 1);
+    if (!r.ok) {
+      setError(r.error);
+      return;
+    }
+    setDirty(false);
+    setHasDraft(false);
+    setPreviewNonce((n) => n + 1);
   };
 
   const onDiscard = async () => {
     setDiscarding(true);
     await discardProductsContentDraft(token);
-    setDiscarding(false); void load();
+    setDiscarding(false);
+    void load();
   };
 
   if (loading) return <p className="text-body text-ink/55">Loading editor…</p>;
@@ -108,60 +176,132 @@ export function ProductsEditor() {
     <EditorShell
       title="Products"
       backHref="/admin/content/pages"
-      hasDraft={hasDraft} dirty={dirty} saving={saving} publishing={publishing}
-      discarding={discarding} error={error}
-      previewSrc="/admin/preview/products" previewSaving={previewSaving}
-      previewNonce={previewNonce} liveSiteHref="/products"
+      hasDraft={hasDraft}
+      dirty={dirty}
+      saving={saving}
+      publishing={publishing}
+      discarding={discarding}
+      error={error}
+      previewSrc="/admin/preview/products"
+      previewSaving={previewSaving}
+      previewNonce={previewNonce}
+      liveSiteHref="/products"
       fullPreviewHref="/admin/preview/products"
-      onSaveDraft={onSaveDraft} onPublish={onPublish} onDiscard={onDiscard}
+      onSaveDraft={onSaveDraft}
+      onPublish={onPublish}
+      onDiscard={onDiscard}
     >
-      {/* Intro */}
       <SectionAccordion id="intro" label="Intro" selected={selected} onSelect={setSelected}>
-        <Field label="Eyebrow" value={intro.eyebrow}
-          onChange={(v) => update({ ...content, intro: { ...intro, eyebrow: v } })} />
-        <Field label="Headline" value={intro.headline}
-          onChange={(v) => update({ ...content, intro: { ...intro, headline: v } })} />
+        <p className="text-label text-ink/55">
+          Toggle &ldquo;Featured on homepage&rdquo; on any product below to show it
+          in the homepage product rail.
+        </p>
+        <Field
+          label="Eyebrow"
+          value={intro.eyebrow}
+          onChange={(v) => update({ ...content, intro: { ...intro, eyebrow: v } })}
+        />
+        <Field
+          label="Headline"
+          value={intro.headline}
+          onChange={(v) => update({ ...content, intro: { ...intro, headline: v } })}
+        />
+        <ImagePickerField
+          label="Hero image"
+          value={intro.image}
+          onChange={(v) => update({ ...content, intro: { ...intro, image: v } })}
+        />
       </SectionAccordion>
 
-      {/* Product blocks */}
-      {content.products.map((p, i) => (
-        <SectionAccordion
-          key={i}
-          id={`product-${i}`}
-          label={`${String(i + 1).padStart(2, "0")} / ${p.title || `Product ${i + 1}`}`}
-          selected={selected} onSelect={setSelected}
-        >
-          <Field label="Title" value={p.title} onChange={(v) => updateProduct(i, { title: v })} />
-          <Field label="Tagline (top-right label)" value={p.tagline}
-            onChange={(v) => updateProduct(i, { tagline: v })} />
-          <Field label="Description" value={p.description} multiline rows={3}
-            onChange={(v) => updateProduct(i, { description: v })} />
-          <ImagePickerField label="Hero image" value={p.hero}
-            onChange={(v) => updateProduct(i, { hero: v })} />
-          <ImagePickerField label="Hover / detail image" value={p.detail}
-            onChange={(v) => updateProduct(i, { detail: v })} />
-          <ListField label="Highlight tags" values={p.highlights}
-            placeholder="e.g. Jersey basics"
-            onChange={(v) => updateProduct(i, { highlights: v })} />
-          <Field label="MOQ" value={p.moq} placeholder="From 200 pcs"
-            onChange={(v) => updateProduct(i, { moq: v })} />
-          <Field label="Lead time" value={p.leadTime} placeholder="45–60 days"
-            onChange={(v) => updateProduct(i, { leadTime: v })} />
-        </SectionAccordion>
-      ))}
+      {PRODUCT_CATEGORIES.map((category) => {
+        const items = content.catalog.filter((item) => item.category === category.slug);
+        return (
+          <SectionAccordion
+            key={category.slug}
+            id={`catalog-${category.slug}`}
+            label={category.title}
+            selected={selected}
+            onSelect={setSelected}
+          >
+            {items.map((item, i) => (
+              <div
+                key={item.id}
+                className="rounded-xl border border-[var(--hairline)] p-3 space-y-2 mb-3"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-eyebrow text-ink/40">
+                    {String(i + 1).padStart(2, "0")} / Product
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => removeProduct(item.id)}
+                    className="text-label text-ink/45 hover:text-terracotta px-2 shrink-0"
+                  >
+                    ✕ Delete
+                  </button>
+                </div>
+                <Field
+                  label="Title"
+                  value={item.title}
+                  onChange={(v) => updateCatalogItem(item.id, { title: v })}
+                />
+                <ImagePickerField
+                  label="Photo"
+                  value={item.image}
+                  onChange={(v) => updateCatalogItem(item.id, { image: v })}
+                />
+                <ImagePickerField
+                  label="Hover photo (alternate product)"
+                  value={item.hoverImage ?? ""}
+                  onChange={(v) => updateCatalogItem(item.id, { hoverImage: v })}
+                />
+                <label className="flex items-center gap-2.5 rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!item.featured}
+                    onChange={(e) =>
+                      updateCatalogItem(item.id, { featured: e.target.checked })
+                    }
+                    className="size-4 rounded border-[var(--hairline)] accent-ink"
+                  />
+                  <span className="text-label text-ink/85">Featured on homepage</span>
+                </label>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => addProduct(category.slug)}
+              className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+            >
+              + Add product
+            </button>
+          </SectionAccordion>
+        );
+      })}
 
-      {/* CTA */}
       <SectionAccordion id="cta" label="Closing CTA" selected={selected} onSelect={setSelected}>
-        <Field label="Headline — line 1" value={cta.headlineLine1}
-          onChange={(v) => update({ ...content, cta: { ...cta, headlineLine1: v } })} />
-        <Field label="Headline — line 2 (italic)" value={cta.headlineLine2}
-          onChange={(v) => update({ ...content, cta: { ...cta, headlineLine2: v } })} />
-        <Field label="Body" value={cta.body} multiline rows={3}
-          onChange={(v) => update({ ...content, cta: { ...cta, body: v } })} />
-        <CtaField label="Primary CTA" value={cta.primaryCta}
-          onChange={(v) => update({ ...content, cta: { ...cta, primaryCta: v } })} />
-        <CtaField label="Secondary CTA" value={cta.secondaryCta}
-          onChange={(v) => update({ ...content, cta: { ...cta, secondaryCta: v } })} />
+        <Field
+          label="Headline — line 1"
+          value={cta.headlineLine1}
+          onChange={(v) => update({ ...content, cta: { ...cta, headlineLine1: v } })}
+        />
+        <Field
+          label="Headline — line 2 (italic)"
+          value={cta.headlineLine2}
+          onChange={(v) => update({ ...content, cta: { ...cta, headlineLine2: v } })}
+        />
+        <Field
+          label="Body"
+          value={cta.body}
+          multiline
+          rows={3}
+          onChange={(v) => update({ ...content, cta: { ...cta, body: v } })}
+        />
+        <CtaField
+          label="Contact CTA"
+          value={cta.contactCta}
+          onChange={(v) => update({ ...content, cta: { ...cta, contactCta: v } })}
+        />
       </SectionAccordion>
     </EditorShell>
   );

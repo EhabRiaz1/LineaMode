@@ -95,7 +95,7 @@ export function InboxFeed() {
         <div className="rounded-3xl border border-dashed border-[var(--hairline)] px-6 py-16 text-center text-ink/55">
           <p className="text-h3 text-ink">All quiet.</p>
           <p className="text-body mt-2">
-            New intakes from /start will land here within seconds of submission.
+            New intakes from /start and contact form briefs land here within seconds of submission.
           </p>
         </div>
       )}

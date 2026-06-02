@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 const founderSchema = z.object({
   name: z.string().max(120),
@@ -42,7 +43,7 @@ export const foundersContentSchema = z.object({
           "Both founders sit on every project pitch. Tell us what you're building and we'll come back inside two working days.",
         ),
       ctaLabel: z.string().max(80).default("Open the brief form"),
-      ctaHref: z.string().max(2048).default("/contact"),
+      ctaHref: z.string().max(2048).default(CONTACT_FORM_HREF),
     })
     .prefault({}),
 });
@@ -64,7 +65,7 @@ export const FOUNDERS_CONTENT_DEFAULTS: FoundersContent = {
     headlineLine2: "directly.",
     body: "Both founders sit on every project pitch. Tell us what you're building and we'll come back inside two working days.",
     ctaLabel: "Open the brief form",
-    ctaHref: "/contact",
+    ctaHref: CONTACT_FORM_HREF,
   },
 };
 

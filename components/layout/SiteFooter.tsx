@@ -3,6 +3,7 @@ import Image from "next/image";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { CopyrightYear } from "@/components/layout/CopyrightYear";
+import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 const NAV = [
   {
@@ -22,7 +23,7 @@ const NAV = [
   },
   {
     heading: "Contact",
-    links: [{ href: "/contact", label: "Contact Us" }],
+    links: [{ href: CONTACT_FORM_HREF, label: "Contact Us" }],
   },
 ];
 

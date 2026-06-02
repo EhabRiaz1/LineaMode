@@ -3,6 +3,7 @@ import { SplitText } from "@/components/ui/SplitText";
 import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 export const metadata = pageMetadata({
     title: "Sustainability",
@@ -150,7 +151,7 @@ export default function SustainabilityPage() {
             </div>
 
             <div className="mt-16 flex justify-end">
-              <ButtonLink href="/contact" variant="ink">
+              <ButtonLink href={CONTACT_FORM_HREF} variant="ink">
                 Audit our supply chain
               </ButtonLink>
             </div>

@@ -4,6 +4,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { capabilities } from "@/content/capabilities";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 export const metadata = pageMetadata({
     title: "Design",
@@ -216,7 +217,7 @@ export default function DesignPage() {
               you where the work is and take it to a production-ready line.
             </p>
             <div className="mt-12 flex flex-wrap gap-3">
-              <ButtonLink href="/contact" variant="ink">
+              <ButtonLink href={CONTACT_FORM_HREF} variant="ink">
                 Brief the studio
               </ButtonLink>
               <ButtonLink href="/capabilities" variant="ghost">

@@ -16,6 +16,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { easeBrand } from "@/lib/motion/easings";
+import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 const HERO_IMAGE_DEFAULT =
   "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85";
@@ -41,8 +42,8 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
   const primaryCta = cms?.primaryCta ?? { label: "What we do", href: "/capabilities" };
   const secondaryCta =
     cms?.secondaryCta?.href === "/start"
-      ? { label: "Contact Us", href: "/contact" }
-      : (cms?.secondaryCta ?? { label: "Contact Us", href: "/contact" });
+      ? { label: "Contact Us", href: CONTACT_FORM_HREF }
+      : (cms?.secondaryCta ?? { label: "Contact Us", href: CONTACT_FORM_HREF });
   const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
 

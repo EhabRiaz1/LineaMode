@@ -72,6 +72,11 @@ export class UnauthorizedError extends Error {
   }
 }
 
-export const VALID_PIPELINE_TYPES: PipelineType[] = ["design_idea", "design_scratch", "manufacture_existing"];
+export const VALID_PIPELINE_TYPES: PipelineType[] = [
+  "design_idea",
+  "design_scratch",
+  "manufacture_existing",
+  "contact_form",
+];
 export const VALID_PROJECT_STATUSES: ProjectStatus[] = ["draft", "reviewing", "quoted", "in_progress", "delivered", "archived"];
 export const VALID_STEP_STATES: StepState[] = ["pending", "in_progress", "blocked", "done"];

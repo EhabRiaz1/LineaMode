@@ -6,6 +6,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { ContactForm, ContactFormSuccess } from "@/components/sections/ContactForm";
 import { ContactQuickModal, ContactActionButtons } from "@/components/sections/ContactQuickModal";
 import { easeBrand } from "@/lib/motion/easings";
+import { CONTACT_CTA_ID, getScrollOffsetForHashId } from "@/lib/navigation";
 
 type ContactCtaCms = {
   eyebrow?: string;
@@ -26,9 +27,9 @@ export function ContactCTA({ cms }: { cms?: ContactCtaCms } = {}) {
   useLayoutEffect(() => {
     if (!submitted || !sectionRef.current) return;
 
-    const headerOffset = 96;
+    const offset = getScrollOffsetForHashId(CONTACT_CTA_ID);
     const top =
-      sectionRef.current.getBoundingClientRect().top + window.scrollY - headerOffset;
+      sectionRef.current.getBoundingClientRect().top + window.scrollY - offset;
 
     window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
   }, [submitted]);
@@ -47,7 +48,7 @@ export function ContactCTA({ cms }: { cms?: ContactCtaCms } = {}) {
       <section
         ref={sectionRef}
         id="contact-cta"
-        className="relative scroll-mt-28 bg-[var(--color-terracotta)] text-stone py-32 md:py-44 overflow-hidden"
+        className="relative bg-[var(--color-terracotta)] text-stone py-32 md:py-44 overflow-hidden"
       >
         <div className="shell relative">
           <AnimatePresence mode="wait">

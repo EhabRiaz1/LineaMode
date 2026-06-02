@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 const ctaSchema = z.object({
   label: z.string().max(80),
@@ -20,7 +21,7 @@ export const homeContentSchema = z.object({
           "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85",
         ),
       primaryCta: ctaSchema.default({ label: "What we do", href: "/capabilities" }),
-      secondaryCta: ctaSchema.default({ label: "Contact Us", href: "/contact" }),
+      secondaryCta: ctaSchema.default({ label: "Contact Us", href: CONTACT_FORM_HREF }),
     })
     .prefault({}),
 
@@ -111,8 +112,8 @@ export const homeContentSchema = z.object({
       email: z.string().max(200).default("saif@lineamode.com"),
       phone: z.string().max(80).default("+92 300 1234567"),
       studio: z.string().max(120).default("Islamabad, Pakistan"),
-      primaryCta: ctaSchema.default({ label: "Contact Us", href: "/contact" }),
-      secondaryCta: ctaSchema.default({ label: "Contact", href: "/contact" }),
+      primaryCta: ctaSchema.default({ label: "Contact Us", href: CONTACT_FORM_HREF }),
+      secondaryCta: ctaSchema.default({ label: "Contact", href: CONTACT_FORM_HREF }),
     })
     .prefault({}),
 
@@ -146,7 +147,7 @@ export const HOME_CONTENT_DEFAULTS: HomeContent = {
     image:
       "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85",
     primaryCta: { label: "What we do", href: "/capabilities" },
-    secondaryCta: { label: "Contact Us", href: "/contact" },
+    secondaryCta: { label: "Contact Us", href: CONTACT_FORM_HREF },
   },
   whatWeDo: {
     enabled: true,
@@ -187,8 +188,8 @@ export const HOME_CONTENT_DEFAULTS: HomeContent = {
     email: "saif@lineamode.com",
     phone: "+92 300 1234567",
     studio: "Islamabad, Pakistan",
-    primaryCta: { label: "Contact Us", href: "/contact" },
-    secondaryCta: { label: "Contact", href: "/contact" },
+    primaryCta: { label: "Contact Us", href: CONTACT_FORM_HREF },
+    secondaryCta: { label: "Contact", href: CONTACT_FORM_HREF },
   },
   capabilities: {
     enabled: false,

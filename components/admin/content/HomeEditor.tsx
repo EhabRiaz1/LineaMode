@@ -468,73 +468,14 @@ export function HomeEditor() {
               onChange={(v) => update({ ...content, products: { ...p, enabled: v } })}
             />
             {p.enabled && (
-              <>
-                <Field
-                  label="Headline"
-                  value={p.headline}
-                  onChange={(v) => update({ ...content, products: { ...p, headline: v } })}
-                />
-                <Field
-                  label="Headline — italic continuation"
-                  value={p.headlineItalic}
-                  onChange={(v) => update({ ...content, products: { ...p, headlineItalic: v } })}
-                />
-                <Field
-                  label="Body"
-                  value={p.body}
-                  multiline
-                  onChange={(v) => update({ ...content, products: { ...p, body: v } })}
-                />
-                <div className="space-y-3 pt-1">
-                  <p className="text-eyebrow text-ink/40">Product tiles</p>
-                  {p.tiles.map((tile, i) => (
-                    <div
-                      key={i}
-                      className="rounded-xl border border-[var(--hairline)] p-3 space-y-2"
-                    >
-                      <p className="text-label text-ink/55 font-medium">
-                        {tile.title || `Tile ${i + 1}`}
-                      </p>
-                      <Field
-                        label="Product name"
-                        value={tile.title}
-                        onChange={(v) => {
-                          const tiles = [...p.tiles];
-                          tiles[i] = { ...tiles[i], title: v };
-                          update({ ...content, products: { ...p, tiles } });
-                        }}
-                      />
-                      <Field
-                        label="Caption"
-                        value={tile.caption}
-                        onChange={(v) => {
-                          const tiles = [...p.tiles];
-                          tiles[i] = { ...tiles[i], caption: v };
-                          update({ ...content, products: { ...p, tiles } });
-                        }}
-                      />
-                      <ImagePickerField
-                        label="Background image"
-                        value={tile.poster}
-                        onChange={(v) => {
-                          const tiles = [...p.tiles];
-                          tiles[i] = { ...tiles[i], poster: v };
-                          update({ ...content, products: { ...p, tiles } });
-                        }}
-                      />
-                      <Field
-                        label="Image alt text"
-                        value={tile.imageAlt}
-                        onChange={(v) => {
-                          const tiles = [...p.tiles];
-                          tiles[i] = { ...tiles[i], imageAlt: v };
-                          update({ ...content, products: { ...p, tiles } });
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </>
+              <p className="text-label text-ink/55">
+                The homepage now shows a rail of products marked “Featured” in the{" "}
+                <Link href="/admin/content/pages" className="underline hover:text-ink">
+                  Products page editor
+                </Link>
+                . There&rsquo;s nothing else to configure here besides showing or
+                hiding this section.
+              </p>
             )}
           </SectionAccordion>
 

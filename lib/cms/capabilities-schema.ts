@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 const capabilityItemSchema = z.object({
   title: z.string().max(120),
@@ -44,7 +45,7 @@ export const capabilitiesContentSchema = z.object({
         ),
       steps: z.array(processStepSchema).default([]),
       ctaLabel: z.string().max(80).default("Brief the studio"),
-      ctaHref: z.string().max(2048).default("/contact"),
+      ctaHref: z.string().max(2048).default(CONTACT_FORM_HREF),
     })
     .prefault({}),
 });
@@ -82,7 +83,7 @@ export const CAPABILITIES_CONTENT_DEFAULTS: CapabilitiesContent = {
     body: "Every project moves on the same five-step rail. Each step has an owner, a deliverable and a target date — visible to the client at all times.",
     steps: [],
     ctaLabel: "Brief the studio",
-    ctaHref: "/contact",
+    ctaHref: CONTACT_FORM_HREF,
   },
 };
 

@@ -100,6 +100,7 @@ const DEFAULT_QUESTIONS: Record<PipelineType, PipelineQuestion[]> = {
       required: true,
     },
   ],
+  contact_form: [],
 };
 
 function phoneQuestion(): PipelineQuestion {

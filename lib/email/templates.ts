@@ -12,6 +12,52 @@ const PIPELINE_LABELS: Record<IntakePayload["pipelineType"], string> = {
  * inboxes can quote it cleanly. The HTML body is a thin wrapper that adds
  * minimal editorial styling without breaking dark-mode-aware clients.
  */
+export type ContactAutoReplyData = {
+  name: string;
+  brand: string;
+  productType: string;
+  moq?: string;
+};
+
+export function contactAutoReply(data: ContactAutoReplyData) {
+  const firstName = data.name.split(/\s+/)[0] || "Friend";
+  const text = [
+    `Hi ${firstName},`,
+    "",
+    "Thanks for reaching out — your brief has landed at Lineamode.",
+    "",
+    `We've received your enquiry for ${data.brand} (${data.productType}). Someone from the founding team reads every brief by hand, and we usually reply within two working days with a few sharper questions and next steps.`,
+    data.moq ? `You mentioned an MOQ of: ${data.moq}.` : "",
+    "",
+    "If something changes between now and our reply, just write back to this email — your project is already in our queue.",
+    "",
+    "— The studio",
+    "Lineamode Apparel",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const html = `
+    <div style="font-family: 'Times New Roman', Georgia, serif; max-width: 560px; margin: 32px auto; line-height: 1.5; color: #1a1a1a;">
+      <p style="font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #999; margin: 0 0 24px;">
+        / Lineamode · Studio reply
+      </p>
+      <p>Hi ${escapeHtml(firstName)},</p>
+      <p>Thanks for reaching out — your brief has landed at Lineamode.</p>
+      <p>We've received your enquiry for <strong>${escapeHtml(data.brand)}</strong> (${escapeHtml(data.productType)}). Someone from the founding team reads every brief by hand, and we usually reply within two working days with a few sharper questions and next steps.</p>
+      ${data.moq ? `<p>You mentioned an MOQ of: <em>${escapeHtml(data.moq)}</em>.</p>` : ""}
+      <p>If something changes between now and our reply, just write back to this email — your project is already in our queue.</p>
+      <p style="margin-top: 32px;">— The studio<br/><em>Lineamode Apparel</em></p>
+    </div>
+  `;
+
+  return {
+    subject: `We have your brief, ${firstName}.`,
+    text,
+    html,
+  };
+}
+
 export function customerAutoReply(payload: IntakePayload) {
   const firstName = payload.name.split(/\s+/)[0] || "Friend";
   const text = [

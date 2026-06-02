@@ -70,6 +70,7 @@ export const PIPELINE_LABELS: Record<(typeof PIPELINE_TYPES)[number], { eyebrow:
   design_idea: { eyebrow: "01", title: "From an idea." },
   design_scratch: { eyebrow: "02", title: "From scratch." },
   manufacture_existing: { eyebrow: "03", title: "From a CAD." },
+  contact_form: { eyebrow: "—", title: "Contact form." },
 };
 
 export const startBaseSchema = sharedContact.merge(sharedNotes).extend({

@@ -2,9 +2,14 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { getServiceRoleClient } from "@/lib/supabase/client";
 import { parseHomeContent } from "@/lib/cms/home-schema";
+import {
+  parseProductsContent,
+  resolveProductCatalog,
+  getFeaturedProducts,
+} from "@/lib/cms/products-schema";
 import { Hero } from "@/components/sections/Hero";
 import { WhatWeDoSection } from "@/components/sections/WhatWeDoSection";
-import { ProductPreview } from "@/components/sections/ProductPreview";
+import { HomeProductRail } from "@/components/sections/products/HomeProductRail";
 import { IdentitySection } from "@/components/sections/IdentitySection";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
 import { ContactCTA } from "@/components/sections/ContactCTA";
@@ -13,12 +18,22 @@ async function HomePreviewContent() {
   await connection();
 
   const sb = getServiceRoleClient();
-  const [{ data: draftRow }, { data: pubRow }] = await Promise.all([
+  const [
+    { data: draftRow },
+    { data: pubRow },
+    { data: productsDraftRow },
+    { data: productsPubRow },
+  ] = await Promise.all([
     sb.from("cms_settings").select("value").eq("key", "home_content_draft").maybeSingle(),
     sb.from("cms_settings").select("value").eq("key", "home_content").maybeSingle(),
+    sb.from("cms_settings").select("value").eq("key", "products_content_draft").maybeSingle(),
+    sb.from("cms_settings").select("value").eq("key", "products_content").maybeSingle(),
   ]);
 
   const cms = parseHomeContent(draftRow?.value ?? pubRow?.value);
+  const productsCms = parseProductsContent(
+    productsDraftRow?.value ?? productsPubRow?.value,
+  );
 
   return (
     <>
@@ -33,7 +48,9 @@ async function HomePreviewContent() {
         {cms.whatWeDo.enabled && (
           <WhatWeDoSection cms={cms.whatWeDo} capabilityItems={cms.capabilities.items} />
         )}
-        {cms.products.enabled && <ProductPreview cms={cms.products} />}
+        {cms.products.enabled && (
+          <HomeProductRail products={getFeaturedProducts(resolveProductCatalog(productsCms.catalog))} />
+        )}
         {cms.identity.enabled && <IdentitySection cms={cms.identity} />}
         {cms.journal.enabled && <JournalTeaser cms={cms.journal} />}
         {cms.contactCta.enabled && <ContactCTA cms={cms.contactCta} />}

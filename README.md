@@ -45,15 +45,23 @@ The dev server listens on http://localhost:3000.
 
 ## Environment
 
+Copy `.env.local.example` to `.env.local` (or `.env`). Both work in Next.js dev;
+**restart the dev server** after adding or changing env vars.
+
 ```ini
-RESEND_API_KEY=         # Resend API key (contact form)
+RESEND_API_KEY=         # Resend API key (contact form + intake auto-replies)
 CONTACT_EMAIL_TO=saif@lineamode.com
-CONTACT_EMAIL_FROM=Lineamode <hello@lineamode.com>
+CONTACT_EMAIL_FROM=Lineamode <hello@lineamode.com>  # or onboarding@resend.dev for sandbox tests
+CONTACT_AUTO_REPLY=true # Set false/0/off/no to skip submitter auto-reply in dev
 ```
 
-When `RESEND_API_KEY` is missing the contact form server action logs the
-brief and returns a successful state, so the form UX can be reviewed
-without provisioning Resend.
+When `RESEND_API_KEY` is missing the contact form server action skips email and
+logs `[contact] RESEND_API_KEY not set`. With Supabase also unconfigured the
+form returns an error; with Supabase configured it still saves the brief and
+returns success. Successful submissions send an admin notification and a
+submitter auto-reply (unless `CONTACT_AUTO_REPLY` is disabled). Resend API
+errors are logged as `[contact] admin notification failed` or
+`[contact] auto-reply failed` in the terminal.
 
 ## Project layout
 

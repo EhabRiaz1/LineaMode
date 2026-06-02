@@ -4,6 +4,7 @@ import { GridPattern } from "@/components/ui/GridPattern";
 import { ButtonLink } from "@/components/ui/Button";
 import { lookbook26, type Spread } from "@/content/lookbook";
 import { pageMetadata } from "@/lib/seo/metadata";
+import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 export const metadata = pageMetadata({
     title: "Lookbook '26",
@@ -199,7 +200,7 @@ function EndSpread({ spread }: { spread: Spread }) {
           The <span className="italic font-extralight">end.</span>
         </h2>
         <div className="mt-16 flex flex-col md:flex-row gap-3 justify-center">
-          <ButtonLink href="/contact" variant="ink">
+          <ButtonLink href={CONTACT_FORM_HREF} variant="ink">
             Brief the studio
           </ButtonLink>
           <Link

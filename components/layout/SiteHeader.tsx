@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { easeBrand } from "@/lib/motion/easings";
 import type { PageVisibility } from "@/lib/cms";
+import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 const BASE_NAV = [
   { href: "/about", label: "About" },
@@ -103,7 +104,7 @@ function MobileNavDrawer({
                 className="pt-8"
               >
                 <Link
-                  href="/contact"
+                  href={CONTACT_FORM_HREF}
                   onClick={onClose}
                   className="inline-flex h-14 items-center gap-3 rounded-full border border-ink/25 bg-ink px-7 text-[var(--color-stone-veil)] transition-colors hover:bg-ink/90"
                 >
@@ -218,7 +219,7 @@ export function SiteHeader({ visibility }: Props) {
 
           <div className="hidden md:flex items-center gap-2">
             <Link
-              href="/contact"
+              href={CONTACT_FORM_HREF}
               className="inline-flex items-center gap-2 text-label border border-ink/30 px-4 py-2 rounded-full hover:bg-ink hover:text-[var(--color-stone-veil)] transition-colors"
             >
               <span className="size-1.5 rounded-full bg-ink group-hover:bg-[var(--color-stone-veil)]" />
