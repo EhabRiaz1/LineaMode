@@ -18,6 +18,7 @@ import {
   discardPageDraft,
 } from "@/app/admin/(console)/content/_actions";
 import { BlockFields } from "./BlockFields";
+import { PreviewPanel } from "./PreviewPanel";
 import { cn } from "@/lib/utils";
 
 type LoadedPage = {
@@ -422,42 +423,33 @@ export function PageEditor({ slug }: { slug: string }) {
           </details>
         </div>
 
-        <div className="lg:sticky lg:top-4 space-y-3">
-          <div className="rounded-2xl border border-[var(--hairline)] bg-stone overflow-hidden">
-            <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[var(--hairline)]">
-              <div className="space-y-1">
-                <p className="text-body text-ink font-medium">Preview</p>
-                <p className="text-label text-ink/55">Shows the published page — no draft cookies.</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPreviewNonce((n) => n + 1)}
-                  className="rounded-full border border-[var(--hairline)] px-3 py-1.5 text-label text-ink/75 hover:bg-ink/5 transition-colors"
-                >
-                  Refresh
-                </button>
-                <Link
-                  href={previewHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full bg-ink text-stone px-4 py-1.5 text-label hover:bg-ink/85 transition-colors"
-                >
-                  Open live
-                </Link>
-              </div>
-            </div>
-            <div className="relative bg-white">
-              <iframe
-                key={`${previewHref}-${previewNonce}`}
-                src={previewHref}
-                title={`Preview ${page.title}`}
-                loading="lazy"
-                className="w-full h-[70vh] min-h-[520px] border-0"
-              />
-            </div>
-          </div>
-        </div>
+        <PreviewPanel
+          title="Preview"
+          subtitle="Shows the published page — no draft cookies."
+          previewSrc={previewHref}
+          previewNonce={previewNonce}
+          iframeTitle={`Preview ${page.title}`}
+          height="70vh"
+          actions={
+            <>
+              <button
+                type="button"
+                onClick={() => setPreviewNonce((n) => n + 1)}
+                className="rounded-full border border-[var(--hairline)] px-3 py-1.5 text-label text-ink/75 hover:bg-ink/5 transition-colors"
+              >
+                Refresh
+              </button>
+              <Link
+                href={previewHref}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-ink px-4 py-1.5 text-label text-stone hover:bg-ink/85 transition-colors"
+              >
+                Open live
+              </Link>
+            </>
+          }
+        />
       </div>
 
     </div>

@@ -72,22 +72,20 @@ export function WhatWeDoSection({
   return (
     <section
       ref={sectionRef}
-      className="relative bg-stone text-ink py-32 md:py-44"
+      className="relative bg-stone text-ink py-28 md:pt-12 md:pb-20"
     >
       <div className="shell">
-        <div className="grid grid-cols-12 gap-6 mb-12">
+        <div className="grid grid-cols-12 gap-6 mb-10">
           <div className="col-span-12 md:col-span-5">
             <Eyebrow number="02">{eyebrow}</Eyebrow>
-            <h2 className="mt-6 font-[family-name:var(--font-display)] text-[clamp(2.25rem,4.5vw,4.75rem)] font-light leading-[1.02] tracking-[-0.02em]">
-              <span className="block whitespace-nowrap">{headlineLine1}</span>
-              <span className="block whitespace-nowrap italic font-extralight">
-                {headlineLine2}
-              </span>
+            <h2 className="mt-5 font-sans text-[clamp(2rem,3.6vw,2.85rem)] leading-[1.08] tracking-[-0.015em]">
+              <span className="block whitespace-nowrap font-medium">{headlineLine1}</span>
+              <span className="block whitespace-nowrap italic font-light">{headlineLine2}</span>
             </h2>
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-8 md:gap-12 items-start">
+        <div className="grid grid-cols-12 gap-7 md:gap-10 items-start">
             <ul className="col-span-12 md:col-span-6 flex flex-col">
               {displayCapabilities.map((c, i) => (
                 <li key={c.slug} className="relative">
@@ -95,33 +93,31 @@ export function WhatWeDoSection({
                     type="button"
                     onClick={() => onSelect(i)}
                     className={cn(
-                      "group flex items-center justify-between text-left w-full py-5 transition-colors",
+                      "group flex items-center justify-between gap-4 text-left w-full py-4 transition-colors",
                       active === i
                         ? "text-[#36454F]"
                         : "text-ink/50 hover:text-ink/85",
                     )}
                     aria-pressed={active === i}
                   >
-                    <span className="flex items-baseline gap-5">
-                      <span
-                        className={cn(
-                          "text-label transition-colors",
-                          active === i ? "text-[#36454F]/70" : "text-ink/40",
-                        )}
-                      >
-                        / {c.number}
-                      </span>
-                      <span className="text-h2 font-light">{c.title}</span>
+                    <span className="font-sans text-[clamp(1.155rem,0.99vw+0.88rem,1.595rem)] font-light leading-[1.08] tracking-[-0.015em]">
+                      {c.title}
                     </span>
-                    <span
+                    <motion.span
                       aria-hidden
+                      initial={false}
+                      animate={{
+                        rotate: active === i ? 90 : 0,
+                        scale: active === i ? 1.12 : 1,
+                      }}
+                      transition={{ duration: 0.55, ease: easeBrand }}
                       className={cn(
-                        "text-label transition-opacity",
-                        active === i ? "opacity-100" : "opacity-0",
+                        "inline-block shrink-0 origin-center font-mono text-[0.75rem] font-extralight tracking-normal normal-case transition-colors duration-300",
+                        active === i ? "text-[#36454F]/55" : "text-ink/22 group-hover:text-ink/35",
                       )}
                     >
                       →
-                    </span>
+                    </motion.span>
                   </button>
 
                   {active === i ? (
@@ -130,9 +126,9 @@ export function WhatWeDoSection({
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.45, ease: easeBrand }}
-                      className="pb-8"
+                      className="pb-7"
                     >
-                      <div className="md:hidden mb-6 aspect-square overflow-hidden bg-ink/5 ring-1 ring-ink/10">
+                      <div className="md:hidden mx-auto mb-5 aspect-square w-full max-w-[220px] overflow-hidden bg-ink/5 ring-1 ring-ink/10">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={c.image}
@@ -140,7 +136,7 @@ export function WhatWeDoSection({
                           className="h-full w-full object-cover"
                         />
                       </div>
-                      <p className="text-[clamp(1.45rem,1.55vw+0.95rem,2.2rem)] font-sans font-light leading-tight max-w-xl">
+                      <p className="max-w-xl font-[family-name:var(--font-display)] text-[clamp(0.91rem,0.98vw+0.595rem,1.386rem)] font-extralight leading-tight">
                         {c.short}
                       </p>
                     </motion.div>

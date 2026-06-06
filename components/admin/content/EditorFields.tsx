@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { MediaPicker, type MediaItem } from "./MediaPicker";
+import { PreviewPanel } from "./PreviewPanel";
 
 // ─── Text field ──────────────────────────────────────────────────────────────
 
@@ -389,50 +390,33 @@ export function EditorShell({
           {children}
         </div>
 
-        <div className="lg:sticky lg:top-4">
-          <div className="rounded-2xl border border-[var(--hairline)] bg-stone overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--hairline)]">
-              <div>
-                <p className="text-body text-ink font-medium">Live Preview</p>
-                <p className="text-label text-ink/55">
-                  {previewSaving ? "Refreshing…" : "Auto-refreshes after each edit"}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href={fullPreviewHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full border border-[var(--hairline)] px-3 py-1.5 text-label text-ink/75 hover:bg-ink/5 transition-colors"
-                >
-                  Full preview ↗
-                </a>
-                <a
-                  href={liveSiteHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full bg-ink text-stone px-4 py-1.5 text-label hover:bg-ink/85 transition-colors"
-                >
-                  Live site →
-                </a>
-              </div>
-            </div>
-            <div className="relative bg-stone">
-              {previewSaving && (
-                <div className="absolute inset-0 z-10 bg-stone/70 flex items-center justify-center">
-                  <p className="text-label text-ink/55">Refreshing preview…</p>
-                </div>
-              )}
-              <iframe
-                key={previewNonce}
-                src={previewSrc}
-                title="Draft preview"
-                className="w-full border-0"
-                style={{ height: "78vh", minHeight: 520 }}
-              />
-            </div>
-          </div>
-        </div>
+        <PreviewPanel
+          subtitle={previewSaving ? "Refreshing…" : "Auto-refreshes after each edit"}
+          previewSrc={previewSrc}
+          previewNonce={previewNonce}
+          previewSaving={previewSaving}
+          iframeTitle="Draft preview"
+          actions={
+            <>
+              <a
+                href={fullPreviewHref}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-[var(--hairline)] px-3 py-1.5 text-label text-ink/75 hover:bg-ink/5 transition-colors"
+              >
+                Full preview ↗
+              </a>
+              <a
+                href={liveSiteHref}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-ink px-4 py-1.5 text-label text-stone hover:bg-ink/85 transition-colors"
+              >
+                Live site →
+              </a>
+            </>
+          }
+        />
       </div>
     </div>
   );

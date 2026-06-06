@@ -5,7 +5,7 @@ import {
   SEED_PRODUCT_CATALOG,
   type ProductCategorySlug,
 } from "@/content/product-catalog";
-import { CONTACT_FORM_HREF } from "@/lib/navigation";
+import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
 
 const categorySlugSchema = z.enum(
   PRODUCT_CATEGORIES.map((c) => c.slug) as [ProductCategorySlug, ...ProductCategorySlug[]],
@@ -83,7 +83,7 @@ function migrateLegacyCta(cta: Record<string, unknown> | undefined): ProductsCon
       ...base,
       contactCta: {
         label: secondary.label ?? base.contactCta.label,
-        href: secondary.href ?? CONTACT_FORM_HREF,
+        href: resolveContactHref(secondary.href ?? base.contactCta.href),
       },
     };
   }
@@ -93,11 +93,17 @@ function migrateLegacyCta(cta: Record<string, unknown> | undefined): ProductsCon
       ...base,
       contactCta: {
         label: contact.label ?? base.contactCta.label,
-        href: contact.href ?? CONTACT_FORM_HREF,
+        href: resolveContactHref(contact.href ?? base.contactCta.href),
       },
     };
   }
-  return base;
+  return {
+    ...base,
+    contactCta: {
+      ...base.contactCta,
+      href: resolveContactHref(base.contactCta.href),
+    },
+  };
 }
 
 export function resolveProductCatalog(catalog: ProductCard[]): ProductCard[] {
@@ -158,6 +164,17 @@ export function parseProductsContent(raw: unknown): ProductsContent {
   }
 
   const result = productsContentSchema.safeParse(raw);
-  if (result.success) return result.data;
+  if (result.success) {
+    return {
+      ...result.data,
+      cta: {
+        ...result.data.cta,
+        contactCta: {
+          ...result.data.cta.contactCta,
+          href: resolveContactHref(result.data.cta.contactCta.href),
+        },
+      },
+    };
+  }
   return PRODUCTS_CONTENT_DEFAULTS;
 }

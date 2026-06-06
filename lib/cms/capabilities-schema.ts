@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CONTACT_FORM_HREF } from "@/lib/navigation";
+import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
 
 const capabilityItemSchema = z.object({
   title: z.string().max(120),
@@ -89,15 +89,27 @@ export const CAPABILITIES_CONTENT_DEFAULTS: CapabilitiesContent = {
 
 export function parseCapabilitiesContent(raw: unknown): CapabilitiesContent {
   const result = capabilitiesContentSchema.safeParse(raw);
-  if (result.success) return result.data;
+  if (result.success) {
+    return {
+      ...result.data,
+      process: {
+        ...result.data.process,
+        ctaHref: resolveContactHref(result.data.process.ctaHref),
+      },
+    };
+  }
   if (raw && typeof raw === "object") {
     const p = raw as Record<string, unknown>;
+    const process = { ...CAPABILITIES_CONTENT_DEFAULTS.process, ...((p.process as object) ?? {}) };
     return {
       intro: { ...CAPABILITIES_CONTENT_DEFAULTS.intro, ...((p.intro as object) ?? {}) },
       capabilities: Array.isArray(p.capabilities)
         ? (p.capabilities as CapabilitiesContent["capabilities"])
         : [],
-      process: { ...CAPABILITIES_CONTENT_DEFAULTS.process, ...((p.process as object) ?? {}) },
+      process: {
+        ...process,
+        ctaHref: resolveContactHref(process.ctaHref),
+      },
     };
   }
   return CAPABILITIES_CONTENT_DEFAULTS;

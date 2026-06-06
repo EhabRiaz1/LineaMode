@@ -1,9 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { FooterContact } from "@/components/layout/FooterContact";
+import { FooterSocial } from "@/components/layout/FooterSocial";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { CopyrightYear } from "@/components/layout/CopyrightYear";
-import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
 const NAV = [
   {
@@ -20,10 +20,6 @@ const NAV = [
       // { href: "/lookbook", label: "Lookbook '26" },
       { href: "/journal", label: "Newsletter" },
     ],
-  },
-  {
-    heading: "Contact",
-    links: [{ href: CONTACT_FORM_HREF, label: "Contact Us" }],
   },
 ];
 
@@ -55,10 +51,10 @@ export function SiteFooter() {
         disruption
       />
 
-      <div className="shell relative pt-16 md:pt-20 pb-8">
+      <div className="shell relative pt-10 md:pt-12 pb-8">
         {/* Tagline — single line, smaller, italic accent matches the hero. */}
-        <div className="border-y border-stone/15 py-10 my-8 md:my-10 text-center">
-          <p className="text-eyebrow text-stone/60 mb-6">Lineamode 2026</p>
+        <div className="border-y border-stone/15 py-8 mt-4 mb-8 md:mt-6 md:mb-10 text-center">
+          <p className="text-eyebrow text-stone/60 mb-4">Lineamode 2026</p>
           <p className="text-h1 leading-[0.95]">
             End to End
             <span className="italic font-extralight"> Apparel Partners.</span>
@@ -86,36 +82,28 @@ export function SiteFooter() {
               <FooterNavColumn col={NAV[0]} />
               <div className="space-y-8">
                 <FooterNavColumn col={NAV[1]} />
-                <FooterNavColumn col={NAV[2]} />
+                <div className="space-y-8">
+                  <FooterContact />
+                  <FooterSocial />
+                </div>
               </div>
             </div>
 
             <div className="hidden md:grid md:grid-cols-3 gap-8">
-              {NAV.map((col) => (
-                <FooterNavColumn key={col.heading} col={col} />
-              ))}
+              <FooterNavColumn col={NAV[0]} />
+              <FooterNavColumn col={NAV[1]} />
+              <div className="space-y-8">
+                <FooterContact />
+                <FooterSocial />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-20 pt-8 border-t border-stone/15 flex flex-col md:flex-row gap-4 justify-between text-label text-stone/60">
+        <div className="mt-20 pt-8 pb-6 md:pb-10 border-t border-stone/15 flex flex-col md:flex-row gap-4 justify-between text-label text-stone/60">
           <p>© <CopyrightYear /> Lineamode Apparel. All rights reserved.</p>
           <p>Design-led apparel manufacturing · Lahore, Pakistan</p>
         </div>
-      </div>
-
-      {/* Sitewide wordmark — sits inside the shell so it lines up with
-          the same left/right margins as the dividers and nav columns
-          above it (rather than running edge-to-edge of the viewport). */}
-      <div className="shell relative pb-6 md:pb-10">
-        <Image
-          src="/brand/lineamode-wordmark.png"
-          alt="Lineamode"
-          width={1253}
-          height={199}
-          sizes="(min-width: 1440px) 1440px, 100vw"
-          className="block w-full h-auto object-contain object-center brightness-0 invert"
-        />
       </div>
     </footer>
   );

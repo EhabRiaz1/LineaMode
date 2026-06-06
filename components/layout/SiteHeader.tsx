@@ -10,6 +10,9 @@ import { easeBrand } from "@/lib/motion/easings";
 import type { PageVisibility } from "@/lib/cms";
 import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
+const START_PROJECT_LABEL = "Start a Project";
+const START_PROJECT_HREF = CONTACT_FORM_HREF;
+
 const BASE_NAV = [
   { href: "/about", label: "About" },
   { href: "/products", label: "Products" },
@@ -53,44 +56,46 @@ function MobileNavDrawer({
           role="dialog"
           aria-modal="true"
           aria-label="Site navigation"
-          initial={{ y: "100%" }}
+          initial={{ y: "-100%" }}
           animate={{ y: 0 }}
-          exit={{ y: "100%" }}
+          exit={{ y: "-100%" }}
           transition={{ duration: 0.42, ease: easeBrand }}
           className="fixed inset-0 z-[60] md:hidden bg-stone text-ink"
         >
-          <div className="flex h-full flex-col px-5 pb-10 pt-28">
+          <div className="flex h-full flex-col px-5 pb-10 pt-20">
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, delay: 0.08, ease: easeBrand }}
-              className="text-eyebrow text-ink/50 mb-10"
+              className="text-eyebrow text-ink/50 mb-4"
             >
               / Menu
             </motion.p>
 
-            <nav className="flex flex-1 flex-col justify-center gap-2" aria-label="Mobile primary">
-              {nav.map((item, index) => (
-                <motion.div
-                  key={item.href}
-                  initial={{ opacity: 0, y: 28 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 16 }}
-                  transition={{
-                    duration: 0.32,
-                    delay: 0.1 + index * 0.055,
-                    ease: easeBrand,
-                  }}
-                >
-                  <Link
-                    href={item.href}
-                    onClick={onClose}
-                    className="block border-b border-ink/10 py-4 font-[family-name:var(--font-display)] text-[clamp(2rem,9vw,3.25rem)] font-light leading-[0.98] tracking-[-0.02em] text-ink transition-colors hover:text-ink/70"
+            <nav className="flex flex-1 flex-col justify-start" aria-label="Mobile primary">
+              <div className="flex flex-col gap-2">
+                {nav.map((item, index) => (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, y: 28 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 16 }}
+                    transition={{
+                      duration: 0.32,
+                      delay: 0.1 + index * 0.055,
+                      ease: easeBrand,
+                    }}
                   >
-                    {item.label}
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      href={item.href}
+                      onClick={onClose}
+                      className="block border-b border-ink/10 py-4 font-[family-name:var(--font-display)] text-[clamp(2rem,9vw,3.25rem)] font-light leading-[0.98] tracking-[-0.02em] text-ink transition-colors hover:text-ink/70"
+                    >
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
 
               <motion.div
                 initial={{ opacity: 0, y: 28 }}
@@ -101,15 +106,14 @@ function MobileNavDrawer({
                   delay: 0.1 + nav.length * 0.055,
                   ease: easeBrand,
                 }}
-                className="pt-8"
+                className="mt-16 pt-8"
               >
                 <Link
-                  href={CONTACT_FORM_HREF}
+                  href={START_PROJECT_HREF}
                   onClick={onClose}
-                  className="inline-flex h-14 items-center gap-3 rounded-full border border-ink/25 bg-ink px-7 text-[var(--color-stone-veil)] transition-colors hover:bg-ink/90"
+                  className="inline-flex h-14 items-center rounded-full border border-ink/25 bg-ink px-7 text-[var(--color-stone-veil)] transition-colors hover:bg-ink/90"
                 >
-                  <span className="size-1.5 rounded-full bg-[var(--color-stone-veil)]" />
-                  <span className="text-label">Contact Us</span>
+                  <span className="text-label">{START_PROJECT_LABEL}</span>
                 </Link>
               </motion.div>
             </nav>
@@ -179,7 +183,7 @@ export function SiteHeader({ visibility }: Props) {
           "fixed left-1/2 top-3 md:top-4",
           open ? "z-[70]" : "z-50",
           "w-[calc(100%-1.5rem)] md:w-[calc(100%-3rem)] md:max-w-[1480px]",
-          "rounded-full border border-stone/30 bg-stone/35 backdrop-blur-[6px] backdrop-saturate-150",
+          "rounded-full border border-stone/30 bg-stone/55 backdrop-blur-[6px] backdrop-saturate-150",
           "shadow-[0_8px_24px_-18px_rgba(15,15,12,0.35),inset_0_1px_0_rgba(255,255,255,0.45)]",
           "transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           hidden && !open ? "opacity-0" : "opacity-100",
@@ -219,11 +223,10 @@ export function SiteHeader({ visibility }: Props) {
 
           <div className="hidden md:flex items-center gap-2">
             <Link
-              href={CONTACT_FORM_HREF}
-              className="inline-flex items-center gap-2 text-label border border-ink/30 px-4 py-2 rounded-full hover:bg-ink hover:text-[var(--color-stone-veil)] transition-colors"
+              href={START_PROJECT_HREF}
+              className="inline-flex items-center text-label border border-ink/30 px-4 py-2 rounded-full hover:bg-ink hover:text-[var(--color-stone-veil)] transition-colors"
             >
-              <span className="size-1.5 rounded-full bg-ink group-hover:bg-[var(--color-stone-veil)]" />
-              Contact Us
+              {START_PROJECT_LABEL}
             </Link>
           </div>
 

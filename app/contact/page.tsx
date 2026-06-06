@@ -25,7 +25,7 @@ export default async function ContactPage() {
             <Eyebrow number="00">{cms.intro.eyebrow}</Eyebrow>
           </div>
           <div className="col-span-12 md:col-span-9">
-            <h1 className="text-display leading-[0.95]">
+            <h1 className="text-display-sm leading-[0.95]">
               <span className="block">
                 <SplitText by="word" stagger={0.05} duration={1}>
                   {cms.intro.headlineLine1}

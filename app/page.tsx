@@ -3,15 +3,15 @@ import { WhatWeDoSection } from "@/components/sections/WhatWeDoSection";
 import { HomeProductRail } from "@/components/sections/products/HomeProductRail";
 import { IdentitySection } from "@/components/sections/IdentitySection";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
-import { ContactCTA } from "@/components/sections/ContactCTA";
-import { getHomeContent, getPageVisibility, getProductsContent } from "@/lib/cms";
+import { getHomeContent, getPageVisibility, getProductsContent, listJournal } from "@/lib/cms";
 import { getFeaturedProducts, resolveProductCatalog } from "@/lib/cms/products-schema";
 
 export default async function HomePage() {
-  const [cms, visibility, products] = await Promise.all([
+  const [cms, visibility, products, journalPosts] = await Promise.all([
     getHomeContent(),
     getPageVisibility(),
     getProductsContent(),
+    listJournal(),
   ]);
 
   const featured = getFeaturedProducts(resolveProductCatalog(products.catalog));
@@ -27,8 +27,7 @@ export default async function HomePage() {
       )}
       {cms.products.enabled && <HomeProductRail products={featured} />}
       {cms.identity.enabled && <IdentitySection cms={cms.identity} />}
-      {showJournal && <JournalTeaser cms={cms.journal} />}
-      {cms.contactCta.enabled && <ContactCTA cms={cms.contactCta} />}
+      {showJournal && <JournalTeaser cms={cms.journal} articles={journalPosts} />}
     </>
   );
 }

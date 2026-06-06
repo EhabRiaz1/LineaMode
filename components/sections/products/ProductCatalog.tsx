@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useCallback } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { PRODUCT_CATEGORIES, type ProductCategorySlug } from "@/content/product-catalog";
+import {
+  PRODUCT_CATEGORIES,
+  parseProductCategorySlug,
+  type ProductCategorySlug,
+} from "@/content/product-catalog";
 import type { ProductCard as ProductCardType } from "@/lib/cms/products-schema";
 import { easeBrand } from "@/lib/motion/easings";
 import { cn } from "@/lib/utils";
@@ -17,9 +22,12 @@ const catalogInset = "mx-auto w-full max-w-[1760px] px-[clamp(28px,5vw,72px)]";
 const catalogCardWidth =
   "w-full sm:w-[calc((100%-var(--catalog-gap))/2)] lg:w-[calc((100%-var(--catalog-gap)*3)/4)]";
 
-export function ProductCatalog({ catalog }: ProductCatalogProps) {
-  const [active, setActive] = useState<ProductCategorySlug>("lifestyle");
+type ProductCatalogViewProps = ProductCatalogProps & {
+  active: ProductCategorySlug;
+  onTabChange: (slug: ProductCategorySlug) => void;
+};
 
+function ProductCatalogView({ catalog, active, onTabChange }: ProductCatalogViewProps) {
   const filtered = catalog.filter((item) => item.category === active);
 
   return (
@@ -34,14 +42,14 @@ export function ProductCatalog({ catalog }: ProductCatalogProps) {
                   <button
                     key={category.slug}
                     type="button"
-                    onClick={() => setActive(category.slug)}
+                    onClick={() => onTabChange(category.slug)}
                     aria-selected={isActive}
                     role="tab"
                     className={cn(
-                      "relative px-1 pb-4 font-[family-name:var(--font-display)] text-[clamp(1.25rem,2vw,1.6rem)] leading-none tracking-[0.01em] transition-colors duration-300",
+                      "relative px-1 pb-4 font-sans text-[clamp(1.25rem,2vw,1.6rem)] font-light leading-none tracking-[0.01em] transition-colors duration-300",
                       isActive
-                        ? "font-medium text-ink"
-                        : "font-normal text-ink/45 hover:text-ink/70",
+                        ? "text-ink"
+                        : "text-ink/45 hover:text-ink/70",
                     )}
                   >
                     {category.title}
@@ -85,5 +93,41 @@ export function ProductCatalog({ catalog }: ProductCatalogProps) {
         </AnimatePresence>
       </div>
     </section>
+  );
+}
+
+function ProductCatalogInner({ catalog }: ProductCatalogProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const active = parseProductCategorySlug(searchParams.get("category"));
+
+  const onTabChange = useCallback(
+    (slug: ProductCategorySlug) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("category", slug);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  return <ProductCatalogView catalog={catalog} active={active} onTabChange={onTabChange} />;
+}
+
+function ProductCatalogFallback({ catalog }: ProductCatalogProps) {
+  return (
+    <ProductCatalogView
+      catalog={catalog}
+      active="lifestyle"
+      onTabChange={() => {}}
+    />
+  );
+}
+
+export function ProductCatalog(props: ProductCatalogProps) {
+  return (
+    <Suspense fallback={<ProductCatalogFallback {...props} />}>
+      <ProductCatalogInner {...props} />
+    </Suspense>
   );
 }

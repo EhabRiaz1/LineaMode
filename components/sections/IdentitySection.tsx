@@ -65,9 +65,9 @@ export function IdentitySection({ cms }: { cms?: IdentityCms } = {}) {
             transition={{ duration: 0.9, ease: easeBrand, delay: 0.08 }}
             className="col-span-12 md:col-span-6 lg:col-span-7 md:col-start-7 md:justify-self-end md:text-right"
           >
-            <h2 className="max-w-2xl font-[family-name:var(--font-display)] font-light tracking-[-0.02em] leading-[1.04] text-[clamp(2.35rem,4.2vw,4.35rem)] md:ml-auto">
+            <h2 className="max-w-2xl font-mono font-medium tracking-[-0.02em] leading-[1.06] text-[clamp(2rem,3.6vw,3.7rem)] md:ml-auto">
               {headline}{" "}
-              <span className="italic font-extralight">{headlineItalic}</span>
+              <span className="italic">{headlineItalic}</span>
             </h2>
           </motion.div>
         </div>
@@ -82,7 +82,7 @@ export function IdentitySection({ cms }: { cms?: IdentityCms } = {}) {
           <Eyebrow number="04" className="text-stone/70">
             {eyebrow}
           </Eyebrow>
-          <p className="text-body text-stone/80 max-w-xl mt-8">
+          <p className="font-display font-normal text-[clamp(0.95rem,0.2vw+0.9rem,1.0625rem)] leading-[1.55] text-stone/80 max-w-xl mt-8">
             {body}
           </p>
         </motion.div>

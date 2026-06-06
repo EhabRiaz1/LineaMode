@@ -12,7 +12,7 @@ import { WhatWeDoSection } from "@/components/sections/WhatWeDoSection";
 import { HomeProductRail } from "@/components/sections/products/HomeProductRail";
 import { IdentitySection } from "@/components/sections/IdentitySection";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
-import { ContactCTA } from "@/components/sections/ContactCTA";
+import { listJournal } from "@/lib/cms";
 
 async function HomePreviewContent() {
   await connection();
@@ -34,6 +34,7 @@ async function HomePreviewContent() {
   const productsCms = parseProductsContent(
     productsDraftRow?.value ?? productsPubRow?.value,
   );
+  const journalPosts = await listJournal();
 
   return (
     <>
@@ -52,8 +53,7 @@ async function HomePreviewContent() {
           <HomeProductRail products={getFeaturedProducts(resolveProductCatalog(productsCms.catalog))} />
         )}
         {cms.identity.enabled && <IdentitySection cms={cms.identity} />}
-        {cms.journal.enabled && <JournalTeaser cms={cms.journal} />}
-        {cms.contactCta.enabled && <ContactCTA cms={cms.contactCta} />}
+        {cms.journal.enabled && <JournalTeaser cms={cms.journal} articles={journalPosts} />}
       </div>
     </>
   );

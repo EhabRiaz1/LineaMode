@@ -16,7 +16,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { easeBrand } from "@/lib/motion/easings";
-import { CONTACT_FORM_HREF } from "@/lib/navigation";
+import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
 
 const HERO_IMAGE_DEFAULT =
   "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85";
@@ -40,10 +40,14 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
   const description = cms?.description ?? "Knitwear · Performance Polyester · Soft Wovens";
   const bottomLabel = cms?.bottomLabel ?? "Design / Development / Manufacture";
   const primaryCta = cms?.primaryCta ?? { label: "What we do", href: "/capabilities" };
-  const secondaryCta =
+  const secondaryCtaRaw =
     cms?.secondaryCta?.href === "/start"
-      ? { label: "Contact Us", href: CONTACT_FORM_HREF }
-      : (cms?.secondaryCta ?? { label: "Contact Us", href: CONTACT_FORM_HREF });
+      ? { label: "Start a project", href: CONTACT_FORM_HREF }
+      : (cms?.secondaryCta ?? { label: "Start a project", href: CONTACT_FORM_HREF });
+  const secondaryCta = {
+    ...secondaryCtaRaw,
+    href: resolveContactHref(secondaryCtaRaw.href),
+  };
   const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -164,7 +168,7 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
             and are styled explicitly for the dark backdrop so the text
             never inherits the section's stone-on-stone defaults. */}
         <div className="flex flex-col gap-8 md:gap-10">
-          <h1 className="text-display leading-[0.92] max-w-5xl">
+          <h1 className="text-[clamp(2.35rem,5.5vw+0.65rem,6.75rem)] font-mono font-light tracking-[-0.02em] leading-[0.95] max-w-5xl">
             <span className="block">
               <SplitText by="word" stagger={0.06} duration={1.1}>
                 {headlineLine1}
@@ -189,6 +193,7 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
             <ButtonLink
               href={primaryCta.href}
               variant="ink"
+              plain
               className="!text-ink bg-stone hover:bg-stone/90"
             >
               {primaryCta.label}
@@ -198,6 +203,7 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
             <ButtonLink
               href={secondaryCta.href}
               variant="ghost"
+              plain
               className="!text-stone ring-stone/45 hover:bg-stone/10"
             >
               {secondaryCta.label}

@@ -205,6 +205,14 @@ body {
   font-size: clamp(3.5rem, 9vw + 1rem, 10.5rem);
 }
 
+.text-display-sm {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.92;
+  font-size: clamp(2.8rem, 7.2vw + 0.8rem, 8.4rem);
+}
+
 .text-h1 {
   font-family: var(--font-display);
   font-weight: 400;

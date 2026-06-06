@@ -4,6 +4,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { ButtonLink } from "@/components/ui/Button";
 import { CapabilitiesRail } from "@/components/sections/CapabilitiesRail";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
+import { listJournal } from "@/lib/cms";
 import type { Block, MediaRef, Cta } from "@/lib/cms/blocks";
 import { cn } from "@/lib/utils";
 
@@ -185,8 +186,9 @@ function LookbookTeaserBlock({
   );
 }
 
-async function JournalGridBlock({ limit: _limit }: { limit: number }) {
-  return <JournalTeaser />;
+async function JournalGridBlock({ limit }: { limit: number }) {
+  const articles = await listJournal();
+  return <JournalTeaser articles={articles.slice(0, limit || 4)} />;
 }
 
 function GalleryBlock({ block }: { block: Extract<Block, { type: "gallery" }> }) {

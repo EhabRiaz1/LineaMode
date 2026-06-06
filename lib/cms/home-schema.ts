@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CONTACT_FORM_HREF } from "@/lib/navigation";
+import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
 
 const ctaSchema = z.object({
   label: z.string().max(80),
@@ -21,7 +21,7 @@ export const homeContentSchema = z.object({
           "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85",
         ),
       primaryCta: ctaSchema.default({ label: "What we do", href: "/capabilities" }),
-      secondaryCta: ctaSchema.default({ label: "Contact Us", href: CONTACT_FORM_HREF }),
+      secondaryCta: ctaSchema.default({ label: "Start a project", href: CONTACT_FORM_HREF }),
     })
     .prefault({}),
 
@@ -147,7 +147,7 @@ export const HOME_CONTENT_DEFAULTS: HomeContent = {
     image:
       "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85",
     primaryCta: { label: "What we do", href: "/capabilities" },
-    secondaryCta: { label: "Contact Us", href: CONTACT_FORM_HREF },
+    secondaryCta: { label: "Start a project", href: CONTACT_FORM_HREF },
   },
   whatWeDo: {
     enabled: true,
@@ -201,11 +201,29 @@ export const HOME_CONTENT_DEFAULTS: HomeContent = {
 
 export function parseHomeContent(raw: unknown): HomeContent {
   const result = homeContentSchema.safeParse(raw);
-  if (result.success) return result.data;
+  if (result.success) {
+    return {
+      ...result.data,
+      hero: {
+        ...result.data.hero,
+        secondaryCta: {
+          ...result.data.hero.secondaryCta,
+          href: resolveContactHref(result.data.hero.secondaryCta.href),
+        },
+      },
+    };
+  }
   if (raw && typeof raw === "object") {
     const p = raw as Record<string, unknown>;
+    const hero = { ...HOME_CONTENT_DEFAULTS.hero, ...((p.hero as object) ?? {}) };
     return {
-      hero: { ...HOME_CONTENT_DEFAULTS.hero, ...((p.hero as object) ?? {}) },
+      hero: {
+        ...hero,
+        secondaryCta: {
+          ...hero.secondaryCta,
+          href: resolveContactHref(hero.secondaryCta.href),
+        },
+      },
       whatWeDo: { ...HOME_CONTENT_DEFAULTS.whatWeDo, ...((p.whatWeDo as object) ?? {}) },
       products: { ...HOME_CONTENT_DEFAULTS.products, ...((p.products as object) ?? {}) },
       identity: { ...HOME_CONTENT_DEFAULTS.identity, ...((p.identity as object) ?? {}) },

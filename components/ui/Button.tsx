@@ -24,6 +24,8 @@ type CommonProps = {
   size?: Size;
   className?: string;
   children: ReactNode;
+  /** Omit the leading dot and trailing arrow. */
+  plain?: boolean;
 };
 
 export function ButtonLink({
@@ -33,15 +35,19 @@ export function ButtonLink({
   size = "md",
   className,
   children,
+  plain = false,
 }: CommonProps & { href: string; external?: boolean }) {
   const styles = cn(
-    "inline-flex items-center gap-3 rounded-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group/btn",
+    "inline-flex items-center rounded-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group/btn",
+    plain ? "gap-0" : "gap-3",
     VARIANTS[variant],
     SIZES[size],
     className,
   );
 
-  const inner = (
+  const inner = plain ? (
+    <span>{children}</span>
+  ) : (
     <>
       <span className="size-1.5 rounded-full bg-current transition-transform duration-500 group-hover/btn:scale-150" />
       <span>{children}</span>

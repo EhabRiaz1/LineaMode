@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CONTACT_FORM_HREF } from "@/lib/navigation";
+import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
 
 const founderSchema = z.object({
   name: z.string().max(120),
@@ -71,13 +71,25 @@ export const FOUNDERS_CONTENT_DEFAULTS: FoundersContent = {
 
 export function parseFoundersContent(raw: unknown): FoundersContent {
   const result = foundersContentSchema.safeParse(raw);
-  if (result.success) return result.data;
+  if (result.success) {
+    return {
+      ...result.data,
+      cta: {
+        ...result.data.cta,
+        ctaHref: resolveContactHref(result.data.cta.ctaHref),
+      },
+    };
+  }
   if (raw && typeof raw === "object") {
     const p = raw as Record<string, unknown>;
+    const cta = { ...FOUNDERS_CONTENT_DEFAULTS.cta, ...((p.cta as object) ?? {}) };
     return {
       intro: { ...FOUNDERS_CONTENT_DEFAULTS.intro, ...((p.intro as object) ?? {}) },
       founders: Array.isArray(p.founders) ? (p.founders as FounderItem[]) : [],
-      cta: { ...FOUNDERS_CONTENT_DEFAULTS.cta, ...((p.cta as object) ?? {}) },
+      cta: {
+        ...cta,
+        ctaHref: resolveContactHref(cta.ctaHref),
+      },
     };
   }
   return FOUNDERS_CONTENT_DEFAULTS;

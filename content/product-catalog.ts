@@ -6,6 +6,27 @@ export const PRODUCT_CATEGORIES = [
 
 export type ProductCategorySlug = (typeof PRODUCT_CATEGORIES)[number]["slug"];
 
+const PRODUCT_CATEGORY_SLUGS = new Set<string>(
+  PRODUCT_CATEGORIES.map((category) => category.slug),
+);
+
+export function parseProductCategorySlug(
+  value: string | null | undefined,
+): ProductCategorySlug {
+  if (value && PRODUCT_CATEGORY_SLUGS.has(value)) {
+    return value as ProductCategorySlug;
+  }
+  return "lifestyle";
+}
+
+export function productsCategoryHref(
+  category: ProductCategorySlug,
+  basePath = "/products",
+): string {
+  const path = basePath.split("?")[0] || "/products";
+  return `${path}?category=${encodeURIComponent(category)}`;
+}
+
 export type SeedProductCard = {
   id: string;
   category: ProductCategorySlug;

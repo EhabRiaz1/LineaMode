@@ -1,5 +1,5 @@
 import { ButtonLink } from "@/components/ui/Button";
-import { CONTACT_FORM_HREF } from "@/lib/navigation";
+import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
 
 type ProductsCtaProps = {
   headlineLine1: string;
@@ -9,7 +9,7 @@ type ProductsCtaProps = {
 };
 
 export function ProductsCta({ headlineLine1, headlineLine2, body, contactCta }: ProductsCtaProps) {
-  const href = contactCta.href || CONTACT_FORM_HREF;
+  const href = resolveContactHref(contactCta.href || CONTACT_FORM_HREF);
 
   return (
     <section className="bg-[var(--color-terracotta)] text-stone py-32">

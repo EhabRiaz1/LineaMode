@@ -1,6 +1,7 @@
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SplitText } from "@/components/ui/SplitText";
 import { ButtonLink } from "@/components/ui/Button";
+import { resolveContactHref } from "@/lib/navigation";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { capabilities as staticCapabilities } from "@/content/capabilities";
 import { pageMetadata } from "@/lib/seo/metadata";
@@ -163,7 +164,7 @@ export default async function CapabilitiesPage() {
           </ol>
 
           <div className="mt-12 flex justify-end">
-            <ButtonLink href={cms.process.ctaHref} variant="ink">
+            <ButtonLink href={resolveContactHref(cms.process.ctaHref)} variant="ink">
               {cms.process.ctaLabel}
             </ButtonLink>
           </div>

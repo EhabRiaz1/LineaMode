@@ -47,6 +47,8 @@ const monoSans = Inter({
   variable: "--font-mono-sans",
   subsets: ["latin"],
   display: "swap",
+  weight: ["200", "300", "400", "500"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {

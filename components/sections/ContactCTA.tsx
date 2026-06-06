@@ -48,7 +48,7 @@ export function ContactCTA({ cms }: { cms?: ContactCtaCms } = {}) {
       <section
         ref={sectionRef}
         id="contact-cta"
-        className="relative bg-[var(--color-terracotta)] text-stone py-32 md:py-44 overflow-hidden"
+        className="relative bg-[var(--color-terracotta)] text-stone py-32 md:hidden overflow-hidden"
       >
         <div className="shell relative">
           <AnimatePresence mode="wait">
@@ -86,7 +86,7 @@ export function ContactCTA({ cms }: { cms?: ContactCtaCms } = {}) {
                     <p className="text-body text-stone/85 max-w-md mt-8">{body}</p>
                   </div>
 
-                  <div className="col-span-12 md:col-span-8 md:col-start-5 md:row-start-2">
+                  <div className="col-span-12">
                     <p className="text-eyebrow text-stone/70 mb-8">
                       / Tell us what you&apos;re making
                     </p>
@@ -95,18 +95,9 @@ export function ContactCTA({ cms }: { cms?: ContactCtaCms } = {}) {
                       successScope="section"
                       onSuccess={onSuccess}
                     />
-                    <div className="mt-8 md:hidden">
+                    <div className="mt-8">
                       <ContactActionButtons
                         compact
-                        onEmailClick={() => setActiveModal("email")}
-                        onPhoneClick={() => setActiveModal("phone")}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="hidden md:flex col-span-12 md:col-span-4 md:row-start-2 flex-col justify-end">
-                    <div className="md:sticky md:top-32">
-                      <ContactActionButtons
                         onEmailClick={() => setActiveModal("email")}
                         onPhoneClick={() => setActiveModal("phone")}
                       />

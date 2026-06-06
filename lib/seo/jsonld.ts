@@ -3,6 +3,7 @@ import {
   SITE_TAGLINE,
   SQUARE_LOGO_PATH,
 } from "@/lib/seo/site";
+import { SOCIAL_SAME_AS } from "@/lib/social";
 
 export function buildOrganizationJsonLd(siteOrigin: string) {
   return {
@@ -29,6 +30,6 @@ export function buildOrganizationJsonLd(siteOrigin: string) {
       areaServed: "Worldwide",
       availableLanguage: ["en"],
     },
-    sameAs: ["https://www.linkedin.com/company/lineamode-apparel"],
+    sameAs: SOCIAL_SAME_AS,
   };
 }
