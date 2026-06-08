@@ -3,8 +3,9 @@ import { respond } from "@/lib/api/responses";
 import { revalidateTag } from "next/cache";
 import { cmsTags } from "@/lib/cms/cache-tags";
 import { getServiceRoleClient, requireAdminUser, UnauthorizedError } from "@/lib/supabase/client";
+import { CMS_MEDIA_BUCKET, CMS_MEDIA_MAX_BYTES, CMS_MEDIA_MAX_MB } from "@/lib/cms/media-config";
 
-const BUCKET = "cms-media";
+const BUCKET = CMS_MEDIA_BUCKET;
 
 function publicUrl(supabase: ReturnType<typeof getServiceRoleClient>, path: string) {
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
@@ -34,39 +35,59 @@ export async function GET(request: Request) {
   }
 }
 
-const uploadSchema = z.object({
-  filename: z.string().min(1).max(200),
-  contentType: z.string().min(1).max(120),
+/**
+ * Commit step of the direct-upload flow. The browser has already streamed the
+ * file straight to Supabase Storage via a signed upload URL (see
+ * `./sign/route.ts`), so this endpoint receives only metadata — never bytes.
+ * That keeps the request body tiny and immune to the platform's 4.5 MB limit.
+ *
+ * We verify the object actually landed in storage, re-check its real size
+ * server-side, then insert the DB row. Any failure rolls back the uploaded
+ * object so we never leave an orphaned file.
+ */
+const commitSchema = z.object({
+  path: z.string().min(1).max(300),
   alt: z.string().max(240).optional(),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
-  /** base64-encoded payload — only used for small uploads from the browser. */
-  data: z.string().min(1),
 });
+
+function splitStoragePath(path: string): { folder: string; name: string } {
+  const slash = path.lastIndexOf("/");
+  if (slash < 0) return { folder: "", name: path };
+  return { folder: path.slice(0, slash), name: path.slice(slash + 1) };
+}
 
 export async function POST(request: Request) {
   try {
     const admin = await requireAdminUser(request.headers.get("authorization") ?? undefined);
-    const json = await request.json();
-    const parsed = uploadSchema.safeParse(json);
+    const json = await request.json().catch(() => null);
+    const parsed = commitSchema.safeParse(json);
     if (!parsed.success) {
       return respond.badRequest("Invalid upload payload", parsed.error.flatten());
     }
 
+    const { path } = parsed.data;
     const supabase = getServiceRoleClient();
-    const buffer = Buffer.from(parsed.data.data, "base64");
-    if (buffer.length > 10 * 1024 * 1024) {
-      return respond.badRequest("Image too large (10 MB limit)");
-    }
-    const ext = parsed.data.filename.split(".").pop() ?? "bin";
-    const path = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
+    const { folder, name } = splitStoragePath(path);
 
-    const upload = await supabase.storage.from(BUCKET).upload(path, buffer, {
-      contentType: parsed.data.contentType,
-      upsert: false,
-    });
-    if (upload.error) {
-      return respond.serverError("Upload failed", upload.error.message);
+    // Confirm the direct upload completed and read the authoritative size
+    // from storage — never trust a client-reported size.
+    const { data: listed, error: listError } = await supabase.storage
+      .from(BUCKET)
+      .list(folder, { search: name, limit: 100 });
+    if (listError) {
+      return respond.serverError("Could not verify upload", listError.message);
+    }
+    const object = listed?.find((entry) => entry.name === name);
+    if (!object) {
+      return respond.badRequest("Upload not found in storage — please retry");
+    }
+
+    const size = (object.metadata as { size?: number } | null)?.size ?? 0;
+    if (size <= 0 || size > CMS_MEDIA_MAX_BYTES) {
+      await supabase.storage.from(BUCKET).remove([path]);
+      return respond.badRequest(`Image too large (${CMS_MEDIA_MAX_MB} MB limit)`);
     }
 
     const { data: row, error: insertError } = await supabase
@@ -81,6 +102,7 @@ export async function POST(request: Request) {
       .select("id, alt, width, height, storage_path, created_at")
       .single();
     if (insertError || !row) {
+      await supabase.storage.from(BUCKET).remove([path]);
       return respond.serverError("Upload saved but DB insert failed", insertError?.message);
     }
 

@@ -3,23 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { adminFetch } from "@/lib/admin/api";
+import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
+import {
+  CMS_MEDIA_BUCKET,
+  CMS_MEDIA_MAX_BYTES,
+  CMS_MEDIA_MAX_MB,
+  isAllowedMediaType,
+} from "@/lib/cms/media-config";
 import type { MediaItem } from "./MediaPicker";
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result !== "string") {
-        reject(new Error("Failed to read file"));
-        return;
-      }
-      resolve(result.split(",")[1] ?? "");
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
 
 function readImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
   return new Promise((resolve) => {
@@ -66,23 +57,58 @@ export function MediaLibrary() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+
+    const contentType = file.type || "application/octet-stream";
+    if (!isAllowedMediaType(contentType)) {
+      setError(`Unsupported file type: ${contentType}`);
+      return;
+    }
+    if (file.size > CMS_MEDIA_MAX_BYTES) {
+      setError(`File too large (${CMS_MEDIA_MAX_MB} MB limit)`);
+      return;
+    }
+
     setUploading(true);
     setError(null);
     try {
-      const [data, dims] = await Promise.all([
-        fileToBase64(file),
-        readImageDimensions(file),
-      ]);
+      const dims = await readImageDimensions(file);
+
+      // 1) Ask the server for a single-use signed upload URL (tiny JSON).
+      const signed = await adminFetch<{ path: string; token: string }>(
+        "/api/admin/cms/media/sign",
+        {
+          method: "POST",
+          authHeaders: authHeaders(),
+          body: JSON.stringify({ filename: file.name, contentType, size: file.size }),
+        },
+      );
+      if (!signed.ok) {
+        setError(signed.error);
+        setUploading(false);
+        return;
+      }
+
+      // 2) Stream the bytes directly to Supabase Storage — bypasses the
+      //    Vercel function and its 4.5 MB request-body limit entirely.
+      const supabase = getBrowserSupabaseClient();
+      const { error: uploadError } = await supabase.storage
+        .from(CMS_MEDIA_BUCKET)
+        .uploadToSignedUrl(signed.data.path, signed.data.token, file, { contentType });
+      if (uploadError) {
+        setError(uploadError.message || "Upload failed");
+        setUploading(false);
+        return;
+      }
+
+      // 3) Commit the metadata so the DB row is created and caches revalidate.
       const res = await adminFetch<{ media: MediaItem }>("/api/admin/cms/media", {
         method: "POST",
         authHeaders: authHeaders(),
         body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type || "application/octet-stream",
+          path: signed.data.path,
           alt: alt || undefined,
           width: dims?.width,
           height: dims?.height,
-          data,
         }),
       });
       if (!res.ok) {
@@ -128,7 +154,7 @@ export function MediaLibrary() {
           </label>
         </div>
         <p className="text-label text-ink/45">
-          Stored in Supabase Storage bucket cms-media. Max 10 MB.
+          Stored in Supabase Storage bucket cms-media. Max {CMS_MEDIA_MAX_MB} MB.
         </p>
       </div>
 
