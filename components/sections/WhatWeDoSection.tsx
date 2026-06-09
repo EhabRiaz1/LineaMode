@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "motion/react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useInView } from "motion/react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { capabilities } from "@/content/capabilities";
 import { easeBrand } from "@/lib/motion/easings";
 import { cn } from "@/lib/utils";
 
 const CYCLE_MS = 5000;
+const COLLAPSED_PHOTO_MS = 3500;
+const COLLAPSED_FADE_S = 3.5;
 
 const CAPABILITY_IMAGES: Record<string, string> = {
   "design-support":
@@ -46,28 +48,68 @@ export function WhatWeDoSection({
     image: capabilityItems?.[i]?.image || CAPABILITY_IMAGES[c.slug] || "",
   }));
   const sectionRef = useRef<HTMLElement>(null);
+  const headlineRef = useRef<HTMLHeadingElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const inView = useInView(sectionRef, { margin: "-15% 0px -15% 0px" });
 
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState<number | null>(0);
+  const [photoPullUp, setPhotoPullUp] = useState(0);
+  const [collapsedPhotoIndex, setCollapsedPhotoIndex] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
   const [hasManualSelection, setHasManualSelection] = useState(false);
 
   useEffect(() => {
-    if (!inView || hasManualSelection) return;
+    if (!inView || hasManualSelection || active === null) return;
     const t = window.setTimeout(() => {
-      setActive((i) => (i + 1) % displayCapabilities.length);
+      setActive((i) => ((i ?? 0) + 1) % displayCapabilities.length);
       setCycleKey((k) => k + 1);
     }, CYCLE_MS);
     return () => window.clearTimeout(t);
   }, [displayCapabilities.length, inView, cycleKey, active, hasManualSelection]);
 
+  useLayoutEffect(() => {
+    const updatePhotoPullUp = () => {
+      if (!headlineRef.current || !listRef.current) return;
+      const headlineTop = headlineRef.current.getBoundingClientRect().top;
+      const listTop = listRef.current.getBoundingClientRect().top;
+      setPhotoPullUp(Math.max(0, listTop - headlineTop));
+    };
+
+    updatePhotoPullUp();
+    const observer = new ResizeObserver(updatePhotoPullUp);
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    window.addEventListener("resize", updatePhotoPullUp);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updatePhotoPullUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!inView || active !== null) return;
+    const t = window.setTimeout(() => {
+      setCollapsedPhotoIndex((i) => (i + 1) % displayCapabilities.length);
+    }, COLLAPSED_PHOTO_MS);
+    return () => window.clearTimeout(t);
+  }, [displayCapabilities.length, inView, active, collapsedPhotoIndex]);
+
   const onSelect = (i: number) => {
-    setActive(i);
+    setActive((current) => {
+      if (current === i) {
+        setCollapsedPhotoIndex(i);
+        return null;
+      }
+      return i;
+    });
     setHasManualSelection(true);
     setCycleKey((k) => k + 1);
   };
 
-  const item = displayCapabilities[active];
+  const photoItem =
+    active !== null
+      ? displayCapabilities[active]
+      : displayCapabilities[collapsedPhotoIndex];
+  const isCollapsedSlideshow = active === null;
 
   return (
     <section
@@ -78,7 +120,10 @@ export function WhatWeDoSection({
         <div className="grid grid-cols-12 gap-6 mb-10">
           <div className="col-span-12 md:col-span-5">
             <Eyebrow number="02">{eyebrow}</Eyebrow>
-            <h2 className="mt-5 font-sans text-[clamp(2rem,3.6vw,2.85rem)] leading-[1.08] tracking-[-0.015em]">
+            <h2
+              ref={headlineRef}
+              className="mt-5 font-sans text-[clamp(2rem,3.6vw,2.85rem)] leading-[1.08] tracking-[-0.015em]"
+            >
               <span className="block whitespace-nowrap font-medium">{headlineLine1}</span>
               <span className="block whitespace-nowrap italic font-light">{headlineLine2}</span>
             </h2>
@@ -86,7 +131,7 @@ export function WhatWeDoSection({
         </div>
 
         <div className="grid grid-cols-12 gap-7 md:gap-10 items-start">
-            <ul className="col-span-12 md:col-span-6 flex flex-col">
+            <ul ref={listRef} className="col-span-12 md:col-span-6 flex flex-col">
               {displayCapabilities.map((c, i) => (
                 <li key={c.slug} className="relative">
                   <button
@@ -100,7 +145,12 @@ export function WhatWeDoSection({
                     )}
                     aria-pressed={active === i}
                   >
-                    <span className="font-sans text-[clamp(1.155rem,0.99vw+0.88rem,1.595rem)] font-light leading-[1.08] tracking-[-0.015em]">
+                    <span
+                      className={cn(
+                        "font-sans text-[clamp(1.155rem,0.99vw+0.88rem,1.595rem)] leading-[1.08] tracking-[-0.015em]",
+                        active === i ? "font-semibold" : "font-medium",
+                      )}
+                    >
                       {c.title}
                     </span>
                     <motion.span
@@ -128,7 +178,7 @@ export function WhatWeDoSection({
                       transition={{ duration: 0.45, ease: easeBrand }}
                       className="pb-7"
                     >
-                      <div className="md:hidden mx-auto mb-5 aspect-square w-full max-w-[220px] overflow-hidden bg-ink/5 ring-1 ring-ink/10">
+                      <div className="md:hidden mx-auto mb-5 aspect-square w-full max-w-[264px] overflow-hidden bg-ink/5 ring-1 ring-ink/10">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={c.image}
@@ -136,7 +186,7 @@ export function WhatWeDoSection({
                           className="h-full w-full object-cover"
                         />
                       </div>
-                      <p className="max-w-xl font-[family-name:var(--font-display)] text-[clamp(0.91rem,0.98vw+0.595rem,1.386rem)] font-extralight leading-tight">
+                      <p className="w-full font-[family-name:var(--font-display)] text-[clamp(0.77rem,0.83vw+0.51rem,1.18rem)] font-extralight leading-tight">
                         {c.short}
                       </p>
                     </motion.div>
@@ -164,24 +214,40 @@ export function WhatWeDoSection({
               ))}
             </ul>
 
-            <div className="hidden md:block col-span-12 md:col-span-5 md:col-start-8 relative">
-              <motion.div
-                key={item.slug}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: easeBrand }}
-                className="md:sticky md:top-32"
-              >
-                <div className="aspect-square overflow-hidden bg-ink/5 ring-1 ring-ink/10">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="h-full w-full object-cover"
-                  />
+            <motion.div
+              animate={{ marginTop: isCollapsedSlideshow ? -photoPullUp : 0 }}
+              transition={{ duration: 0.55, ease: easeBrand }}
+              className="hidden md:block col-span-12 md:col-span-5 md:col-start-8 relative"
+            >
+              <div className={cn(!isCollapsedSlideshow && "md:sticky md:top-32")}>
+                <div className="relative aspect-square overflow-hidden bg-ink/5 ring-1 ring-ink/10">
+                  <AnimatePresence mode="sync">
+                    <motion.div
+                      key={
+                        isCollapsedSlideshow
+                          ? `collapsed-${collapsedPhotoIndex}`
+                          : photoItem.slug
+                      }
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        duration: isCollapsedSlideshow ? COLLAPSED_FADE_S : 0.6,
+                        ease: easeBrand,
+                      }}
+                      className="absolute inset-0"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photoItem.image}
+                        alt={photoItem.title}
+                        className="h-full w-full object-cover"
+                      />
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
         </div>
       </div>
     </section>

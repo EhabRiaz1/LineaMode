@@ -168,13 +168,13 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
             and are styled explicitly for the dark backdrop so the text
             never inherits the section's stone-on-stone defaults. */}
         <div className="flex flex-col gap-8 md:gap-10">
-          <h1 className="text-[clamp(2.35rem,5.5vw+0.65rem,6.75rem)] font-mono font-light tracking-[-0.02em] leading-[0.95] max-w-5xl">
+          <h1 className="text-[clamp(2.35rem,5.5vw+0.65rem,6.75rem)] md:text-[clamp(1.058rem,calc((5.5vw+0.65rem)*0.45),3.038rem)] font-mono font-light tracking-[-0.02em] leading-[0.95] max-w-5xl">
             <span className="block">
               <SplitText by="word" stagger={0.06} duration={1.1}>
                 {headlineLine1}
               </SplitText>
             </span>
-            <span className="block italic font-extralight">
+            <span className="block font-extralight">
               <SplitText by="word" stagger={0.06} duration={1.1} delay={0.25}>
                 {headlineLine2}
               </SplitText>
@@ -185,7 +185,7 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: easeBrand, delay: 0.7 }}
-            className="flex flex-wrap items-center gap-3"
+            className="flex flex-wrap items-center gap-3 [&_a]:max-md:h-[calc(2.75rem*0.85)] [&_a]:max-md:px-[calc(1.25rem*0.85)] [&_a]:max-md:text-[calc(0.75rem*0.85)]"
           >
             {/* Primary CTA — solid stone pill, ink text, force-coloured
                 with a literal class so it never inherits the section's
