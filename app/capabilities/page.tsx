@@ -3,6 +3,7 @@ import { SplitText } from "@/components/ui/SplitText";
 import { ButtonLink } from "@/components/ui/Button";
 import { resolveContactHref } from "@/lib/navigation";
 import { GridPattern } from "@/components/ui/GridPattern";
+import { CmsImage } from "@/components/ui/CmsImage";
 import { capabilities as staticCapabilities } from "@/content/capabilities";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { getCapabilitiesContent } from "@/lib/cms";
@@ -113,9 +114,8 @@ export default async function CapabilitiesPage() {
               </div>
               <div className={`min-h-[14rem] min-w-0 md:min-h-0 md:h-full ${i % 2 === 1 ? "md:order-1" : ""}`}>
                 <div className="h-full overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={cap.image || CAPABILITY_DEFAULT_IMAGES[i] || ""}
+                  <CmsImage
+                    value={cap.image || CAPABILITY_DEFAULT_IMAGES[i] || ""}
                     alt={cap.title}
                     className="h-full w-full object-cover"
                   />

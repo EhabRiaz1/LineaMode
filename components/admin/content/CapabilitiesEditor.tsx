@@ -368,6 +368,7 @@ export function CapabilitiesEditor() {
               />
               <ImagePickerField
                 label="Card image"
+                frame="capability-card"
                 value={cap.image}
                 placeholder={CAPABILITY_DEFAULT_IMAGES[i] ?? "https://…"}
                 onChange={(v) => {

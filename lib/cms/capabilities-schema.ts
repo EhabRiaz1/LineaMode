@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
+import { cmsImageSchema } from "@/lib/cms/cms-image";
 
 const capabilityItemSchema = z.object({
   title: z.string().max(120),
   short: z.string().max(600),
   description: z.string().max(600),
   bullets: z.array(z.string().max(200)).max(8).default([]),
-  image: z.string().max(2048).default(""),
+  image: cmsImageSchema.default(""),
 });
 
 const processStepSchema = z.object({

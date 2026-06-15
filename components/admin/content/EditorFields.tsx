@@ -2,6 +2,15 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  cmsImageSrc,
+  isDefaultMobileFocus,
+  parseCmsImage,
+  serializeCmsImage,
+  type CmsImageValue,
+  type ImageFramePreset,
+} from "@/lib/cms/cms-image";
+import { FocalPointModal } from "./FocalPointModal";
 import { MediaPicker, type MediaItem } from "./MediaPicker";
 import { PreviewPanel } from "./PreviewPanel";
 
@@ -141,24 +150,37 @@ export function ImagePickerField({
   value,
   onChange,
   placeholder,
+  frame = "video",
 }: {
   label: string;
-  value: string;
-  onChange: (url: string) => void;
+  value: CmsImageValue;
+  onChange: (value: CmsImageValue) => void;
   placeholder?: string;
+  frame?: ImageFramePreset;
 }) {
   const [picking, setPicking] = useState(false);
+  const [positioning, setPositioning] = useState(false);
+  const parsed = parseCmsImage(value);
+  const src = parsed.src;
+  const hasCustomFocus = !isDefaultMobileFocus(parsed.mobileFocus);
+
+  const updateSrc = (nextSrc: string) => {
+    onChange(serializeCmsImage({ src: nextSrc, mobileFocus: parsed.mobileFocus }));
+  };
+
+  const updateFocus = (mobileFocus: typeof parsed.mobileFocus) => {
+    onChange(serializeCmsImage({ src: parsed.src, mobileFocus }));
+  };
 
   return (
     <div className="space-y-2">
       <p className="text-eyebrow text-ink/40">{label}</p>
 
-      {/* Thumbnail + picker button */}
       <div className="rounded-2xl border border-[var(--hairline)] bg-stone p-3 space-y-3">
-        {value && (
+        {src && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={value}
+            src={src}
             alt=""
             className="w-full aspect-video object-cover rounded-xl bg-ink/5"
           />
@@ -170,26 +192,40 @@ export function ImagePickerField({
             onClick={() => setPicking(true)}
             className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
           >
-            {value ? "Change image" : "Pick from library"}
+            {src ? "Change image" : "Pick from library"}
           </button>
-          {value && (
-            <button
-              type="button"
-              onClick={() => onChange("")}
-              className="text-label text-ink/45 hover:text-terracotta transition-colors"
-            >
-              Remove
-            </button>
+          {src && (
+            <>
+              <button
+                type="button"
+                onClick={() => setPositioning(true)}
+                className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+              >
+                {hasCustomFocus ? "Edit phone position" : "Position for phone"}
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="text-label text-ink/45 hover:text-terracotta transition-colors"
+              >
+                Remove
+              </button>
+            </>
           )}
         </div>
 
-        {/* URL fallback — keep existing links, allow external URLs */}
+        {hasCustomFocus && (
+          <p className="text-label text-ink/45">
+            Phone focus set · {parsed.mobileFocus.x}% × {parsed.mobileFocus.y}%
+          </p>
+        )}
+
         <div>
           <p className="text-eyebrow text-ink/35 mb-1">Or paste a URL</p>
           <input
-            value={value}
+            value={src}
             placeholder={placeholder ?? "https://…"}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => updateSrc(e.target.value)}
             className="w-full rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-label text-ink outline-none focus:ring-2 focus:ring-ink/15"
           />
         </div>
@@ -199,9 +235,22 @@ export function ImagePickerField({
         <MediaPicker
           onClose={() => setPicking(false)}
           onPick={(media: MediaItem) => {
-            onChange(media.url);
+            updateSrc(media.url);
             setPicking(false);
           }}
+        />
+      )}
+
+      {positioning && src && (
+        <FocalPointModal
+          src={src}
+          focus={parsed.mobileFocus}
+          frame={frame}
+          onSave={(mobileFocus) => {
+            updateFocus(mobileFocus);
+            setPositioning(false);
+          }}
+          onClose={() => setPositioning(false)}
         />
       )}
     </div>

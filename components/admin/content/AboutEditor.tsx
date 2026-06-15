@@ -188,6 +188,7 @@ export function AboutEditor() {
               />
               <ImagePickerField
                 label="Photo"
+                frame="founder-portrait"
                 value={card.portrait}
                 onChange={(v) => {
                   const cards = [...fcta.cards];
@@ -215,8 +216,12 @@ export function AboutEditor() {
         <Field label="Address" value={hq.address} multiline rows={3}
           placeholder={"Line 1,\nLine 2,\nCity, Country."}
           onChange={(v) => update({ ...content, hq: { ...hq, address: v } })} />
-        <ImagePickerField label="Photo" value={hq.image}
-          onChange={(v) => update({ ...content, hq: { ...hq, image: v } })} />
+        <ImagePickerField
+          label="Photo"
+          frame="editorial-split"
+          value={hq.image}
+          onChange={(v) => update({ ...content, hq: { ...hq, image: v } })}
+        />
       </SectionAccordion>
     </EditorShell>
   );

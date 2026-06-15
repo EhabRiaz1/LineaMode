@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
+import { cmsImageSchema } from "@/lib/cms/cms-image";
 
 const ctaSchema = z.object({
   label: z.string().max(80),
@@ -14,10 +15,7 @@ export const homeContentSchema = z.object({
       headlineLine2: z.string().max(120).default("to Execution."),
       description: z.string().max(200).default("Knitwear · Performance Polyester · Soft Wovens"),
       bottomLabel: z.string().max(120).default("Design / Development / Manufacture"),
-      image: z
-        .string()
-        .max(2048)
-        .default(
+      image: cmsImageSchema.default(
           "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85",
         ),
       primaryCta: ctaSchema.default({ label: "What we do", href: "/capabilities" }),
@@ -73,7 +71,7 @@ export const homeContentSchema = z.object({
         .default(
           "Lineamode Apparel is a design-led manufacturing partner shaped by years on the floor and in the field — from trend and textile to production and merchandising. We work with global fashion brands that need technical competence, operational agility, and a studio that treats every collection as a long-term collaboration.",
         ),
-      image: z.string().max(2048).default("/images/home/identity-office.jpg"),
+      image: cmsImageSchema.default("/images/home/identity-office.jpg"),
     })
     .prefault({}),
 
@@ -127,7 +125,7 @@ export const homeContentSchema = z.object({
           z.object({
             title: z.string().max(120),
             short: z.string().max(600),
-            image: z.string().max(2048).default(""),
+            image: cmsImageSchema.default(""),
           }),
         )
         .default([]),

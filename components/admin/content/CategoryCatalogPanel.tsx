@@ -5,6 +5,7 @@ import type { ProductCategorySlug } from "@/content/product-catalog";
 import type { CategoryConfig, ProductCard, Subcategory } from "@/lib/cms/products-schema";
 import { sortSubcategories } from "@/lib/cms/products-schema";
 import { Field, ImagePickerField } from "./EditorFields";
+import { cmsImageSrc } from "@/lib/cms/cms-image";
 
 function slugify(value: string): string {
   return value
@@ -154,6 +155,7 @@ export function CategoryCatalogPanel({
               />
               <ImagePickerField
                 label="Tile image (homepage expand)"
+                frame="subcategory-tile"
                 value={sub.image ?? ""}
                 onChange={(v) => updateSubcategory(sub.id, { image: v })}
               />
@@ -179,11 +181,13 @@ export function CategoryCatalogPanel({
         </div>
         <ImagePickerField
           label="Tile image"
+          frame="category-tile"
           value={categoryConfig.image}
           onChange={(v) => onUpdateCategory({ image: v })}
         />
         <ImagePickerField
           label="Tile hover image"
+          frame="category-tile"
           value={categoryConfig.hoverImage}
           onChange={(v) => onUpdateCategory({ hoverImage: v })}
         />
@@ -232,11 +236,13 @@ export function CategoryCatalogPanel({
             />
             <ImagePickerField
               label="Photo"
+              frame="product-grid"
               value={selectedProduct.image}
               onChange={(v) => onUpdateProduct(selectedProduct.id, { image: v })}
             />
             <ImagePickerField
               label="Hover photo (alternate product)"
+              frame="product-hover"
               value={selectedProduct.hoverImage ?? ""}
               onChange={(v) => onUpdateProduct(selectedProduct.id, { hoverImage: v })}
             />
@@ -269,10 +275,10 @@ export function CategoryCatalogPanel({
                   className="group overflow-hidden rounded-xl border border-[var(--hairline)] bg-stone text-left transition-colors hover:border-ink/20"
                 >
                   <div className="aspect-[4/5] overflow-hidden bg-ink/5">
-                    {item.image ? (
+                    {cmsImageSrc(item.image) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={item.image}
+                        src={cmsImageSrc(item.image)}
                         alt=""
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />

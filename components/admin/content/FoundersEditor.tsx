@@ -11,7 +11,7 @@ import { founders as staticFounders } from "@/content/founders";
 import {
   saveFoundersContentDraft, publishFoundersContent, discardFoundersContentDraft,
 } from "@/app/admin/(console)/content/_actions";
-import { Field, ListField, CtaField, SectionAccordion, EditorShell } from "./EditorFields";
+import { Field, ListField, CtaField, SectionAccordion, EditorShell, ImagePickerField } from "./EditorFields";
 
 export function FoundersEditor() {
   const { token, authHeaders, status } = useAdminSession();
@@ -161,6 +161,12 @@ export function FoundersEditor() {
           <ListField label="Focus areas" values={f.focus}
             placeholder="e.g. Commercial strategy"
             onChange={(v) => updateFounder(i, { focus: v })} />
+          <ImagePickerField
+            label="Portrait photo"
+            frame="founder-portrait"
+            value={f.portrait ?? ""}
+            onChange={(v) => updateFounder(i, { portrait: v })}
+          />
         </SectionAccordion>
       ))}
 

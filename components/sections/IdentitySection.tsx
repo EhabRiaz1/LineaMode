@@ -1,17 +1,18 @@
 "use client";
 
-import Image from "next/image";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { easeBrand } from "@/lib/motion/easings";
+import { CmsImage } from "@/components/ui/CmsImage";
+import type { CmsImageValue } from "@/lib/cms/cms-image";
 
 type IdentityCms = {
   eyebrow?: string;
   headline?: string;
   headlineItalic?: string;
   body?: string;
-  image?: string;
+  image?: CmsImageValue;
 };
 
 export function IdentitySection({ cms }: { cms?: IdentityCms } = {}) {
@@ -21,7 +22,7 @@ export function IdentitySection({ cms }: { cms?: IdentityCms } = {}) {
   const body =
     cms?.body ??
     "Lineamode Apparel is a design-led manufacturing partner shaped by years on the floor and in the field — from trend and textile to production and merchandising. We work with global fashion brands that need technical competence, operational agility, and a studio that treats every collection as a long-term collaboration.";
-  const image = cms?.image || "/images/home/identity-office.jpg";
+  const image = cms?.image ?? "/images/home/identity-office.jpg";
 
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -36,13 +37,10 @@ export function IdentitySection({ cms }: { cms?: IdentityCms } = {}) {
       className="relative h-[88vh] min-h-[520px] overflow-hidden bg-ink text-stone"
     >
       <motion.div className="absolute inset-0 scale-105" style={{ y }}>
-        <Image
-          src={image}
+        <CmsImage
+          value={image}
           alt="Lineamode studio office"
-          fill
-          sizes="100vw"
-          className="object-cover opacity-75"
-          priority={false}
+          className="absolute inset-0 h-full w-full object-cover opacity-75"
         />
       </motion.div>
 

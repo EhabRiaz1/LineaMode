@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import type { Block, MediaRef, Cta } from "@/lib/cms/blocks";
+import {
+  DEFAULT_MOBILE_FOCUS,
+  type ImageFramePreset,
+} from "@/lib/cms/cms-image";
 import { MediaPicker } from "./MediaPicker";
+import { FocalPointModal } from "./FocalPointModal";
 
 /**
  * Per-block field editor. Each branch of the discriminated union maps a
@@ -22,6 +27,7 @@ export function BlockFields({
         <div className="space-y-4">
           <MediaInput
             label="Background image"
+            frame="hero"
             value={block.image}
             onChange={(image) => onChange({ ...block, image })}
           />
@@ -54,6 +60,7 @@ export function BlockFields({
           />
           <MediaInput
             label="Image"
+            frame="editorial-split"
             value={block.image}
             onChange={(image) => onChange({ ...block, image })}
           />
@@ -82,7 +89,12 @@ export function BlockFields({
     case "lookbook_teaser":
       return (
         <div className="space-y-4">
-          <MediaInput label="Background image" value={block.image} onChange={(image) => onChange({ ...block, image })} />
+          <MediaInput
+            label="Background image"
+            frame="lookbook"
+            value={block.image}
+            onChange={(image) => onChange({ ...block, image })}
+          />
           <Text label="Eyebrow" value={block.eyebrow} onChange={(v) => onChange({ ...block, eyebrow: v })} />
           <Text label="Title" value={block.title} multiline onChange={(v) => onChange({ ...block, title: v })} />
           <Text label="Body" value={block.body} multiline onChange={(v) => onChange({ ...block, body: v })} />
@@ -126,6 +138,7 @@ export function BlockFields({
               >
                 <MediaInput
                   label={`Image ${index + 1}`}
+                  frame="gallery"
                   value={image}
                   onChange={(next) => {
                     const list = [...block.images];
@@ -420,12 +433,22 @@ function MediaInput({
   label,
   value,
   onChange,
+  frame = "video",
 }: {
   label: string;
   value: MediaRef;
   onChange: (value: MediaRef) => void;
+  frame?: ImageFramePreset;
 }) {
   const [picking, setPicking] = useState(false);
+  const [positioning, setPositioning] = useState(false);
+  const focusX = Math.round((value.focal_x ?? 0.5) * 100);
+  const focusY = Math.round((value.focal_y ?? 0.5) * 100);
+  const hasCustomFocus =
+    value.focal_x !== undefined &&
+    value.focal_y !== undefined &&
+    (focusX !== DEFAULT_MOBILE_FOCUS.x || focusY !== DEFAULT_MOBILE_FOCUS.y);
+
   return (
     <div className="space-y-2">
       <p className="text-eyebrow text-ink/40">{label}</p>
@@ -456,7 +479,7 @@ function MediaInput({
             />
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={() => setPicking(true)}
@@ -464,7 +487,21 @@ function MediaInput({
           >
             Pick from library
           </button>
+          {value.src && (
+            <button
+              type="button"
+              onClick={() => setPositioning(true)}
+              className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+            >
+              {hasCustomFocus ? "Edit phone position" : "Position for phone"}
+            </button>
+          )}
         </div>
+        {hasCustomFocus && (
+          <p className="text-label text-ink/45">
+            Phone focus set · {focusX}% × {focusY}%
+          </p>
+        )}
       </div>
       {picking && (
         <MediaPicker
@@ -479,6 +516,22 @@ function MediaInput({
               id: media.id,
             });
             setPicking(false);
+          }}
+        />
+      )}
+      {positioning && value.src && (
+        <FocalPointModal
+          src={value.src}
+          frame={frame}
+          focus={{ x: focusX, y: focusY }}
+          onClose={() => setPositioning(false)}
+          onSave={(focus) => {
+            onChange({
+              ...value,
+              focal_x: focus.x / 100,
+              focal_y: focus.y / 100,
+            });
+            setPositioning(false);
           }}
         />
       )}

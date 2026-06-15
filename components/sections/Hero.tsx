@@ -17,6 +17,8 @@ import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { easeBrand } from "@/lib/motion/easings";
 import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
+import { CmsImage } from "@/components/ui/CmsImage";
+import type { CmsImageValue } from "@/lib/cms/cms-image";
 
 const HERO_IMAGE_DEFAULT =
   "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85";
@@ -27,13 +29,13 @@ type HeroCms = {
   headlineLine2?: string;
   description?: string;
   bottomLabel?: string;
-  image?: string;
+  image?: CmsImageValue;
   primaryCta?: { label: string; href: string };
   secondaryCta?: { label: string; href: string };
 };
 
 export function Hero({ cms }: { cms?: HeroCms } = {}) {
-  const image = cms?.image || HERO_IMAGE_DEFAULT;
+  const image = cms?.image ?? HERO_IMAGE_DEFAULT;
   const eyebrow = cms?.eyebrow ?? "Lineamode Apparel · Est. Islamabad";
   const headlineLine1 = cms?.headlineLine1 ?? "From Idea";
   const headlineLine2 = cms?.headlineLine2 ?? "to Execution.";
@@ -113,11 +115,10 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
             willChange: "filter, transform",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={image}
+          <CmsImage
+            value={image}
             alt="Editorial garment study — Lineamode Apparel"
-            className="h-full w-full object-cover object-[center_25%]"
+            className="h-full w-full object-cover md:object-[center_25%]"
             draggable={false}
           />
         </motion.div>

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRef } from "react";
 import type { HomeCategoryTile } from "@/lib/cms/products-schema";
+import { cmsImageSrc } from "@/lib/cms/cms-image";
+import { CmsImage } from "@/components/ui/CmsImage";
 import { cn } from "@/lib/utils";
 
 type CategoryTileProps = {
@@ -21,7 +23,6 @@ export function CategoryTile({
   onActivate,
   className,
 }: CategoryTileProps) {
-  const hoverSrc = tile.hoverImage || tile.image;
   const lastPointer = useRef<string>("mouse");
   const hasSubcategories = tile.subcategories.length > 0;
   const expanded = active && hasSubcategories;
@@ -53,9 +54,8 @@ export function CategoryTile({
             expanded ? "scale-[1.04] opacity-0" : "scale-100 opacity-100",
           )}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={tile.image}
+          <CmsImage
+            value={tile.image}
             alt={tile.title}
             className={cn(
               "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700",
@@ -63,9 +63,10 @@ export function CategoryTile({
               active && !expanded ? "scale-[1.03] opacity-0" : "scale-100 opacity-100",
             )}
           />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={hoverSrc}
+          <CmsImage
+            value={
+              cmsImageSrc(tile.hoverImage) ? tile.hoverImage : tile.image
+            }
             alt=""
             aria-hidden
             className={cn(
@@ -122,10 +123,9 @@ export function CategoryTile({
                   )}
                   style={expanded ? { transitionDelay: `${180 + index * 70}ms` } : undefined}
                 >
-                  {sub.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={sub.image}
+                  {cmsImageSrc(sub.image) ? (
+                    <CmsImage
+                      value={sub.image}
                       alt={sub.title}
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover/sub:scale-[1.05]"
                     />

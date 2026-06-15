@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
+import { cmsImageSchema } from "@/lib/cms/cms-image";
 
 const founderSchema = z.object({
   name: z.string().max(120),
@@ -11,7 +12,7 @@ const founderSchema = z.object({
   bio: z.array(z.string().max(600)).default([]),
   focus: z.array(z.string().max(200)).default([]),
   pull: z.string().max(400),
-  portrait: z.string().max(2048).default(""),
+  portrait: cmsImageSchema.default(""),
 });
 
 export const foundersContentSchema = z.object({

@@ -3,6 +3,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useInView } from "motion/react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { CmsImage } from "@/components/ui/CmsImage";
+import type { CmsImageValue } from "@/lib/cms/cms-image";
 import { capabilities } from "@/content/capabilities";
 import { easeBrand } from "@/lib/motion/easings";
 import { cn } from "@/lib/utils";
@@ -28,7 +30,7 @@ type WhatWeDoCms = {
   headlineLine2?: string;
 };
 
-type CapabilityItem = { title: string; short: string; image?: string };
+type CapabilityItem = { title: string; short: string; image?: CmsImageValue };
 
 export function WhatWeDoSection({
   cms,
@@ -179,9 +181,8 @@ export function WhatWeDoSection({
                       className="pb-7"
                     >
                       <div className="md:hidden mx-auto mb-5 aspect-square w-full max-w-[264px] overflow-hidden bg-ink/5 ring-1 ring-ink/10">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={c.image}
+                        <CmsImage
+                          value={c.image}
                           alt={c.title}
                           className="h-full w-full object-cover"
                         />
@@ -237,9 +238,8 @@ export function WhatWeDoSection({
                       }}
                       className="absolute inset-0"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={photoItem.image}
+                      <CmsImage
+                        value={photoItem.image}
                         alt={photoItem.title}
                         className="h-full w-full object-cover"
                       />

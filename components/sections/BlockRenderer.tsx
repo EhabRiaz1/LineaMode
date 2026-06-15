@@ -1,12 +1,13 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { ButtonLink } from "@/components/ui/Button";
+import { CmsImage } from "@/components/ui/CmsImage";
 import { CapabilitiesRail } from "@/components/sections/CapabilitiesRail";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
 import { listJournal } from "@/lib/cms";
 import type { Block, MediaRef, Cta } from "@/lib/cms/blocks";
 import { cn } from "@/lib/utils";
+import type { CmsImageValue } from "@/lib/cms/cms-image";
 
 /**
  * BlockRenderer is the only place that knows how a CMS block.type maps to
@@ -61,6 +62,14 @@ function CtaPill({ cta, tone = "primary" }: { cta: Cta; tone?: Cta["variant"] })
   );
 }
 
+function mediaRefToCmsImage(media: MediaRef): CmsImageValue {
+  if (!media.src) return "";
+  const x = Math.round((media.focal_x ?? 0.5) * 100);
+  const y = Math.round((media.focal_y ?? 0.5) * 100);
+  if (x === 50 && y === 50) return media.src;
+  return { src: media.src, mobileFocus: { x, y } };
+}
+
 function MediaImage({
   media,
   className,
@@ -73,20 +82,15 @@ function MediaImage({
   priority?: boolean;
 }) {
   if (!media.src) return null;
-  const objectPosition =
-    media.focal_x !== undefined || media.focal_y !== undefined
-      ? `${(media.focal_x ?? 0.5) * 100}% ${(media.focal_y ?? 0.5) * 100}%`
-      : undefined;
+  const cmsValue = mediaRefToCmsImage(media);
   return (
-    <Image
-      src={media.src}
+    <CmsImage
+      value={cmsValue}
       alt={media.alt ?? ""}
-      width={media.width ?? 2400}
-      height={media.height ?? 1600}
-      sizes={sizes}
-      priority={priority}
       className={cn("h-full w-full object-cover", className)}
-      style={{ objectPosition }}
+      // sizes/priority only apply to Next Image; kept for API compat
+      data-sizes={sizes}
+      data-priority={priority ? "true" : undefined}
     />
   );
 }

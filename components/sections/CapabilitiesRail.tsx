@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "motion/react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { CmsImage } from "@/components/ui/CmsImage";
+import { cmsImageSrc, type CmsImageValue } from "@/lib/cms/cms-image";
 import { capabilities } from "@/content/capabilities";
 
 /**
@@ -40,7 +42,7 @@ type CapabilitiesCms = {
   headlineItalic?: string;
 };
 
-type CapabilityItem = { title: string; short: string; image?: string };
+type CapabilityItem = { title: string; short: string; image?: CmsImageValue };
 
 export function CapabilitiesRail({
   cms,
@@ -200,10 +202,9 @@ export function CapabilitiesRail({
                   key={c.slug}
                   className="relative shrink-0 w-[86vw] md:w-[58vw] lg:w-[40vw] h-[clamp(440px,68vh,580px)] md:h-[clamp(420px,58vh,560px)] overflow-hidden ring-1 ring-ink/15 text-stone"
                 >
-                  {image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={image}
+                  {cmsImageSrc(image) ? (
+                    <CmsImage
+                      value={image}
                       alt=""
                       aria-hidden
                       className="absolute inset-0 h-full w-full object-cover"

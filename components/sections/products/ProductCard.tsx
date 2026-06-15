@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { CmsImage } from "@/components/ui/CmsImage";
+import { cmsImageSrc, type CmsImageValue } from "@/lib/cms/cms-image";
 import { cn } from "@/lib/utils";
 
 type ProductCardProps = {
   title: string;
-  image: string;
-  hoverImage?: string;
+  image: CmsImageValue;
+  hoverImage?: CmsImageValue;
   variant?: "rail" | "grid";
   className?: string;
   /** Short blurb revealed when the tile expands on hover. */
@@ -54,7 +56,8 @@ export function ProductCard({
   ctaHref = "/products",
   ctaLabel = "Explore more",
 }: ProductCardProps) {
-  const hoverSrc = hoverImage || image;
+  const hoverValue =
+    hoverImage && cmsImageSrc(hoverImage) ? hoverImage : image;
   const [active, setActive] = useState(false);
   const lastPointer = useRef<string>("mouse");
   const hasDetails = Boolean(description);
@@ -101,9 +104,8 @@ export function ProductCard({
       onBlur={() => setActive(false)}
     >
       <div className={cn("relative overflow-hidden rounded-none bg-ink/5 ring-1 ring-ink/[0.06]", frame)}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={image}
+        <CmsImage
+          value={image}
           alt={title}
           className={cn(
             "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700",
@@ -111,9 +113,8 @@ export function ProductCard({
             active ? "scale-[1.03] opacity-0" : "scale-100 opacity-100",
           )}
         />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={hoverSrc}
+        <CmsImage
+          value={hoverValue}
           alt=""
           aria-hidden
           className={cn(

@@ -7,6 +7,7 @@ import { founders as staticFounders } from "@/content/founders";
 import type { Founder } from "@/content/founders";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { getFoundersContent } from "@/lib/cms";
+import { cmsImageSrc, type CmsImageValue } from "@/lib/cms/cms-image";
 
 export const metadata = pageMetadata({
   title: "Founders",
@@ -18,14 +19,14 @@ export const metadata = pageMetadata({
 function cmsToFounder(f: {
   name: string; role: string; phone: string; email: string;
   website: string; address: string; bio: string[]; focus: string[];
-  pull: string; portrait: string;
+  pull: string; portrait: CmsImageValue;
 }, _index: number): Founder {
   return {
     slug: f.name.toLowerCase().replace(/\s+/g, "-"),
     name: f.name, role: f.role, phone: f.phone,
     phoneHref: "tel:" + f.phone.replace(/\s/g, ""),
     email: f.email, website: f.website, address: f.address,
-    bio: f.bio, focus: f.focus, pull: f.pull, portrait: f.portrait,
+    bio: f.bio, focus: f.focus, pull: f.pull, portrait: cmsImageSrc(f.portrait),
   };
 }
 

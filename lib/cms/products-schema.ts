@@ -9,6 +9,7 @@ import {
   type ProductCategorySlug,
 } from "@/content/product-catalog";
 import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
+import { cmsImageSchema, cmsImageSrc, parseCmsImage, serializeCmsImage, type CmsImageValue } from "@/lib/cms/cms-image";
 
 const categorySlugSchema = z.enum(
   PRODUCT_CATEGORIES.map((c) => c.slug) as [ProductCategorySlug, ...ProductCategorySlug[]],
@@ -23,14 +24,14 @@ export const subcategorySchema = z.object({
   id: z.string().max(80),
   title: z.string().max(80),
   slug: z.string().max(80),
-  image: z.string().max(2048).default(""),
+  image: cmsImageSchema.default(""),
   sortOrder: z.number().int().min(0).default(0),
 });
 
 export const categoryConfigSchema = z.object({
   slug: categorySlugSchema,
-  image: z.string().max(2048).default(""),
-  hoverImage: z.string().max(2048).default(""),
+  image: cmsImageSchema.default(""),
+  hoverImage: cmsImageSchema.default(""),
   description: z.string().max(280).default(""),
   subcategories: z.array(subcategorySchema).default([]),
 });
@@ -39,8 +40,8 @@ export const productCardSchema = z.object({
   id: z.string().max(80),
   category: categorySlugSchema,
   title: z.string().max(80),
-  image: z.string().max(2048),
-  hoverImage: z.string().max(2048).default(""),
+  image: cmsImageSchema,
+  hoverImage: cmsImageSchema.default(""),
   subcategoryId: z.string().max(80).default(""),
   featured: z.boolean().default(false),
 });
@@ -50,7 +51,7 @@ export const productsContentSchema = z.object({
     .object({
       eyebrow: z.string().max(80).default("Products"),
       headline: z.string().max(120).default("Our products"),
-      image: z.string().max(2048).default(PRODUCTS_HERO_IMAGE_DEFAULT),
+      image: cmsImageSchema.default(PRODUCTS_HERO_IMAGE_DEFAULT),
     })
     .prefault({}),
 
@@ -82,7 +83,7 @@ export type HomeSubcategoryTile = {
   id: string;
   title: string;
   slug: string;
-  image: string;
+  image: CmsImageValue;
   href: string;
 };
 
@@ -90,8 +91,8 @@ export type HomeCategoryTile = {
   slug: ProductCategorySlug;
   title: string;
   description: string;
-  image: string;
-  hoverImage: string;
+  image: CmsImageValue;
+  hoverImage: CmsImageValue;
   subcategories: HomeSubcategoryTile[];
   ctaHref: string;
 };
@@ -162,12 +163,11 @@ function firstProductImagesForCategory(
   catalog: ProductCard[],
   slug: ProductCategorySlug,
 ): { image: string; hoverImage: string } {
-  const item = catalog.find((p) => p.category === slug && p.image);
+  const item = catalog.find((p) => p.category === slug && cmsImageSrc(p.image));
   if (!item) return { image: "", hoverImage: "" };
-  return {
-    image: item.image,
-    hoverImage: item.hoverImage || item.image,
-  };
+  const image = cmsImageSrc(item.image);
+  const hover = cmsImageSrc(item.hoverImage) || image;
+  return { image, hoverImage: hover };
 }
 
 export function sortSubcategories(subcategories: Subcategory[]): Subcategory[] {
@@ -193,13 +193,15 @@ function resolveSubcategoryImage(
   categorySlug: ProductCategorySlug,
   categoryImage: string,
 ): string {
-  if (sub.image) return sub.image;
+  const subSrc = cmsImageSrc(sub.image);
+  if (subSrc) return subSrc;
   const matched = catalog.find(
-    (item) => item.category === categorySlug && item.subcategoryId === sub.id && item.image,
+    (item) =>
+      item.category === categorySlug && item.subcategoryId === sub.id && cmsImageSrc(item.image),
   );
-  if (matched?.image) return matched.image;
-  const inCategory = catalog.find((item) => item.category === categorySlug && item.image);
-  return inCategory?.image || categoryImage;
+  if (matched) return cmsImageSrc(matched.image);
+  const inCategory = catalog.find((item) => item.category === categorySlug && cmsImageSrc(item.image));
+  return inCategory ? cmsImageSrc(inCategory.image) : categoryImage;
 }
 
 export function resolveCategoryConfigs(
@@ -250,13 +252,19 @@ export function getHomeCategoryTiles(
       hoverImage: config.hoverImage,
       subcategories: sortSubcategories(config.subcategories)
         .slice(0, 4)
-        .map((sub) => ({
-          id: sub.id,
-          title: sub.title,
-          slug: sub.slug,
-          image: resolveSubcategoryImage(sub, catalog, config.slug, config.image),
-          href: productsSubcategoryHref(config.slug, sub.slug, viewAllHref),
-        })),
+        .map((sub) => {
+          const parsed = parseCmsImage(sub.image);
+          const src =
+            parsed.src ||
+            resolveSubcategoryImage(sub, catalog, config.slug, cmsImageSrc(config.image));
+          return {
+            id: sub.id,
+            title: sub.title,
+            slug: sub.slug,
+            image: serializeCmsImage({ src, mobileFocus: parsed.mobileFocus }),
+            href: productsSubcategoryHref(config.slug, sub.slug, viewAllHref),
+          };
+        }),
       ctaHref: `${viewAllHref.split("?")[0] || "/products"}?category=${encodeURIComponent(config.slug)}`,
     };
   });

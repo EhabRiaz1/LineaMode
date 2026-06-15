@@ -395,6 +395,7 @@ export function HomeEditor() {
             />
             <ImagePickerField
               label="Background image"
+              frame="hero"
               value={h.image}
               onChange={(v) => update({ ...content, hero: { ...h, image: v } })}
             />
@@ -521,6 +522,7 @@ export function HomeEditor() {
                 />
                 <ImagePickerField
                   label="Background image"
+                  frame="identity-split"
                   value={id.image}
                   placeholder="/images/home/identity-office.jpg or https://…"
                   onChange={(v) => update({ ...content, identity: { ...id, image: v } })}
@@ -699,6 +701,7 @@ export function HomeEditor() {
                       />
                       <ImagePickerField
                         label="Card image"
+                        frame="capability-card"
                         value={item.image ?? ""}
                         placeholder="Leave blank to use the default image"
                         onChange={(v) => {

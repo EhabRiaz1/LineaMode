@@ -229,6 +229,7 @@ export function ProductsEditor() {
         />
         <ImagePickerField
           label="Hero image"
+          frame="hero"
           value={intro.image}
           onChange={(v) => update({ ...content, intro: { ...intro, image: v } })}
         />

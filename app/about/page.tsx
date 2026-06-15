@@ -2,6 +2,8 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SplitText } from "@/components/ui/SplitText";
 import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
+import { CmsImage } from "@/components/ui/CmsImage";
+import { cmsImageSrc } from "@/lib/cms/cms-image";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { getAboutContent } from "@/lib/cms";
 import { ABOUT_CONTENT_DEFAULTS } from "@/lib/cms/about-schema";
@@ -119,9 +121,8 @@ export default async function AboutPage() {
                     className="group snap-start shrink-0 w-[min(68vw,240px)] sm:w-[260px] md:w-[300px] lg:w-[320px]"
                   >
                     <div className="relative aspect-square overflow-hidden bg-stone/10 ring-1 ring-stone/20 transition-[box-shadow,transform] duration-500 group-hover:-translate-y-1 group-hover:ring-stone/35 group-hover:shadow-[0_24px_60px_-40px_rgba(0,0,0,0.65)]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={founder.portrait}
+                      <CmsImage
+                        value={founder.portrait}
                         alt={founder.name}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
@@ -167,10 +168,9 @@ export default async function AboutPage() {
           </div>
           <div className="col-span-12 md:col-span-6 md:col-start-7">
             <div className="aspect-[5/4] overflow-hidden ring-1 ring-ink/15 bg-ink/5">
-              {cms.hq.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={cms.hq.image}
+              {cmsImageSrc(cms.hq.image) ? (
+                <CmsImage
+                  value={cms.hq.image}
                   alt="Studio building exterior"
                   className="w-full h-full object-cover"
                 />

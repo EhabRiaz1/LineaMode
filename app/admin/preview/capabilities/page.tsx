@@ -11,6 +11,7 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SplitText } from "@/components/ui/SplitText";
 import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
+import { CmsImage } from "@/components/ui/CmsImage";
 
 function capabilityBlurb(short: string) {
   const normalized = short.replace(/\s+/g, " ").trim();
@@ -126,9 +127,8 @@ async function CapabilitiesPreviewContent() {
                 </div>
                 <div className={`min-h-[14rem] min-w-0 md:min-h-0 md:h-full ${i % 2 === 1 ? "md:order-1" : ""}`}>
                   <div className="h-full overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={cap.image || CAPABILITY_DEFAULT_IMAGES[i] || ""}
+                    <CmsImage
+                      value={cap.image || CAPABILITY_DEFAULT_IMAGES[i] || ""}
                       alt={cap.title}
                       className="h-full w-full object-cover"
                     />

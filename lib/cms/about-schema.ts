@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cmsImageSchema } from "@/lib/cms/cms-image";
 
 const ctaSchema = z.object({
   label: z.string().max(80),
@@ -8,7 +9,7 @@ const ctaSchema = z.object({
 const founderPreviewCardSchema = z.object({
   name: z.string().max(120),
   description: z.string().max(300),
-  portrait: z.string().max(2048).default(""),
+  portrait: cmsImageSchema.default(""),
 });
 
 export const aboutContentSchema = z.object({
@@ -57,10 +58,7 @@ export const aboutContentSchema = z.object({
         .default(
           "Three decades in the global textile industry — working alongside the most exacting brands and manufacturers in fashion — taught the studio one thing above all: brands grow when their partner owns the long-term, not just the next purchase order.",
         ),
-      image: z
-        .string()
-        .max(2048)
-        .default(
+      image: cmsImageSchema.default(
           "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1600&q=80",
         ),
       cards: z.array(founderPreviewCardSchema).default([
@@ -112,10 +110,7 @@ export const aboutContentSchema = z.object({
         .string()
         .max(400)
         .default("1st Floor, NESPAK House,\nG-5/2, Attaturk Avenue,\nIslamabad, Pakistan."),
-      image: z
-        .string()
-        .max(2048)
-        .default(
+      image: cmsImageSchema.default(
           "https://images.unsplash.com/photo-1565793298595-6a879b1d9492?auto=format&fit=crop&w=1600&q=80",
         ),
     })

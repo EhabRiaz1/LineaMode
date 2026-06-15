@@ -2,24 +2,25 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SplitText } from "@/components/ui/SplitText";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { PRODUCTS_HERO_IMAGE_DEFAULT } from "@/content/product-catalog";
+import { CmsImage } from "@/components/ui/CmsImage";
+import type { CmsImageValue } from "@/lib/cms/cms-image";
 
 type ProductsHeroProps = {
   eyebrow: string;
   headline: string;
-  image?: string;
+  image?: CmsImageValue;
 };
 
 export function ProductsHero({ eyebrow, headline, image }: ProductsHeroProps) {
-  const heroImage = image || PRODUCTS_HERO_IMAGE_DEFAULT;
+  const heroImage = image ?? PRODUCTS_HERO_IMAGE_DEFAULT;
 
   return (
     <section className="relative min-h-[75vh] overflow-hidden text-stone">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={heroImage}
+      <CmsImage
+        value={heroImage}
         alt=""
         aria-hidden
-        className="absolute inset-0 h-full w-full object-cover object-[center_30%]"
+        className="absolute inset-0 h-full w-full object-cover md:object-[center_30%]"
         draggable={false}
       />
 
