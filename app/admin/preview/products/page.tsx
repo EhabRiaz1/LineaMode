@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { getServiceRoleClient } from "@/lib/supabase/client";
-import { parseProductsContent, resolveProductCatalog } from "@/lib/cms/products-schema";
+import { parseProductsContent, resolveCategoryConfigs, resolveProductCatalog } from "@/lib/cms/products-schema";
 import { ProductsHero } from "@/components/sections/products/ProductsHero";
 import { ProductCatalog } from "@/components/sections/products/ProductCatalog";
 import { ProductsCta } from "@/components/sections/products/ProductsCta";
@@ -15,6 +15,7 @@ async function ProductsPreviewContent() {
   ]);
   const cms = parseProductsContent(draftRow?.value ?? pubRow?.value);
   const catalog = resolveProductCatalog(cms.catalog);
+  const categories = resolveCategoryConfigs(cms);
 
   return (
     <>
@@ -30,7 +31,7 @@ async function ProductsPreviewContent() {
           headline={cms.intro.headline}
           image={cms.intro.image}
         />
-        <ProductCatalog catalog={catalog} />
+        <ProductCatalog catalog={catalog} categories={categories} />
         <ProductsCta
           headlineLine1={cms.cta.headlineLine1}
           headlineLine2={cms.cta.headlineLine2}

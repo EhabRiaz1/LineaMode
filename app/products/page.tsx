@@ -3,7 +3,7 @@ import { ProductCatalog } from "@/components/sections/products/ProductCatalog";
 import { ProductsCta } from "@/components/sections/products/ProductsCta";
 import { pageMetadata } from "@/lib/seo/metadata";
 import { getProductsContent } from "@/lib/cms";
-import { resolveProductCatalog } from "@/lib/cms/products-schema";
+import { resolveCategoryConfigs, resolveProductCatalog } from "@/lib/cms/products-schema";
 
 export const metadata = pageMetadata({
   title: "Products",
@@ -15,6 +15,7 @@ export const metadata = pageMetadata({
 export default async function ProductsPage() {
   const cms = await getProductsContent();
   const catalog = resolveProductCatalog(cms.catalog);
+  const categories = resolveCategoryConfigs(cms);
 
   return (
     <>
@@ -23,7 +24,7 @@ export default async function ProductsPage() {
         headline={cms.intro.headline}
         image={cms.intro.image}
       />
-      <ProductCatalog catalog={catalog} />
+      <ProductCatalog catalog={catalog} categories={categories} />
       <ProductsCta
         headlineLine1={cms.cta.headlineLine1}
         headlineLine2={cms.cta.headlineLine2}

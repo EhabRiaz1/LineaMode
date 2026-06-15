@@ -6,8 +6,10 @@ import { adminFetch } from "@/lib/admin/api";
 import {
   PRODUCTS_CONTENT_DEFAULTS,
   parseProductsContent,
+  resolveCategoryConfigs,
   type ProductsContent,
   type ProductCard,
+  type CategoryConfig,
 } from "@/lib/cms/products-schema";
 import {
   PRODUCT_CATEGORIES,
@@ -26,6 +28,7 @@ import {
   SectionAccordion,
   EditorShell,
 } from "./EditorFields";
+import { CategoryCatalogPanel } from "./CategoryCatalogPanel";
 
 function newProductId(category: ProductCategorySlug): string {
   return `${category}-${crypto.randomUUID().slice(0, 8)}`;
@@ -57,6 +60,7 @@ export function ProductsEditor() {
       if (!parsed.catalog.length) {
         parsed.catalog = SEED_PRODUCT_CATALOG.map((item) => ({
           ...item,
+          subcategoryId: "",
           featured: item.featured ?? false,
         }));
       }
@@ -96,6 +100,20 @@ export function ProductsEditor() {
     setDirty(true);
   }, []);
 
+  const categoryConfigs = resolveCategoryConfigs(content);
+
+  const getCategoryConfig = (slug: ProductCategorySlug): CategoryConfig =>
+    categoryConfigs.find((item) => item.slug === slug)!;
+
+  const updateCategoryConfig = (slug: ProductCategorySlug, patch: Partial<CategoryConfig>) => {
+    const existing = content.categories.find((item) => item.slug === slug);
+    const base = existing ?? getCategoryConfig(slug);
+    const nextCategories = content.categories.some((item) => item.slug === slug)
+      ? content.categories.map((item) => (item.slug === slug ? { ...item, ...patch } : item))
+      : [...content.categories, { ...base, ...patch }];
+    update({ ...content, categories: nextCategories });
+  };
+
   const updateCatalogItem = (id: string, patch: Partial<ProductCard>) => {
     const catalog = content.catalog.map((item) =>
       item.id === id ? { ...item, ...patch } : item,
@@ -103,19 +121,22 @@ export function ProductsEditor() {
     update({ ...content, catalog });
   };
 
-  const addProduct = (category: ProductCategorySlug) => {
+  const addProduct = (category: ProductCategorySlug): string => {
+    const id = newProductId(category);
     const catalog = [
       ...content.catalog,
       {
-        id: newProductId(category),
+        id,
         category,
         title: "New product",
         image: "",
         hoverImage: "",
+        subcategoryId: "",
         featured: false,
       },
     ];
     update({ ...content, catalog });
+    return id;
   };
 
   const removeProduct = (id: string) => {
@@ -193,8 +214,8 @@ export function ProductsEditor() {
     >
       <SectionAccordion id="intro" label="Intro" selected={selected} onSelect={setSelected}>
         <p className="text-label text-ink/55">
-          Toggle &ldquo;Featured on homepage&rdquo; on any product below to show it
-          in the homepage product rail.
+          Configure category tiles, subcategories, and products in each category section
+          below. Homepage section 03 uses the category tile images and subcategories.
         </p>
         <Field
           label="Eyebrow"
@@ -215,6 +236,7 @@ export function ProductsEditor() {
 
       {PRODUCT_CATEGORIES.map((category) => {
         const items = content.catalog.filter((item) => item.category === category.slug);
+        const config = getCategoryConfig(category.slug);
         return (
           <SectionAccordion
             key={category.slug}
@@ -223,58 +245,16 @@ export function ProductsEditor() {
             selected={selected}
             onSelect={setSelected}
           >
-            {items.map((item, i) => (
-              <div
-                key={item.id}
-                className="rounded-xl border border-[var(--hairline)] p-3 space-y-2 mb-3"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-eyebrow text-ink/40">
-                    {String(i + 1).padStart(2, "0")} / Product
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => removeProduct(item.id)}
-                    className="text-label text-ink/45 hover:text-terracotta px-2 shrink-0"
-                  >
-                    ✕ Delete
-                  </button>
-                </div>
-                <Field
-                  label="Title"
-                  value={item.title}
-                  onChange={(v) => updateCatalogItem(item.id, { title: v })}
-                />
-                <ImagePickerField
-                  label="Photo"
-                  value={item.image}
-                  onChange={(v) => updateCatalogItem(item.id, { image: v })}
-                />
-                <ImagePickerField
-                  label="Hover photo (alternate product)"
-                  value={item.hoverImage ?? ""}
-                  onChange={(v) => updateCatalogItem(item.id, { hoverImage: v })}
-                />
-                <label className="flex items-center gap-2.5 rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={!!item.featured}
-                    onChange={(e) =>
-                      updateCatalogItem(item.id, { featured: e.target.checked })
-                    }
-                    className="size-4 rounded border-[var(--hairline)] accent-ink"
-                  />
-                  <span className="text-label text-ink/85">Featured on homepage</span>
-                </label>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => addProduct(category.slug)}
-              className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
-            >
-              + Add product
-            </button>
+            <CategoryCatalogPanel
+              categorySlug={category.slug}
+              categoryTitle={category.title}
+              categoryConfig={config}
+              products={items}
+              onUpdateCategory={(patch) => updateCategoryConfig(category.slug, patch)}
+              onUpdateProduct={updateCatalogItem}
+              onAddProduct={() => addProduct(category.slug)}
+              onRemoveProduct={removeProduct}
+            />
           </SectionAccordion>
         );
       })}

@@ -39,7 +39,7 @@ export function JournalTeaser({
   return (
     <section className="relative overflow-hidden bg-stone py-20 md:py-32">
       <div className="shell">
-        <div className="grid grid-cols-12 items-start gap-8 md:items-center md:gap-10">
+        <div className="grid grid-cols-12 items-start gap-8 md:gap-10">
           <div className="col-span-12 md:col-span-5 lg:col-span-4">
             <Eyebrow number="05">{eyebrow}</Eyebrow>
             <h2 className="mt-5 text-balance font-[family-name:var(--font-display)] text-[clamp(1.85rem,5.5vw,2.75rem)] font-light leading-[1.08] tracking-[-0.02em] text-ink/90">
@@ -63,7 +63,7 @@ export function JournalTeaser({
                     <li key={article.slug} className="border-b border-ink/12 last:border-b-0">
                       <Link
                         href={`/journal/${article.slug}`}
-                        className="group grid grid-cols-[1fr_auto] items-center gap-3 py-3.5 transition-colors hover:bg-ink/[0.02] md:grid-cols-[3.25rem_1fr_auto] md:gap-3.5 md:py-3.5"
+                        className="group grid grid-cols-[1fr_auto] items-start gap-3 py-3.5 transition-colors hover:bg-ink/[0.02] md:grid-cols-[3.25rem_1fr_auto] md:gap-3.5 md:py-4"
                       >
                         <div className="hidden aspect-[4/5] w-[3.25rem] overflow-hidden bg-ink/5 ring-1 ring-ink/10 md:block">
                           {article.cover ? (
@@ -93,11 +93,16 @@ export function JournalTeaser({
                           <h3 className="mt-1 font-sans text-[0.98rem] font-light leading-snug tracking-[-0.015em] text-ink/85 transition-colors group-hover:text-ink md:text-[clamp(0.95rem,0.95vw,1.05rem)]">
                             {article.title}
                           </h3>
+                          {article.excerpt ? (
+                            <p className="mt-1.5 line-clamp-2 text-[0.8125rem] leading-relaxed text-ink/50 transition-colors group-hover:text-ink/65">
+                              {article.excerpt}
+                            </p>
+                          ) : null}
                         </div>
 
                         <span
                           aria-hidden
-                          className="text-label text-ink/25 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-ink/55"
+                          className="mt-1 text-label text-ink/25 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-ink/55"
                         >
                           →
                         </span>

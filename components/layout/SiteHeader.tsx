@@ -10,7 +10,7 @@ import { easeBrand } from "@/lib/motion/easings";
 import type { PageVisibility } from "@/lib/cms";
 import { CONTACT_FORM_HREF } from "@/lib/navigation";
 
-const START_PROJECT_LABEL = "Start a Project";
+const START_PROJECT_LABEL = "Contact Us";
 const START_PROJECT_HREF = CONTACT_FORM_HREF;
 
 const BASE_NAV = [

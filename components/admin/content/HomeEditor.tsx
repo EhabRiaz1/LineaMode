@@ -470,12 +470,12 @@ export function HomeEditor() {
             />
             {p.enabled && (
               <p className="text-label text-ink/55">
-                The homepage now shows a rail of products marked “Featured” in the{" "}
-                <Link href="/admin/content/pages" className="underline hover:text-ink">
+                The homepage shows three category tiles configured in the{" "}
+                <Link href="/admin/content/pages/products" className="underline hover:text-ink">
                   Products page editor
                 </Link>
-                . There&rsquo;s nothing else to configure here besides showing or
-                hiding this section.
+                . Set tile images and subcategories per category there. There&rsquo;s
+                nothing else to configure here besides showing or hiding this section.
               </p>
             )}
           </SectionAccordion>

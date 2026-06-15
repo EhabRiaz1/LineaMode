@@ -4,8 +4,7 @@ import { getServiceRoleClient } from "@/lib/supabase/client";
 import { parseHomeContent } from "@/lib/cms/home-schema";
 import {
   parseProductsContent,
-  resolveProductCatalog,
-  getFeaturedProducts,
+  getHomeCategoryTiles,
 } from "@/lib/cms/products-schema";
 import { Hero } from "@/components/sections/Hero";
 import { WhatWeDoSection } from "@/components/sections/WhatWeDoSection";
@@ -50,7 +49,7 @@ async function HomePreviewContent() {
           <WhatWeDoSection cms={cms.whatWeDo} capabilityItems={cms.capabilities.items} />
         )}
         {cms.products.enabled && (
-          <HomeProductRail products={getFeaturedProducts(resolveProductCatalog(productsCms.catalog))} />
+          <HomeProductRail categories={getHomeCategoryTiles(productsCms)} />
         )}
         {cms.identity.enabled && <IdentitySection cms={cms.identity} />}
         {cms.journal.enabled && <JournalTeaser cms={cms.journal} articles={journalPosts} />}

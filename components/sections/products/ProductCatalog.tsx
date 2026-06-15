@@ -1,34 +1,106 @@
 "use client";
 
-import { Suspense, useCallback } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import {
   PRODUCT_CATEGORIES,
   parseProductCategorySlug,
+  subcategorySectionId,
   type ProductCategorySlug,
 } from "@/content/product-catalog";
-import type { ProductCard as ProductCardType } from "@/lib/cms/products-schema";
+import type { CategoryConfig, ProductCard as ProductCardType } from "@/lib/cms/products-schema";
+import { groupProductsBySubcategory } from "@/lib/cms/products-schema";
 import { easeBrand } from "@/lib/motion/easings";
 import { cn } from "@/lib/utils";
-import { ProductCard } from "./ProductCard";
+import { SubcategoryProductSection } from "./SubcategoryProductSection";
 
 type ProductCatalogProps = {
   catalog: ProductCardType[];
+  categories: CategoryConfig[];
 };
 
 const catalogInset = "mx-auto w-full max-w-[1760px] px-[clamp(28px,5vw,72px)]";
 
-const catalogCardWidth =
-  "w-full sm:w-[calc((100%-var(--catalog-gap))/2)] lg:w-[calc((100%-var(--catalog-gap)*3)/4)]";
-
 type ProductCatalogViewProps = ProductCatalogProps & {
   active: ProductCategorySlug;
+  activeSubcategory: string | null;
   onTabChange: (slug: ProductCategorySlug) => void;
 };
 
-function ProductCatalogView({ catalog, active, onTabChange }: ProductCatalogViewProps) {
-  const filtered = catalog.filter((item) => item.category === active);
+function ProductCatalogView({
+  catalog,
+  categories,
+  active,
+  activeSubcategory,
+  onTabChange,
+}: ProductCatalogViewProps) {
+  const categoryConfig = categories.find((item) => item.slug === active)!;
+  const groups = useMemo(
+    () => groupProductsBySubcategory(catalog, active, categoryConfig.subcategories),
+    [catalog, active, categoryConfig.subcategories],
+  );
+
+  const [expandedSlugs, setExpandedSlugs] = useState<Set<string>>(new Set());
+  const pendingScrollSlug = useRef<string | null>(null);
+  const hasInitializedFromUrl = useRef(false);
+
+  useEffect(() => {
+    setExpandedSlugs(new Set());
+    hasInitializedFromUrl.current = false;
+  }, [active]);
+
+  useEffect(() => {
+    if (!activeSubcategory || hasInitializedFromUrl.current) return;
+
+    const exists = groups.some((group) => group.subcategory?.slug === activeSubcategory);
+    if (!exists) return;
+
+    hasInitializedFromUrl.current = true;
+    pendingScrollSlug.current = activeSubcategory;
+    setExpandedSlugs((prev) => new Set(prev).add(activeSubcategory));
+  }, [activeSubcategory, groups]);
+
+  useEffect(() => {
+    const slug = pendingScrollSlug.current;
+    if (!slug) return;
+
+    const frame = requestAnimationFrame(() => {
+      const target = document.getElementById(subcategorySectionId(active, slug));
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        pendingScrollSlug.current = null;
+      }
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [active, expandedSlugs, groups]);
+
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash || !hash.startsWith("products-subcategory-")) return;
+
+    const match = groups.find(
+      (group) =>
+        group.subcategory &&
+        subcategorySectionId(active, group.subcategory.slug) === hash,
+    );
+    if (!match?.subcategory) return;
+
+    setExpandedSlugs((prev) => new Set(prev).add(match.subcategory!.slug));
+    requestAnimationFrame(() => {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [active, groups]);
+
+  const toggleExpanded = (slug: string) => {
+    setExpandedSlugs((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
+  };
 
   return (
     <section className="border-t hairline bg-stone">
@@ -47,9 +119,7 @@ function ProductCatalogView({ catalog, active, onTabChange }: ProductCatalogView
                     role="tab"
                     className={cn(
                       "relative px-1 pb-4 font-sans text-[clamp(1.25rem,2vw,1.6rem)] font-light leading-none tracking-[0.01em] transition-colors duration-300",
-                      isActive
-                        ? "text-ink"
-                        : "text-ink/45 hover:text-ink/70",
+                      isActive ? "text-ink" : "text-ink/45 hover:text-ink/70",
                     )}
                   >
                     {category.title}
@@ -77,18 +147,21 @@ function ProductCatalogView({ catalog, active, onTabChange }: ProductCatalogView
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.45, ease: easeBrand }}
-            className="flex flex-wrap justify-center gap-[var(--catalog-gap)] [--catalog-gap:2rem] md:[--catalog-gap:2.5rem]"
+            className="space-y-12 md:space-y-16"
           >
-            {filtered.map((item) => (
-              <ProductCard
-                key={item.id}
-                title={item.title}
-                image={item.image}
-                hoverImage={item.hoverImage}
-                variant="grid"
-                className={catalogCardWidth}
-              />
-            ))}
+            {groups.map((group) => {
+              const slug = group.subcategory?.slug ?? "uncategorized";
+              return (
+                <SubcategoryProductSection
+                  key={`${active}-${slug}`}
+                  categorySlug={active}
+                  subcategory={group.subcategory}
+                  products={group.products}
+                  expanded={expandedSlugs.has(slug)}
+                  onToggleExpanded={() => toggleExpanded(slug)}
+                />
+              );
+            })}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -96,29 +169,47 @@ function ProductCatalogView({ catalog, active, onTabChange }: ProductCatalogView
   );
 }
 
-function ProductCatalogInner({ catalog }: ProductCatalogProps) {
+function ProductCatalogInner({ catalog, categories }: ProductCatalogProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const active = parseProductCategorySlug(searchParams.get("category"));
+  const activeSubcategory = (() => {
+    const raw = searchParams.get("subcategory");
+    if (!raw) return null;
+    const config = categories.find((item) => item.slug === active);
+    if (!config?.subcategories.some((sub) => sub.slug === raw)) return null;
+    return raw;
+  })();
 
   const onTabChange = useCallback(
     (slug: ProductCategorySlug) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set("category", slug);
+      params.delete("subcategory");
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [pathname, router, searchParams],
   );
 
-  return <ProductCatalogView catalog={catalog} active={active} onTabChange={onTabChange} />;
-}
-
-function ProductCatalogFallback({ catalog }: ProductCatalogProps) {
   return (
     <ProductCatalogView
       catalog={catalog}
+      categories={categories}
+      active={active}
+      activeSubcategory={activeSubcategory}
+      onTabChange={onTabChange}
+    />
+  );
+}
+
+function ProductCatalogFallback({ catalog, categories }: ProductCatalogProps) {
+  return (
+    <ProductCatalogView
+      catalog={catalog}
+      categories={categories}
       active="lifestyle"
+      activeSubcategory={null}
       onTabChange={() => {}}
     />
   );
