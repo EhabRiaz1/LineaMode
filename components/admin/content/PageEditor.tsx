@@ -42,6 +42,8 @@ function seedBlocksForSlug(slug: string): Blocks {
       return [
         {
           type: "hero",
+          mediaMode: "image",
+          video: "",
           image: { src: HERO_IMAGE, alt: "Editorial garment study — Lineamode Apparel" },
           eyebrow: "01 / Lineamode",
           headline: "From idea to execution.",
