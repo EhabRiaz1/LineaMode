@@ -17,7 +17,7 @@ import {
 import { capabilities } from "@/content/capabilities";
 import { homeProducts } from "@/content/home-products";
 import { cn } from "@/lib/utils";
-import { ImagePickerField } from "./EditorFields";
+import { ImagePickerField, MediaModeToggle, VideoPickerField } from "./EditorFields";
 import { PreviewPanel } from "./PreviewPanel";
 
 // ─── Tiny reusable form fields ──────────────────────────────────────────────
@@ -393,12 +393,34 @@ export function HomeEditor() {
               value={h.bottomLabel}
               onChange={(v) => update({ ...content, hero: { ...h, bottomLabel: v } })}
             />
-            <ImagePickerField
-              label="Background image"
-              frame="hero"
-              value={h.image}
-              onChange={(v) => update({ ...content, hero: { ...h, image: v } })}
+            <MediaModeToggle
+              value={h.mediaMode ?? "image"}
+              onChange={(mode) =>
+                update({
+                  ...content,
+                  hero: {
+                    ...h,
+                    mediaMode: mode,
+                    ...(mode === "image" ? { video: "" } : { image: "" }),
+                  },
+                })
+              }
             />
+            {(h.mediaMode ?? "image") === "video" ? (
+              <VideoPickerField
+                label="Background video"
+                frame="hero"
+                value={h.video ?? ""}
+                onChange={(v) => update({ ...content, hero: { ...h, video: v } })}
+              />
+            ) : (
+              <ImagePickerField
+                label="Background photo"
+                frame="hero"
+                value={h.image}
+                onChange={(v) => update({ ...content, hero: { ...h, image: v } })}
+              />
+            )}
             <CtaField
               label="Primary CTA"
               value={h.primaryCta}

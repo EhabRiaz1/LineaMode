@@ -14,6 +14,10 @@ export type MediaItem = {
   created_at: string;
 };
 
+function isVideoMedia(item: MediaItem): boolean {
+  return /\.(mp4|webm)(\?|$)/i.test(item.storage_path) || /\.(mp4|webm)(\?|$)/i.test(item.url);
+}
+
 /**
  * Modal that pulls the entire cms_media table and lets the editor pick an
  * asset for a block. Designed as a thin wrapper so MediaLibrary (the full
@@ -22,9 +26,11 @@ export type MediaItem = {
 export function MediaPicker({
   onClose,
   onPick,
+  mediaFilter = "all",
 }: {
   onClose: () => void;
   onPick: (media: MediaItem) => void;
+  mediaFilter?: "all" | "image" | "video";
 }) {
   const { authHeaders, status } = useAdminSession();
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -45,6 +51,13 @@ export function MediaPicker({
   useEffect(() => {
     void load();
   }, [load]);
+
+  const visibleItems = items.filter((item) => {
+    const video = isVideoMedia(item);
+    if (mediaFilter === "video") return video;
+    if (mediaFilter === "image") return !video;
+    return true;
+  });
 
   return (
     <div
@@ -73,16 +86,18 @@ export function MediaPicker({
             {error}
           </div>
         )}
-        {items.length === 0 && !loading ? (
+        {visibleItems.length === 0 && !loading ? (
           <div className="rounded-2xl border border-dashed border-[var(--hairline)] px-6 py-16 text-center text-ink/55">
-            <p className="text-body">No media uploaded yet.</p>
+            <p className="text-body">
+              {mediaFilter === "video" ? "No videos uploaded yet." : "No media uploaded yet."}
+            </p>
             <p className="text-label mt-2">
-              Upload images from the Media page in the sidebar.
+              Upload {mediaFilter === "video" ? "videos" : "images"} from the Media page in the sidebar.
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {items.map((item) => (
+            {visibleItems.map((item) => (
               <button
                 key={item.id}
                 type="button"
@@ -90,12 +105,22 @@ export function MediaPicker({
                 className="group rounded-2xl overflow-hidden border border-[var(--hairline)] hover:border-[var(--hairline-strong)] transition-colors text-left"
               >
                 <div className="aspect-[4/3] bg-ink/[0.04]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.url}
-                    alt={item.alt ?? ""}
-                    className="w-full h-full object-cover"
-                  />
+                  {isVideoMedia(item) ? (
+                    <video
+                      src={item.url}
+                      className="w-full h-full object-cover"
+                      muted
+                      playsInline
+                      preload="metadata"
+                    />
+                  ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={item.url}
+                      alt={item.alt ?? ""}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
                 <div className="px-3 py-2">
                   <p className="text-label text-ink truncate">{item.alt || "—"}</p>

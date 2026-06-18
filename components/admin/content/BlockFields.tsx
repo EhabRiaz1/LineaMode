@@ -8,6 +8,7 @@ import {
 } from "@/lib/cms/cms-image";
 import { MediaPicker } from "./MediaPicker";
 import { FocalPointModal } from "./FocalPointModal";
+import { MediaModeToggle, VideoPickerField } from "./EditorFields";
 
 /**
  * Per-block field editor. Each branch of the discriminated union maps a
@@ -25,12 +26,31 @@ export function BlockFields({
     case "hero":
       return (
         <div className="space-y-4">
-          <MediaInput
-            label="Background image"
-            frame="hero"
-            value={block.image}
-            onChange={(image) => onChange({ ...block, image })}
+          <MediaModeToggle
+            value={block.mediaMode ?? "image"}
+            onChange={(mode) =>
+              onChange({
+                ...block,
+                mediaMode: mode,
+                ...(mode === "image" ? { video: "" } : { image: { src: "" } }),
+              })
+            }
           />
+          {(block.mediaMode ?? "image") === "video" ? (
+            <VideoPickerField
+              label="Background video"
+              frame="hero"
+              value={block.video ?? ""}
+              onChange={(video) => onChange({ ...block, video })}
+            />
+          ) : (
+            <MediaInput
+              label="Background photo"
+              frame="hero"
+              value={block.image}
+              onChange={(image) => onChange({ ...block, image })}
+            />
+          )}
           <Text label="Eyebrow" value={block.eyebrow} onChange={(v) => onChange({ ...block, eyebrow: v })} />
           <Text label="Headline" value={block.headline} multiline onChange={(v) => onChange({ ...block, headline: v })} />
           <ListInput

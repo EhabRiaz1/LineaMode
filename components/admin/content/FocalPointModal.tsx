@@ -14,6 +14,7 @@ type FocalPointModalProps = {
   src: string;
   focus: MobileFocus;
   frame: ImageFramePreset;
+  kind?: "image" | "video";
   onSave: (focus: MobileFocus) => void;
   onClose: () => void;
 };
@@ -22,7 +23,14 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-export function FocalPointModal({ src, focus, frame, onSave, onClose }: FocalPointModalProps) {
+export function FocalPointModal({
+  src,
+  focus,
+  frame,
+  kind = "image",
+  onSave,
+  onClose,
+}: FocalPointModalProps) {
   const preset = IMAGE_FRAME_PRESETS[frame];
   const frameRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<MobileFocus>(focus);
@@ -70,14 +78,28 @@ export function FocalPointModal({ src, focus, frame, onSave, onClose }: FocalPoi
               setFocusFromPointer(e.clientX, e.clientY);
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt=""
-              draggable={false}
-              className="absolute inset-0 h-full w-full object-cover select-none"
-              style={{ objectPosition: cmsImageObjectPosition(draft) }}
-            />
+            {kind === "video" ? (
+              <video
+                src={src}
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-cover select-none"
+                style={{ objectPosition: cmsImageObjectPosition(draft) }}
+                muted
+                playsInline
+                loop
+                autoPlay
+                preload="metadata"
+              />
+            ) : (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={src}
+                alt=""
+                draggable={false}
+                className="absolute inset-0 h-full w-full object-cover select-none"
+                style={{ objectPosition: cmsImageObjectPosition(draft) }}
+              />
+            )}
 
             <div
               aria-hidden

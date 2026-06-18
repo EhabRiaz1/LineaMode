@@ -4,6 +4,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { CmsImage } from "@/components/ui/CmsImage";
 import { CapabilitiesRail } from "@/components/sections/CapabilitiesRail";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
+import { HeroBackground } from "@/components/sections/HeroBackground";
 import { listJournal } from "@/lib/cms";
 import type { Block, MediaRef, Cta } from "@/lib/cms/blocks";
 import { cn } from "@/lib/utils";
@@ -96,11 +97,14 @@ function MediaImage({
 }
 
 function HeroBlock({ block }: { block: Extract<Block, { type: "hero" }> }) {
+  const mediaMode = block.mediaMode ?? "image";
   return (
     <section className="relative h-[100svh] min-h-[640px] overflow-hidden text-stone">
-      <div className="absolute inset-0">
-        <MediaImage media={block.image} priority sizes="100vw" />
-      </div>
+      <HeroBackground
+        image={mediaRefToCmsImage(block.image)}
+        video={block.video}
+        mediaMode={mediaMode}
+      />
       <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-ink/65 via-ink/15 to-transparent" />
       <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-ink/35 via-transparent to-ink/75" />
       <div className="shell relative z-10 flex h-full flex-col justify-end pb-14 md:pb-20">

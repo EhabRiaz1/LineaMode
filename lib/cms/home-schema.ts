@@ -18,6 +18,8 @@ export const homeContentSchema = z.object({
       image: cmsImageSchema.default(
           "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85",
         ),
+      mediaMode: z.enum(["image", "video"]).default("image"),
+      video: cmsImageSchema.default(""),
       primaryCta: ctaSchema.default({ label: "What we do", href: "/capabilities" }),
       secondaryCta: ctaSchema.default({ label: "Start a project", href: CONTACT_FORM_HREF }),
     })
@@ -144,6 +146,8 @@ export const HOME_CONTENT_DEFAULTS: HomeContent = {
     bottomLabel: "Design / Development / Manufacture",
     image:
       "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85",
+    mediaMode: "image",
+    video: "",
     primaryCta: { label: "What we do", href: "/capabilities" },
     secondaryCta: { label: "Start a project", href: CONTACT_FORM_HREF },
   },

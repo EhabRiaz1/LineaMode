@@ -138,7 +138,7 @@ export function MediaLibrary() {
             />
           </label>
           <label className="block cursor-pointer">
-            <span className="text-eyebrow text-ink/40 block mb-1">Image</span>
+            <span className="text-eyebrow text-ink/40 block mb-1">Image or video</span>
             <span
               className={`block rounded-full bg-ink text-stone text-center px-4 py-2 text-label hover:bg-ink/85 transition-colors ${uploading ? "opacity-60" : ""}`}
             >
@@ -146,7 +146,7 @@ export function MediaLibrary() {
             </span>
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm"
               onChange={onUpload}
               disabled={uploading}
               className="hidden"
@@ -174,12 +174,22 @@ export function MediaLibrary() {
             className="rounded-3xl overflow-hidden border border-[var(--hairline)] bg-stone"
           >
             <div className="aspect-[4/3] bg-ink/[0.04]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.url}
-                alt={item.alt ?? ""}
-                className="w-full h-full object-cover"
-              />
+              {/\.(mp4|webm)(\?|$)/i.test(item.storage_path) ? (
+                <video
+                  src={item.url}
+                  className="w-full h-full object-cover"
+                  muted
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={item.url}
+                  alt={item.alt ?? ""}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
             <div className="px-3 py-2 space-y-1">
               <p className="text-body text-ink truncate">{item.alt || "—"}</p>

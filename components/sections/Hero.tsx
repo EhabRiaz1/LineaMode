@@ -1,24 +1,14 @@
 "use client";
 
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useVelocity,
-  useSpring,
-  useReducedMotion,
-  useMotionTemplate,
-  useInView,
-} from "motion/react";
-import { useRef } from "react";
+import { motion } from "motion/react";
 import { SplitText } from "@/components/ui/SplitText";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { ButtonLink } from "@/components/ui/Button";
 import { GridPattern } from "@/components/ui/GridPattern";
 import { easeBrand } from "@/lib/motion/easings";
 import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
-import { CmsImage } from "@/components/ui/CmsImage";
 import type { CmsImageValue } from "@/lib/cms/cms-image";
+import { HeroBackground } from "@/components/sections/HeroBackground";
 
 const HERO_IMAGE_DEFAULT =
   "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?auto=format&fit=crop&w=2400&q=85";
@@ -30,12 +20,18 @@ type HeroCms = {
   description?: string;
   bottomLabel?: string;
   image?: CmsImageValue;
+  mediaMode?: "image" | "video";
+  video?: CmsImageValue;
   primaryCta?: { label: string; href: string };
   secondaryCta?: { label: string; href: string };
 };
 
 export function Hero({ cms }: { cms?: HeroCms } = {}) {
-  const image = cms?.image ?? HERO_IMAGE_DEFAULT;
+  const mediaMode = cms?.mediaMode ?? "image";
+  const image =
+    mediaMode === "video"
+      ? (cms?.image ?? "")
+      : (cms?.image ?? HERO_IMAGE_DEFAULT);
   const eyebrow = cms?.eyebrow ?? "Lineamode Apparel · Est. Islamabad";
   const headlineLine1 = cms?.headlineLine1 ?? "From Idea";
   const headlineLine2 = cms?.headlineLine2 ?? "to Execution.";
@@ -50,79 +46,13 @@ export function Hero({ cms }: { cms?: HeroCms } = {}) {
     ...secondaryCtaRaw,
     href: resolveContactHref(secondaryCtaRaw.href),
   };
-  const reduce = useReducedMotion();
-  const sectionRef = useRef<HTMLElement>(null);
-
-  // Visibility gate. Once the hero leaves the viewport we let the entire
-  // filter pipeline collapse to a no-op so:
-  //   — Safari stops paying for an off-screen filter graph (fixes the
-  //     "laggy when scrolling past hero" report).
-  //   — Chrome / any other compositor doesn't carry will-change: filter on
-  //     a layer that's no longer painted.
-  const inView = useInView(sectionRef, { margin: "0px 0px 0px 0px" });
-
-  // Scroll-velocity-driven glass distortion. We use plain CSS filters
-  // (blur + saturate) and a tiny scale wobble — all of which are pure
-  // compositor operations on every modern engine, so the result is
-  // identical in Chrome and Safari and gets GPU-accelerated for free.
-  const { scrollY } = useScroll();
-  const velocity = useVelocity(scrollY);
-  const smooth = useSpring(velocity, {
-    damping: 28,
-    stiffness: 220,
-    mass: 0.5,
-  });
-
-  // Magnitude of the effect, derived from |scroll velocity|. Capped so a
-  // fast flick can't blur the image into a soup.
-  const blurPx = useTransform(smooth, (v) =>
-    !inView || reduce ? 0 : Math.min(8, Math.abs(v) / 240),
-  );
-  const saturate = useTransform(smooth, (v) =>
-    !inView || reduce ? 1 : 1 + Math.min(0.18, Math.abs(v) / 6000),
-  );
-  const wobble = useTransform(smooth, (v) =>
-    !inView || reduce ? 1 : 1 + Math.min(0.012, Math.abs(v) / 90000),
-  );
-
-  // Compose the CSS filter shorthand. useMotionTemplate keeps this on the
-  // motion thread, so the value is written straight to the layer without
-  // going through React render.
-  const filter = useMotionTemplate`blur(${blurPx}px) saturate(${saturate})`;
-
   return (
-    <section
-      ref={sectionRef}
-      className="relative h-[100svh] min-h-[640px] overflow-hidden text-stone"
-    >
-      {/* Background image stack.
-            Outer wrapper  → handles the one-shot intro reveal (opacity + zoom).
-            Inner wrapper  → carries the continuous, scroll-velocity driven
-                              CSS filter and a faint scale wobble.
-          Splitting them avoids two animations fighting over the same `scale`
-          on a single node, and keeps both layers on their own GPU surface. */}
-      <motion.div
-        className="absolute inset-0"
-        initial={{ opacity: 0, scale: 1.06 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.6, ease: easeBrand, delay: 0.2 }}
-      >
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            filter,
-            scale: wobble,
-            willChange: "filter, transform",
-          }}
-        >
-          <CmsImage
-            value={image}
-            alt="Editorial garment study — Lineamode Apparel"
-            className="h-full w-full object-cover md:object-[center_25%]"
-            draggable={false}
-          />
-        </motion.div>
-      </motion.div>
+    <section className="relative h-[100svh] min-h-[640px] overflow-hidden text-stone">
+      <HeroBackground
+        image={image}
+        video={cms?.video}
+        mediaMode={mediaMode}
+      />
 
       {/* Layered overlays for legibility (kept outside the filter so they
           don't ripple). The left-side scrim is what lets the white display

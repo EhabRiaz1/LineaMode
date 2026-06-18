@@ -257,6 +257,162 @@ export function ImagePickerField({
   );
 }
 
+export type HeroMediaMode = "image" | "video";
+
+export function MediaModeToggle({
+  value,
+  onChange,
+}: {
+  value: HeroMediaMode;
+  onChange: (mode: HeroMediaMode) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="text-eyebrow text-ink/40">Background</p>
+      <div className="inline-flex rounded-full border border-[var(--hairline)] bg-stone p-1">
+        {(
+          [
+            { mode: "image" as const, label: "Photo" },
+            { mode: "video" as const, label: "Video" },
+          ] as const
+        ).map(({ mode, label }) => (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => onChange(mode)}
+            className={cn(
+              "rounded-full px-4 py-1.5 text-label transition-colors",
+              value === mode ? "bg-ink text-stone" : "text-ink/65 hover:text-ink",
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <p className="text-label text-ink/45">
+        Only the selected background type is shown on the live page.
+      </p>
+    </div>
+  );
+}
+
+export function VideoPickerField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  frame = "hero",
+}: {
+  label: string;
+  value: CmsImageValue;
+  onChange: (value: CmsImageValue) => void;
+  placeholder?: string;
+  frame?: ImageFramePreset;
+}) {
+  const [picking, setPicking] = useState(false);
+  const [positioning, setPositioning] = useState(false);
+  const parsed = parseCmsImage(value);
+  const src = parsed.src;
+  const hasCustomFocus = !isDefaultMobileFocus(parsed.mobileFocus);
+
+  const updateSrc = (nextSrc: string) => {
+    onChange(serializeCmsImage({ src: nextSrc, mobileFocus: parsed.mobileFocus }));
+  };
+
+  const updateFocus = (mobileFocus: typeof parsed.mobileFocus) => {
+    onChange(serializeCmsImage({ src: parsed.src, mobileFocus }));
+  };
+
+  return (
+    <div className="space-y-2">
+      <p className="text-eyebrow text-ink/40">{label}</p>
+
+      <div className="rounded-2xl border border-[var(--hairline)] bg-stone p-3 space-y-3">
+        {src && (
+          <video
+            src={src}
+            className="w-full aspect-video object-cover rounded-xl bg-ink/5"
+            muted
+            playsInline
+            loop
+            autoPlay
+            preload="metadata"
+          />
+        )}
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setPicking(true)}
+            className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+          >
+            {src ? "Change video" : "Pick from library"}
+          </button>
+          {src && (
+            <>
+              <button
+                type="button"
+                onClick={() => setPositioning(true)}
+                className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+              >
+                {hasCustomFocus ? "Edit phone position" : "Position for phone"}
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange("")}
+                className="text-label text-ink/45 hover:text-terracotta transition-colors"
+              >
+                Remove
+              </button>
+            </>
+          )}
+        </div>
+
+        {hasCustomFocus && (
+          <p className="text-label text-ink/45">
+            Phone focus set · {parsed.mobileFocus.x}% × {parsed.mobileFocus.y}%
+          </p>
+        )}
+
+        <div>
+          <p className="text-eyebrow text-ink/35 mb-1">Or paste a URL</p>
+          <input
+            value={src}
+            placeholder={placeholder ?? "https://…/video.mp4"}
+            onChange={(e) => updateSrc(e.target.value)}
+            className="w-full rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-label text-ink outline-none focus:ring-2 focus:ring-ink/15"
+          />
+        </div>
+      </div>
+
+      {picking && (
+        <MediaPicker
+          mediaFilter="video"
+          onClose={() => setPicking(false)}
+          onPick={(media: MediaItem) => {
+            updateSrc(media.url);
+            setPicking(false);
+          }}
+        />
+      )}
+
+      {positioning && src && (
+        <FocalPointModal
+          src={src}
+          kind="video"
+          focus={parsed.mobileFocus}
+          frame={frame}
+          onSave={(mobileFocus) => {
+            updateFocus(mobileFocus);
+            setPositioning(false);
+          }}
+          onClose={() => setPositioning(false)}
+        />
+      )}
+    </div>
+  );
+}
+
 // ─── Toggle ──────────────────────────────────────────────────────────────────
 
 export function Toggle({

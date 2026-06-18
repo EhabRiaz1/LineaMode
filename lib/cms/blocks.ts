@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cmsImageSchema } from "@/lib/cms/cms-image";
 
 /**
  * Source-of-truth schemas for the Supabase-backed CMS. The same Zod schema
@@ -27,7 +28,7 @@ const cta = z
 const mediaRef = z
   .object({
     id: z.string().uuid().optional(),
-    src: z.string().min(1).max(2048),
+    src: z.string().max(2048).default(""),
     alt: z.string().max(240).optional(),
     width: z.number().int().positive().optional(),
     height: z.number().int().positive().optional(),
@@ -41,7 +42,9 @@ const richText = z.string().max(2000);
 export const heroBlock = z
   .object({
     type: z.literal("hero"),
+    mediaMode: z.enum(["image", "video"]).default("image"),
     image: mediaRef,
+    video: cmsImageSchema.default(""),
     eyebrow: z.string().max(120),
     headline: richText,
     sublines: z.array(z.string().max(280)).max(3).default([]),
@@ -193,7 +196,9 @@ export function emptyBlock(type: Block["type"]): Block {
     case "hero":
       return {
         type: "hero",
+        mediaMode: "image",
         image: { src: "" },
+        video: "",
         eyebrow: "01 / Lineamode",
         headline: "From idea to ship-ready.",
         sublines: [],
