@@ -1,7 +1,8 @@
-import { mkdir, stat } from "node:fs/promises";
+import { mkdir, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
+import toIco from "to-ico";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const wordmarkPath = join(root, "public/brand/lineamode-wordmark.png");
@@ -12,6 +13,49 @@ const INK = "#201C1D";
 
 async function ensureParent(path) {
   await mkdir(dirname(path), { recursive: true });
+}
+
+/**
+ * Nav/footer wordmark on stone — matches BrandLogo `brightness-0` on light surfaces.
+ * The source PNG is bi-tonal; flattening to black keeps LINEA + MODE legible at small sizes.
+ */
+async function buildWordmarkOnStoneSquare(size) {
+  const padding = Math.round(size * 0.1);
+  const maxW = size - padding * 2;
+  const maxH = size - padding * 2;
+
+  const { data, info } = await sharp(wordmarkPath)
+    .resize({ width: maxW, height: maxH, fit: "inside", withoutEnlargement: false })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] > 0) {
+      data[i] = 0;
+      data[i + 1] = 0;
+      data[i + 2] = 0;
+    }
+  }
+
+  const wordmarkBlack = await sharp(data, {
+    raw: { width: info.width, height: info.height, channels: 4 },
+  })
+    .png()
+    .toBuffer();
+
+  const top = Math.round((size - info.height) / 2);
+  const left = Math.round((size - info.width) / 2);
+  const frame = Buffer.from(
+    `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="${STONE}"/>
+    </svg>`,
+  );
+
+  return sharp(frame)
+    .composite([{ input: wordmarkBlack, top, left }])
+    .png()
+    .toBuffer();
 }
 
 async function createOgImage() {
@@ -57,22 +101,9 @@ async function createOgImage() {
 async function createSquareLogo() {
   const size = 512;
   const outputPath = join(root, "public/brand/logo-square.png");
-  const wordmark = await sharp(wordmarkPath)
-    .resize({ width: 420, withoutEnlargement: true })
-    .png()
-    .toBuffer();
-  const wordmarkMeta = await sharp(wordmark).metadata();
-  const top = Math.round((size - (wordmarkMeta.height ?? 0)) / 2);
-  const left = Math.round((size - (wordmarkMeta.width ?? 0)) / 2);
-  const frame = Buffer.from(
-    `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="${STONE}"/>
-    </svg>`,
-  );
 
   await ensureParent(outputPath);
-  await sharp(frame)
-    .composite([{ input: wordmark, top, left }])
+  await sharp(await buildWordmarkOnStoneSquare(size))
     .png({ compressionLevel: 9 })
     .toFile(outputPath);
 }
@@ -117,22 +148,40 @@ async function createOgSocialJpeg() {
   }
 }
 
-/** iOS / fallback icon — same wordmark as logo-square (not the small LM glyph). */
+/** Tab favicon — nav wordmark (`lineamode-wordmark.png`) on stone. */
+async function createPublicFaviconAssets() {
+  const faviconIcoPath = join(root, "public/favicon.ico");
+  const iconPngPath = join(root, "public/icon.png");
+  const sizes = [16, 32, 48];
+
+  const pngBuffers = await Promise.all(
+    sizes.map((size) => buildWordmarkOnStoneSquare(size)),
+  );
+
+  await writeFile(faviconIcoPath, await toIco(pngBuffers));
+
+  await sharp(pngBuffers[1])
+    .png({ compressionLevel: 9 })
+    .toFile(iconPngPath);
+}
+
+/** iOS home-screen icon — same nav wordmark treatment as the favicon. */
 async function createPublicAppleTouchIcon() {
   const size = 180;
   const outputPath = join(root, "public/apple-touch-icon.png");
-  const logo = await sharp(squarePath)
-    .resize(size, size, { fit: "cover", position: "centre" })
-    .png({ compressionLevel: 9 })
-    .toBuffer();
 
   await ensureParent(outputPath);
-  await sharp(logo).toFile(outputPath);
+  await sharp(await buildWordmarkOnStoneSquare(size))
+    .png({ compressionLevel: 9 })
+    .toFile(outputPath);
 }
 
 await createOgImage();
 await createSquareLogo();
 await createOgSocialJpeg();
+await createPublicFaviconAssets();
 await createPublicAppleTouchIcon();
 
-console.log("Generated share assets in public/brand and public/apple-touch-icon.png");
+console.log(
+  "Generated share assets in public/brand, public/favicon.ico, public/icon.png, and public/apple-touch-icon.png",
+);

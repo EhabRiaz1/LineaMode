@@ -1,7 +1,7 @@
 export const SITE_URL = "https://www.lineamode.com";
 
 /**
- * Canonical public origin for absolute URLs in metadata (Open Graph, favicon base, JSON-LD).
+ * Canonical public origin for absolute URLs in metadata (Open Graph, JSON-LD).
  *
  * - Set `NEXT_PUBLIC_SITE_URL` on Vercel (e.g. `https://lineamode.vercel.app` or your custom domain).
  * - If unset, uses `VERCEL_URL` (each Vercel project’s default host) so previews work on *.vercel.app.

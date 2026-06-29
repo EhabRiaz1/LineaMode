@@ -23,7 +23,6 @@ import {
 } from "@/lib/seo/social";
 
 const deploymentOrigin = getDeploymentSiteOrigin();
-const metadataBase = new URL(`${deploymentOrigin.replace(/\/$/, "")}/`);
 
 // Manrope — body / UI (per brand guidelines)
 const manrope = Manrope({
@@ -52,7 +51,6 @@ const monoSans = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase,
   title: {
     default: `${SITE_NAME} — ${SITE_TAGLINE}`,
     template: `%s · ${SITE_NAME}`,
