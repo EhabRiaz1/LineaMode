@@ -17,7 +17,6 @@ import {
   Field,
   ImagePickerField,
   ListField,
-  CtaField,
   SectionAccordion,
   EditorShell,
 } from "./EditorFields";
@@ -142,8 +141,27 @@ export function AboutEditor() {
           onChange={(v) => update({ ...content, manifesto: { ...man, headlineItalic: v } })} />
         <Field label="Subheadline" value={man.subheadline} multiline rows={2}
           onChange={(v) => update({ ...content, manifesto: { ...man, subheadline: v } })} />
-        <Field label="Pull quote" value={man.pull} multiline rows={3}
-          onChange={(v) => update({ ...content, manifesto: { ...man, pull: v } })} />
+        <div className="space-y-3">
+          <p className="text-eyebrow text-ink/40">Group logos</p>
+          <p className="text-body text-ink/55">
+            Tone-on-tone PNG wordmarks, stacked vertically in section 01. Upload one image per company.
+          </p>
+          {man.brandLogos.map((logo, i) => (
+            <div key={logo.name} className="rounded-xl border border-[var(--hairline)] p-3 space-y-2">
+              <p className="text-label text-ink/60 font-medium">{logo.name}</p>
+              <ImagePickerField
+                label="Logo image"
+                frame="video"
+                value={logo.image}
+                onChange={(v) => {
+                  const brandLogos = [...man.brandLogos];
+                  brandLogos[i] = { ...brandLogos[i], image: v };
+                  update({ ...content, manifesto: { ...man, brandLogos } });
+                }}
+              />
+            </div>
+          ))}
+        </div>
         <ListField label="Body paragraphs" values={man.paragraphs}
           placeholder="Write a paragraph…"
           onChange={(v) => update({ ...content, manifesto: { ...man, paragraphs: v } })} />
@@ -161,7 +179,7 @@ export function AboutEditor() {
           onChange={(v) => update({ ...content, foundersCta: { ...fcta, body: v } })} />
         <div className="space-y-3">
           <p className="text-eyebrow text-ink/40">Founder preview cards</p>
-          {fcta.cards.map((card, i) => (
+          {fcta.cards.slice(0, 3).map((card, i) => (
             <div key={i} className="rounded-xl border border-[var(--hairline)] p-3 space-y-2">
               <p className="text-label text-ink/60 font-medium">
                 Card {i + 1} — {card.name || "Untitled"}
@@ -176,13 +194,30 @@ export function AboutEditor() {
                 }}
               />
               <Field
-                label="Brief description"
-                value={card.description}
-                multiline
-                rows={2}
+                label="LinkedIn URL"
+                value={card.linkedin ?? ""}
                 onChange={(v) => {
                   const cards = [...fcta.cards];
-                  cards[i] = { ...cards[i], description: v };
+                  cards[i] = { ...cards[i], linkedin: v };
+                  update({ ...content, foundersCta: { ...fcta, cards } });
+                }}
+              />
+              <Field
+                label="Email"
+                value={card.email ?? ""}
+                onChange={(v) => {
+                  const cards = [...fcta.cards];
+                  cards[i] = { ...cards[i], email: v };
+                  update({ ...content, foundersCta: { ...fcta, cards } });
+                }}
+              />
+              <Field
+                label="WhatsApp number"
+                value={card.whatsapp ?? ""}
+                placeholder="+92 300 0000000"
+                onChange={(v) => {
+                  const cards = [...fcta.cards];
+                  cards[i] = { ...cards[i], whatsapp: v };
                   update({ ...content, foundersCta: { ...fcta, cards } });
                 }}
               />
@@ -199,8 +234,6 @@ export function AboutEditor() {
             </div>
           ))}
         </div>
-        <CtaField label="CTA button" value={fcta.cta}
-          onChange={(v) => update({ ...content, foundersCta: { ...fcta, cta: v } })} />
       </SectionAccordion>
 
       {/* HQ / Studio */}
@@ -216,12 +249,9 @@ export function AboutEditor() {
         <Field label="Address" value={hq.address} multiline rows={3}
           placeholder={"Line 1,\nLine 2,\nCity, Country."}
           onChange={(v) => update({ ...content, hq: { ...hq, address: v } })} />
-        <ImagePickerField
-          label="Photo"
-          frame="editorial-split"
-          value={hq.image}
-          onChange={(v) => update({ ...content, hq: { ...hq, image: v } })}
-        />
+        <p className="text-body text-ink/55">
+          The section displays a rotating branded globe with Pakistan and Kashmir highlighted.
+        </p>
       </SectionAccordion>
     </EditorShell>
   );

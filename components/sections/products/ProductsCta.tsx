@@ -13,17 +13,17 @@ export function ProductsCta({ headlineLine1, headlineLine2, body, contactCta }: 
 
   return (
     <section className="bg-[var(--color-terracotta)] text-stone py-32">
-      <div className="shell grid grid-cols-12 gap-6 items-end">
+      <div className="shell grid grid-cols-12 gap-6 md:gap-12 items-center">
         <div className="col-span-12 md:col-span-7">
           <h2 className="text-display leading-[0.95]">
             {headlineLine1}
             <br />
-            <span className="italic font-extralight">{headlineLine2}</span>
+            <span className="font-extralight">{headlineLine2}</span>
           </h2>
         </div>
         <div className="col-span-12 md:col-span-4">
           <p className="text-body text-stone/85 max-w-md mb-8">{body}</p>
-          <ButtonLink href={href} variant="ink">
+          <ButtonLink href={href} variant="ink" noDot>
             {contactCta.label}
           </ButtonLink>
         </div>

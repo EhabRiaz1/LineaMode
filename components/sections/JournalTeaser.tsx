@@ -30,7 +30,7 @@ export function JournalTeaser({
   const headlineLine2 = cms?.headlineLine2 ?? "and trends for global fashion and textile";
   const body =
     cms?.body ??
-    "Field notes on materials, manufacturing, and the wider industry — written for brands that want context without the noise.";
+    "Explore trends in materials, color, and design – curated alongside industry developments, supply chain shifts, and manufacturing innovation.";
   const ctaLabel = cms?.ctaLabel ?? "Read the journal";
   const ctaHref = cms?.ctaHref ?? "/journal";
 
@@ -44,7 +44,7 @@ export function JournalTeaser({
             <Eyebrow number="05">{eyebrow}</Eyebrow>
             <h2 className="mt-5 text-balance font-[family-name:var(--font-display)] text-[clamp(1.85rem,5.5vw,2.75rem)] font-light leading-[1.08] tracking-[-0.02em] text-ink/90">
               {headlineLine1}
-              <span className="block italic font-extralight">{headlineLine2}</span>
+              <span className="block font-light">{headlineLine2}</span>
             </h2>
             <p className="text-body mt-5 max-w-xl text-ink/70 md:mt-6">{body}</p>
             <div className="mt-7 md:mt-8">
@@ -63,9 +63,9 @@ export function JournalTeaser({
                     <li key={article.slug} className="border-b border-ink/12 last:border-b-0">
                       <Link
                         href={`/journal/${article.slug}`}
-                        className="group grid grid-cols-[1fr_auto] items-start gap-3 py-3.5 transition-colors hover:bg-ink/[0.02] md:grid-cols-[3.25rem_1fr_auto] md:gap-3.5 md:py-4"
+                        className="group grid grid-cols-[1fr_auto] items-start gap-3 py-3.5 transition-colors hover:bg-ink/[0.02] md:grid-cols-[7rem_1fr_auto] md:gap-4 md:py-3.5 lg:grid-cols-[7.75rem_1fr_auto]"
                       >
-                        <div className="hidden aspect-[4/5] w-[3.25rem] overflow-hidden bg-ink/5 ring-1 ring-ink/10 md:block">
+                        <div className="hidden aspect-[5/4] w-[7rem] overflow-hidden bg-ink/5 ring-1 ring-ink/10 md:block lg:w-[7.75rem]">
                           {article.cover ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img

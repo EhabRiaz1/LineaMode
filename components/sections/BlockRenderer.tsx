@@ -67,8 +67,17 @@ function mediaRefToCmsImage(media: MediaRef): CmsImageValue {
   if (!media.src) return "";
   const x = Math.round((media.focal_x ?? 0.5) * 100);
   const y = Math.round((media.focal_y ?? 0.5) * 100);
-  if (x === 50 && y === 50) return media.src;
-  return { src: media.src, mobileFocus: { x, y } };
+  const mobileSrc = media.mobile_src?.trim() || undefined;
+  const hasFocus = x !== 50 || y !== 50;
+
+  if (!mobileSrc && !hasFocus) return media.src;
+
+  const obj: { src: string; mobileSrc?: string; mobileFocus?: { x: number; y: number } } = {
+    src: media.src,
+  };
+  if (mobileSrc) obj.mobileSrc = mobileSrc;
+  if (hasFocus) obj.mobileFocus = { x, y };
+  return obj;
 }
 
 function MediaImage({

@@ -61,8 +61,8 @@ export const founders: Founder[] = [
       "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=1600&q=80",
   },
   {
-    slug: "founder-three",
-    name: "Founder Three",
+    slug: "fawad-shah",
+    name: "Fawad Shah",
     role: "Founder",
     phone: "+92 300 0000000",
     phoneHref: "tel:+923000000000",
@@ -82,28 +82,5 @@ export const founders: Founder[] = [
     pull: "The right material decision protects the product long before it reaches the production floor.",
     portrait:
       "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1600&q=80",
-  },
-  {
-    slug: "founder-four",
-    name: "Founder Four",
-    role: "Founder",
-    phone: "+92 300 0000000",
-    phoneHref: "tel:+923000000000",
-    email: "studio@lineamode.com",
-    website: "www.lineamode.com",
-    address:
-      "1st Floor, NESPAK House, G-5/2, Attaturk Avenue, Islamabad, Pakistan.",
-    bio: [
-      "An operations and merchandising lead who keeps costing, timelines, approvals, and delivery moving in one direction.",
-      "They make sure every project has owners, dates, and a clear route from sample approval to dispatch.",
-    ],
-    focus: [
-      "Merchandising operations",
-      "Cost and timeline control",
-      "Delivery coordination",
-    ],
-    pull: "A strong calendar is not a document. It is a working rhythm every team can trust.",
-    portrait:
-      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=1600&q=80",
   },
 ];

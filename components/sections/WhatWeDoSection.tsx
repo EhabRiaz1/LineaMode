@@ -59,6 +59,8 @@ export function WhatWeDoSection({
   const [collapsedPhotoIndex, setCollapsedPhotoIndex] = useState(0);
   const [cycleKey, setCycleKey] = useState(0);
   const [hasManualSelection, setHasManualSelection] = useState(false);
+  const activeRef = useRef(active);
+  activeRef.current = active;
 
   useEffect(() => {
     if (!inView || hasManualSelection || active === null) return;
@@ -71,10 +73,12 @@ export function WhatWeDoSection({
 
   useLayoutEffect(() => {
     const updatePhotoPullUp = () => {
+      if (activeRef.current !== null) return;
       if (!headlineRef.current || !listRef.current) return;
       const headlineTop = headlineRef.current.getBoundingClientRect().top;
       const listTop = listRef.current.getBoundingClientRect().top;
-      setPhotoPullUp(Math.max(0, listTop - headlineTop));
+      const next = Math.max(0, listTop - headlineTop);
+      setPhotoPullUp((prev) => (Math.abs(prev - next) < 0.5 ? prev : next));
     };
 
     updatePhotoPullUp();
@@ -155,29 +159,28 @@ export function WhatWeDoSection({
                     >
                       {c.title}
                     </span>
-                    <motion.span
+                    <span
                       aria-hidden
-                      initial={false}
-                      animate={{
-                        rotate: active === i ? 90 : 0,
-                        scale: active === i ? 1.12 : 1,
-                      }}
-                      transition={{ duration: 0.55, ease: easeBrand }}
                       className={cn(
-                        "inline-block shrink-0 origin-center font-mono text-[0.75rem] font-extralight tracking-normal normal-case transition-colors duration-300",
-                        active === i ? "text-[#36454F]/55" : "text-ink/22 group-hover:text-ink/35",
+                        "inline-block h-2 w-3.5 shrink-0 origin-center transform-gpu transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                        "bg-current [mask-image:url('/images/icons/chevron-down.png')] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]",
+                        "[-webkit-mask-image:url('/images/icons/chevron-down.png')] [-webkit-mask-size:contain] [-webkit-mask-repeat:no-repeat] [-webkit-mask-position:center]",
+                        active === i
+                          ? "rotate-0 text-[#36454F]/55"
+                          : "-rotate-90 text-ink/22 group-hover:text-ink/35",
                       )}
-                    >
-                      →
-                    </motion.span>
+                    />
                   </button>
 
                   {active === i ? (
                     <motion.div
                       key={`details-${c.slug}`}
-                      initial={{ opacity: 0, y: 8 }}
+                      initial={hasManualSelection ? false : { opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.45, ease: easeBrand }}
+                      transition={{
+                        duration: hasManualSelection ? 0.22 : 0.45,
+                        ease: easeBrand,
+                      }}
                       className="pb-7"
                     >
                       <div className="md:hidden mx-auto mb-5 aspect-square w-full max-w-[264px] overflow-hidden bg-ink/5 ring-1 ring-ink/10">
@@ -233,7 +236,11 @@ export function WhatWeDoSection({
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{
-                        duration: isCollapsedSlideshow ? COLLAPSED_FADE_S : 0.6,
+                        duration: isCollapsedSlideshow
+                          ? COLLAPSED_FADE_S
+                          : hasManualSelection
+                            ? 0.22
+                            : 0.6,
                         ease: easeBrand,
                       }}
                       className="absolute inset-0"

@@ -61,52 +61,6 @@ function Field({
   );
 }
 
-function ListField({
-  label,
-  values,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  values: string[];
-  onChange: (v: string[]) => void;
-  placeholder?: string;
-}) {
-  return (
-    <div className="space-y-2">
-      <p className="text-eyebrow text-ink/40">{label}</p>
-      {values.map((val, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <input
-            value={val}
-            placeholder={placeholder}
-            onChange={(e) => {
-              const next = [...values];
-              next[i] = e.target.value;
-              onChange(next);
-            }}
-            className="flex-1 rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-ink/15"
-          />
-          <button
-            type="button"
-            onClick={() => onChange(values.filter((_, j) => j !== i))}
-            className="text-label text-ink/45 hover:text-terracotta px-2 shrink-0"
-          >
-            ✕
-          </button>
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={() => onChange([...values, ""])}
-        className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
-      >
-        + Add
-      </button>
-    </div>
-  );
-}
-
 function SectionAccordion({
   id,
   label,
@@ -378,37 +332,21 @@ export function CapabilitiesEditor() {
                 }}
               />
               <Field
-                label="Short description (shown on home page)"
+                label="Card copy"
                 value={cap.short}
                 multiline
-                rows={3}
+                rows={5}
+                placeholder="Paragraph shown under the title on the Services page"
                 onChange={(v) => {
                   const next = [...caps];
                   next[i] = { ...next[i], short: v };
                   update({ ...content, capabilities: next });
                 }}
               />
-              <Field
-                label="Full description"
-                value={cap.description}
-                multiline
-                rows={3}
-                onChange={(v) => {
-                  const next = [...caps];
-                  next[i] = { ...next[i], description: v };
-                  update({ ...content, capabilities: next });
-                }}
-              />
-              <ListField
-                label="Bullet points"
-                values={cap.bullets}
-                placeholder="e.g. Trend forecasting and seasonal direction"
-                onChange={(v) => {
-                  const next = [...caps];
-                  next[i] = { ...next[i], bullets: v };
-                  update({ ...content, capabilities: next });
-                }}
-              />
+              <p className="text-label text-ink/45">
+                Shown on the Services page under each discipline title. The home page
+                What we do section uses the same short copy when synced from Home editor.
+              </p>
             </SectionAccordion>
           ))}
 

@@ -9,6 +9,7 @@ import { getResendClient, RESEND_FROM } from "@/lib/email/resend";
 import { contactAutoReply } from "@/lib/email/templates";
 
 const ContactSchema = z.object({
+  title: z.string().trim().min(1, "Please select your title."),
   name: z.string().trim().min(2, "Please share your name."),
   brand: z.string().trim().min(1, "Please share your brand."),
   email: z.string().trim().email("Please use a valid email."),
@@ -29,8 +30,13 @@ export type ContactState =
     }
   | { status: "success" };
 
+function formatContactName(name: string, title: string) {
+  return title ? `${name}, ${title}` : name;
+}
+
 function formValuesFromRaw(raw: Record<string, FormDataEntryValue>) {
   return {
+    title: String(raw.title ?? ""),
     name: String(raw.name ?? ""),
     brand: String(raw.brand ?? ""),
     email: String(raw.email ?? ""),
@@ -61,9 +67,12 @@ async function sendContactEmails(data: z.infer<typeof ContactSchema>) {
   const resend = getResendClient();
   if (!resend) return false;
 
-  const adminTo = process.env.CONTACT_EMAIL_TO ?? "saif@lineamode.com";
+  const adminTo = process.env.CONTACT_EMAIL_TO ?? "contact@lineamode-apparel.com";
   const from = process.env.CONTACT_EMAIL_FROM ?? RESEND_FROM;
-  const { name, brand, email, productType, moq, message } = data;
+  const { name, brand, email, productType, moq, message } = {
+    ...data,
+    name: formatContactName(data.name, data.title),
+  };
 
   const adminResult = await resend.emails.send({
     to: adminTo,
@@ -125,7 +134,7 @@ export async function submitContact(
   }
 
   const submission = {
-    name: parsed.data.name,
+    name: formatContactName(parsed.data.name, parsed.data.title),
     brand: parsed.data.brand,
     email: parsed.data.email,
     productType: parsed.data.productType,
@@ -159,7 +168,7 @@ export async function submitContact(
           status: "error",
           errors: {},
           message:
-            "Something went wrong sending your brief. Please email saif@lineamode.com directly.",
+            "Something went wrong sending your brief. Please email contact@lineamode-apparel.com directly.",
           values,
         };
       }
@@ -171,7 +180,7 @@ export async function submitContact(
         status: "error",
         errors: {},
         message:
-          "Something went wrong sending your brief. Please email saif@lineamode.com directly.",
+          "Something went wrong sending your brief. Please email contact@lineamode-apparel.com directly.",
         values,
       };
     }
@@ -182,7 +191,7 @@ export async function submitContact(
       status: "error",
       errors: {},
       message:
-        "Something went wrong saving your brief. Please try again or email saif@lineamode.com directly.",
+        "Something went wrong saving your brief. Please try again or email contact@lineamode-apparel.com directly.",
       values,
     };
   }

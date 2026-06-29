@@ -17,6 +17,9 @@ type ProductCardProps = {
   /** Destination for the "Explore more" button shown in the expanded tile. */
   ctaHref?: string;
   ctaLabel?: string;
+  /** When set, hover reveals a blank panel with a lookbook PDF CTA. */
+  lookbookPdfHref?: string;
+  lookbookCtaLabel?: string;
 };
 
 const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
@@ -55,12 +58,15 @@ export function ProductCard({
   description,
   ctaHref = "/products",
   ctaLabel = "Explore more",
+  lookbookPdfHref,
+  lookbookCtaLabel = "Explore lookbook",
 }: ProductCardProps) {
   const hoverValue =
     hoverImage && cmsImageSrc(hoverImage) ? hoverImage : image;
   const [active, setActive] = useState(false);
   const lastPointer = useRef<string>("mouse");
   const hasDetails = Boolean(description);
+  const showLookbookHover = Boolean(lookbookPdfHref) && !hasDetails;
 
   const sizing =
     variant === "grid"
@@ -68,12 +74,12 @@ export function ProductCard({
       : cn(
           `shrink-0 snap-start transition-[width] ${DURATION} ${EASE}`,
           active && hasDetails
-            ? "w-[min(86vw,380px)] sm:w-[520px] md:w-[560px]"
-            : "w-[min(72vw,340px)] sm:w-[360px] md:w-[380px]",
+            ? "w-[min(78vw,340px)] sm:w-[520px] md:w-[560px]"
+            : "w-[min(64vw,300px)] sm:w-[360px] md:w-[380px]",
         );
 
   const frame =
-    variant === "grid" ? "aspect-[4/5]" : "h-[400px] sm:h-[450px] md:h-[475px]";
+    variant === "grid" ? "aspect-[4/5]" : "h-[340px] sm:h-[450px] md:h-[475px]";
 
   const headingClass = cn(
     "font-sans font-light leading-[1.15] tracking-[-0.01em] text-ink",
@@ -82,7 +88,9 @@ export function ProductCard({
       : "text-[clamp(1.35rem,2.4vw,1.65rem)]",
     hasDetails && active
       ? "[text-shadow:0_0_18px_rgba(255,255,255,0.75),0_0_34px_rgba(255,255,255,0.4),0_1px_2px_rgba(255,255,255,0.7)]"
-      : "[text-shadow:0_1px_14px_rgba(255,255,255,0.35)]",
+      : showLookbookHover
+        ? ""
+        : "[text-shadow:0_1px_14px_rgba(255,255,255,0.35)]",
   );
 
   return (
@@ -103,35 +111,103 @@ export function ProductCard({
       onFocus={() => setActive(true)}
       onBlur={() => setActive(false)}
     >
-      <div className={cn("relative overflow-hidden rounded-none bg-ink/5 ring-1 ring-ink/[0.06]", frame)}>
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-none",
+          frame,
+          showLookbookHover
+            ? cn(
+                "transition-[background-color,box-shadow] duration-500",
+                EASE,
+                active
+                  ? "bg-[var(--color-stone-veil)] ring-0"
+                  : "bg-ink/5 ring-1 ring-ink/[0.06]",
+              )
+            : "bg-ink/5 ring-1 ring-ink/[0.06]",
+        )}
+      >
         <CmsImage
           value={image}
           alt={title}
           className={cn(
-            "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700",
-            EASE,
-            active ? "scale-[1.03] opacity-0" : "scale-100 opacity-100",
+            "absolute inset-0 z-[1] h-full w-full object-cover",
+            showLookbookHover
+              ? cn(
+                  "transition-[opacity,filter,transform] duration-500",
+                  EASE,
+                  active
+                    ? "scale-[1.04] opacity-0 blur-[16px]"
+                    : "scale-100 opacity-100 blur-0",
+                )
+              : cn(
+                  "transition-[opacity,transform] duration-700",
+                  EASE,
+                  active ? "scale-[1.03] opacity-0" : "scale-100 opacity-100",
+                ),
           )}
         />
-        <CmsImage
-          value={hoverValue}
-          alt=""
-          aria-hidden
-          className={cn(
-            "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700",
-            EASE,
-            active ? "scale-[1.03] opacity-100" : "scale-100 opacity-0",
-          )}
-        />
+        {!showLookbookHover && (
+          <CmsImage
+            value={hoverValue}
+            alt=""
+            aria-hidden
+            className={cn(
+              "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700",
+              EASE,
+              active ? "scale-[1.03] opacity-100" : "scale-100 opacity-0",
+            )}
+          />
+        )}
 
-        <EdgeBackdrop
-          edge="bottom"
-          className={cn(
-            "transition-opacity duration-[400ms]",
-            EASE,
-            hasDetails && active ? "opacity-0" : "opacity-100",
-          )}
-        />
+        {showLookbookHover && (
+          <div
+            className={cn(
+              "absolute inset-0 z-[5] flex items-center justify-center bg-[var(--color-stone-veil)] transition-[opacity,filter] duration-500",
+              EASE,
+              active
+                ? "opacity-100 blur-0"
+                : "pointer-events-none opacity-0 blur-[12px]",
+            )}
+          >
+            <a
+              href={lookbookPdfHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              tabIndex={active ? 0 : -1}
+              onClick={(e) => e.stopPropagation()}
+              className={cn(
+                "inline-flex items-center justify-center rounded-full bg-ink px-5 py-2.5 text-label text-[var(--color-stone-veil)] transition-[opacity,transform,filter] duration-500 hover:bg-ink/85",
+                EASE,
+                active
+                  ? "translate-y-0 opacity-100 blur-0 delay-150"
+                  : "pointer-events-none translate-y-1 opacity-0 blur-[6px]",
+              )}
+            >
+              {lookbookCtaLabel}
+            </a>
+          </div>
+        )}
+
+        {!showLookbookHover && (
+          <EdgeBackdrop
+            edge="bottom"
+            className={cn(
+              "transition-opacity duration-[400ms]",
+              EASE,
+              hasDetails && active ? "opacity-0" : "opacity-100",
+            )}
+          />
+        )}
+        {showLookbookHover && (
+          <EdgeBackdrop
+            edge="bottom"
+            className={cn(
+              "z-[2] transition-opacity duration-500",
+              EASE,
+              active ? "opacity-0" : "opacity-100",
+            )}
+          />
+        )}
         {hasDetails && (
           <EdgeBackdrop
             edge="top"
@@ -210,7 +286,15 @@ export function ProductCard({
             </Link>
           </>
         ) : (
-          <div className="absolute bottom-0 left-0 z-10">
+          <div
+            className={cn(
+              "absolute bottom-0 left-0 z-10 transition-[opacity,filter] duration-500",
+              EASE,
+              showLookbookHover && active
+                ? "pointer-events-none opacity-0 blur-[8px]"
+                : "opacity-100 blur-0",
+            )}
+          >
             <div className="relative w-fit pb-1.5 pl-3.5 pr-1.5 pt-0">
               <h3 className={cn("relative", headingClass)}>{title}</h3>
             </div>

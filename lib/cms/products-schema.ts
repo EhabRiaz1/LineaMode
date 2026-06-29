@@ -5,11 +5,11 @@ import {
   SEED_PRODUCT_CATALOG,
   SEED_SUBCATEGORIES,
   CATEGORY_DESCRIPTIONS,
-  productsSubcategoryHref,
+  productsCategoryHref,
   type ProductCategorySlug,
 } from "@/content/product-catalog";
 import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
-import { cmsImageSchema, cmsImageSrc, parseCmsImage, serializeCmsImage, type CmsImageValue } from "@/lib/cms/cms-image";
+import { cmsImageSchema, cmsImageSrc, type CmsImageValue } from "@/lib/cms/cms-image";
 
 const categorySlugSchema = z.enum(
   PRODUCT_CATEGORIES.map((c) => c.slug) as [ProductCategorySlug, ...ProductCategorySlug[]],
@@ -18,6 +18,13 @@ const categorySlugSchema = z.enum(
 const ctaSchema = z.object({
   label: z.string().max(80),
   href: z.string().max(2048),
+});
+
+export const DEFAULT_LOOKBOOK_PDF_HREF = "/documents/lineamode-lookbook.pdf";
+
+export const lookbookCtaSchema = z.object({
+  label: z.string().max(80).default("Explore lookbook"),
+  pdfHref: z.string().max(2048).default(DEFAULT_LOOKBOOK_PDF_HREF),
 });
 
 export const subcategorySchema = z.object({
@@ -32,7 +39,12 @@ export const categoryConfigSchema = z.object({
   slug: categorySlugSchema,
   image: cmsImageSchema.default(""),
   hoverImage: cmsImageSchema.default(""),
-  description: z.string().max(280).default(""),
+  /** Optional headline on the homepage hover panel; defaults to the category title. */
+  homeHeadline: z.string().max(80).default(""),
+  /** Body copy on the homepage hover panel. */
+  description: z.string().max(400).default(""),
+  /** CTA label on the homepage hover panel. */
+  homeCtaLabel: z.string().max(80).default(""),
   subcategories: z.array(subcategorySchema).default([]),
 });
 
@@ -59,6 +71,8 @@ export const productsContentSchema = z.object({
 
   catalog: z.array(productCardSchema).default([]),
 
+  lookbookCta: lookbookCtaSchema.prefault({}),
+
   cta: z
     .object({
       headlineLine1: z.string().max(120).default("Build a range"),
@@ -79,22 +93,14 @@ export type CategoryConfig = z.infer<typeof categoryConfigSchema>;
 export type ProductCard = z.infer<typeof productCardSchema>;
 export type ProductsContent = z.infer<typeof productsContentSchema>;
 
-export type HomeSubcategoryTile = {
-  id: string;
-  title: string;
-  slug: string;
-  image: CmsImageValue;
-  href: string;
-};
-
 export type HomeCategoryTile = {
   slug: ProductCategorySlug;
   title: string;
+  headline: string;
   description: string;
   image: CmsImageValue;
-  hoverImage: CmsImageValue;
-  subcategories: HomeSubcategoryTile[];
   ctaHref: string;
+  ctaLabel: string;
 };
 
 export const PRODUCTS_CONTENT_DEFAULTS: ProductsContent = {
@@ -105,6 +111,10 @@ export const PRODUCTS_CONTENT_DEFAULTS: ProductsContent = {
   },
   categories: [],
   catalog: [],
+  lookbookCta: {
+    label: "Explore lookbook",
+    pdfHref: DEFAULT_LOOKBOOK_PDF_HREF,
+  },
   cta: {
     headlineLine1: "Build a range",
     headlineLine2: "with us.",
@@ -187,23 +197,6 @@ export function resolveProductCatalog(catalog: ProductCard[]): ProductCard[] {
   );
 }
 
-function resolveSubcategoryImage(
-  sub: Subcategory,
-  catalog: ProductCard[],
-  categorySlug: ProductCategorySlug,
-  categoryImage: string,
-): string {
-  const subSrc = cmsImageSrc(sub.image);
-  if (subSrc) return subSrc;
-  const matched = catalog.find(
-    (item) =>
-      item.category === categorySlug && item.subcategoryId === sub.id && cmsImageSrc(item.image),
-  );
-  if (matched) return cmsImageSrc(matched.image);
-  const inCategory = catalog.find((item) => item.category === categorySlug && cmsImageSrc(item.image));
-  return inCategory ? cmsImageSrc(inCategory.image) : categoryImage;
-}
-
 export function resolveCategoryConfigs(
   content: Pick<ProductsContent, "categories" | "catalog">,
 ): CategoryConfig[] {
@@ -230,7 +223,9 @@ export function resolveCategoryConfigs(
       slug: category.slug,
       image: existing?.image || fallbackImages.image,
       hoverImage: existing?.hoverImage || fallbackImages.hoverImage || fallbackImages.image,
+      homeHeadline: existing?.homeHeadline ?? "",
       description: existing?.description || CATEGORY_DESCRIPTIONS[category.slug],
+      homeCtaLabel: existing?.homeCtaLabel ?? "",
       subcategories,
     };
   });
@@ -240,32 +235,45 @@ export function getHomeCategoryTiles(
   content: Pick<ProductsContent, "categories" | "catalog">,
   viewAllHref = "/products",
 ): HomeCategoryTile[] {
-  const catalog = resolveProductCatalog(content.catalog);
-
   return resolveCategoryConfigs(content).map((config) => {
     const meta = PRODUCT_CATEGORIES.find((c) => c.slug === config.slug)!;
+    const productsPath = viewAllHref.split("?")[0] || "/products";
     return {
       slug: config.slug,
       title: meta.title,
+      headline: config.homeHeadline?.trim() || meta.title,
       description: config.description || CATEGORY_DESCRIPTIONS[config.slug],
       image: config.image,
-      hoverImage: config.hoverImage,
-      subcategories: sortSubcategories(config.subcategories)
-        .slice(0, 4)
-        .map((sub) => {
-          const parsed = parseCmsImage(sub.image);
-          const src =
-            parsed.src ||
-            resolveSubcategoryImage(sub, catalog, config.slug, cmsImageSrc(config.image));
-          return {
-            id: sub.id,
-            title: sub.title,
-            slug: sub.slug,
-            image: serializeCmsImage({ src, mobileFocus: parsed.mobileFocus }),
-            href: productsSubcategoryHref(config.slug, sub.slug, viewAllHref),
-          };
-        }),
-      ctaHref: `${viewAllHref.split("?")[0] || "/products"}?category=${encodeURIComponent(config.slug)}`,
+      ctaHref: productsCategoryHref(config.slug, productsPath),
+      ctaLabel:
+        config.homeCtaLabel?.trim() || `Explore ${meta.title.toLowerCase()}`,
+    };
+  });
+}
+
+export type HomeCategoryCopy = {
+  slug: ProductCategorySlug;
+  headline: string;
+  description: string;
+  ctaLabel: string;
+};
+
+/** Applies homepage CMS copy onto product-sourced category tiles (images + links). */
+export function applyHomeCategoryCopy(
+  tiles: HomeCategoryTile[],
+  copy: HomeCategoryCopy[],
+): HomeCategoryTile[] {
+  const bySlug = new Map(copy.map((item) => [item.slug, item]));
+
+  return tiles.map((tile) => {
+    const home = bySlug.get(tile.slug);
+    if (!home) return tile;
+
+    return {
+      ...tile,
+      headline: home.headline.trim() || tile.headline,
+      description: home.description.trim() || tile.description,
+      ctaLabel: home.ctaLabel.trim() || tile.ctaLabel,
     };
   });
 }
@@ -390,6 +398,10 @@ export function parseProductsContent(raw: unknown): ProductsContent {
         },
         categories: resolveCategoryConfigs({ categories: [], catalog }),
         catalog,
+        lookbookCta: {
+          ...PRODUCTS_CONTENT_DEFAULTS.lookbookCta,
+          ...((p.lookbookCta as object) ?? {}),
+        },
         cta: migrateLegacyCta(p.cta as Record<string, unknown> | undefined),
       };
     }
@@ -404,6 +416,10 @@ export function parseProductsContent(raw: unknown): ProductsContent {
       },
       categories,
       catalog,
+      lookbookCta: {
+        ...PRODUCTS_CONTENT_DEFAULTS.lookbookCta,
+        ...((p.lookbookCta as object) ?? {}),
+      },
       cta: migrateLegacyCta(p.cta as Record<string, unknown> | undefined),
     };
   }
@@ -415,6 +431,7 @@ export function parseProductsContent(raw: unknown): ProductsContent {
       ...result.data,
       categories: parseCategories(result.data.categories, catalog),
       catalog,
+      lookbookCta: result.data.lookbookCta,
       cta: {
         ...result.data.cta,
         contactCta: {

@@ -12,13 +12,6 @@ import {
   DEFAULT_PROCESS_STEPS,
 } from "@/lib/cms/capabilities-schema";
 
-function capabilityBlurb(short: string) {
-  const normalized = short.replace(/\s+/g, " ").trim();
-  const firstSentence = normalized.split(/(?<=[.!?])\s+/)[0]?.trim() || normalized;
-  if (firstSentence.length <= 130) return firstSentence;
-  return `${firstSentence.slice(0, 127).trim()}…`;
-}
-
 export const metadata = pageMetadata({
   title: "Capabilities",
   description:
@@ -57,7 +50,7 @@ export default async function CapabilitiesPage() {
             <Eyebrow number="00">{cms.intro.eyebrow}</Eyebrow>
           </div>
           <div className="col-span-12 md:col-span-9">
-            <h1 className="text-display leading-[0.95]">
+            <h1 className="text-capabilities-intro-headline">
               <span className="block">
                 <SplitText by="word" stagger={0.05} duration={1}>
                   {cms.intro.headlineLine1}
@@ -105,11 +98,11 @@ export default async function CapabilitiesPage() {
                   {cap.title}
                 </h2>
                 <p
-                  className={`mt-4 max-w-sm text-body leading-relaxed ${
+                  className={`mt-4 max-w-md text-body leading-relaxed ${
                     i % 2 === 0 ? "text-stone/75" : "text-ink/70"
                   }`}
                 >
-                  {capabilityBlurb(cap.short)}
+                  {cap.short}
                 </p>
               </div>
               <div className={`min-h-[14rem] min-w-0 md:min-h-0 md:h-full ${i % 2 === 1 ? "md:order-1" : ""}`}>
@@ -156,15 +149,15 @@ export default async function CapabilitiesPage() {
                 key={step.step}
                 className="bg-[var(--color-graphite-blue)] p-6 md:p-7 flex flex-col gap-3 md:min-h-44"
               >
-                <span className="text-label text-stone/60">/ {step.step}</span>
+                <span className="text-label text-stone/60"># {step.step}</span>
                 <span className="text-h2">{step.title}</span>
                 <span className="text-body text-stone/70">{step.note}</span>
               </li>
             ))}
           </ol>
 
-          <div className="mt-12 flex justify-end">
-            <ButtonLink href={resolveContactHref(cms.process.ctaHref)} variant="ink">
+          <div className="mt-12 flex justify-center">
+            <ButtonLink href={resolveContactHref(cms.process.ctaHref)} variant="ink" plain>
               {cms.process.ctaLabel}
             </ButtonLink>
           </div>

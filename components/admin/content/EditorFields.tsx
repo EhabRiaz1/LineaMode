@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
+  cmsImageMobileSrc,
   cmsImageSrc,
   isDefaultMobileFocus,
   parseCmsImage,
   serializeCmsImage,
   type CmsImageValue,
   type ImageFramePreset,
+  type MobileFocus,
 } from "@/lib/cms/cms-image";
 import { FocalPointModal } from "./FocalPointModal";
 import { MediaPicker, type MediaItem } from "./MediaPicker";
@@ -139,11 +141,21 @@ export function CtaField({
 }
 
 // ─── Image picker field ───────────────────────────────────────────────────────
-// Shows:
-//   1. A thumbnail preview of the current image (if any)
-//   2. "Pick from library" → opens the MediaPicker modal (sets URL)
-//   3. The existing URL text input beneath — kept as a fallback so
-//      any already-saved external URL (Unsplash, etc.) is never lost.
+// Desktop asset + optional mobile override + phone focal point.
+
+function commitCmsImage(
+  parsed: ReturnType<typeof parseCmsImage>,
+  patch: Partial<{ src: string; mobileSrc?: string; mobileFocus: MobileFocus }>,
+  onChange: (value: CmsImageValue) => void,
+) {
+  onChange(
+    serializeCmsImage({
+      src: patch.src ?? parsed.src,
+      mobileSrc: patch.mobileSrc !== undefined ? patch.mobileSrc : parsed.mobileSrc,
+      mobileFocus: patch.mobileFocus ?? parsed.mobileFocus,
+    }),
+  );
+}
 
 export function ImagePickerField({
   label,
@@ -158,51 +170,41 @@ export function ImagePickerField({
   placeholder?: string;
   frame?: ImageFramePreset;
 }) {
-  const [picking, setPicking] = useState(false);
+  const [pickingDesktop, setPickingDesktop] = useState(false);
+  const [pickingMobile, setPickingMobile] = useState(false);
   const [positioning, setPositioning] = useState(false);
   const parsed = parseCmsImage(value);
   const src = parsed.src;
+  const mobileSrc = parsed.mobileSrc ?? "";
   const hasCustomFocus = !isDefaultMobileFocus(parsed.mobileFocus);
-
-  const updateSrc = (nextSrc: string) => {
-    onChange(serializeCmsImage({ src: nextSrc, mobileFocus: parsed.mobileFocus }));
-  };
-
-  const updateFocus = (mobileFocus: typeof parsed.mobileFocus) => {
-    onChange(serializeCmsImage({ src: parsed.src, mobileFocus }));
-  };
+  const [mobileOpen, setMobileOpen] = useState(Boolean(mobileSrc));
+  const focalPreviewSrc = cmsImageMobileSrc(value);
 
   return (
     <div className="space-y-2">
       <p className="text-eyebrow text-ink/40">{label}</p>
 
-      <div className="rounded-2xl border border-[var(--hairline)] bg-stone p-3 space-y-3">
-        {src && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={src}
-            alt=""
-            className="w-full aspect-video object-cover rounded-xl bg-ink/5"
-          />
-        )}
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setPicking(true)}
-            className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
-          >
-            {src ? "Change image" : "Pick from library"}
-          </button>
+      <div className="rounded-2xl border border-[var(--hairline)] bg-stone p-3 space-y-4">
+        <div className="space-y-3">
+          <p className="text-eyebrow text-ink/35">Desktop</p>
           {src && (
-            <>
-              <button
-                type="button"
-                onClick={() => setPositioning(true)}
-                className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
-              >
-                {hasCustomFocus ? "Edit phone position" : "Position for phone"}
-              </button>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={src}
+              alt=""
+              className="w-full aspect-video object-cover rounded-xl bg-ink/5"
+            />
+          )}
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setPickingDesktop(true)}
+              className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+            >
+              {src ? "Change image" : "Pick from library"}
+            </button>
+            {src && (
               <button
                 type="button"
                 onClick={() => onChange("")}
@@ -210,44 +212,127 @@ export function ImagePickerField({
               >
                 Remove
               </button>
-            </>
+            )}
+          </div>
+
+          <div>
+            <p className="text-eyebrow text-ink/35 mb-1">Or paste a URL</p>
+            <input
+              value={src}
+              placeholder={placeholder ?? "https://…"}
+              onChange={(e) => commitCmsImage(parsed, { src: e.target.value }, onChange)}
+              className="w-full rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-label text-ink outline-none focus:ring-2 focus:ring-ink/15"
+            />
+          </div>
+        </div>
+
+        <div className="border-t border-[var(--hairline)] pt-3 space-y-3">
+          <button
+            type="button"
+            onClick={() => setMobileOpen((open) => !open)}
+            className="flex w-full items-center justify-between text-left"
+          >
+            <span className="text-eyebrow text-ink/35">Mobile (optional)</span>
+            <span className="text-label text-ink/45">{mobileOpen ? "Hide" : "Show"}</span>
+          </button>
+
+          {mobileOpen && (
+            <div className="space-y-3">
+              {mobileSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={mobileSrc}
+                  alt=""
+                  className="w-full aspect-[9/16] max-w-[220px] object-cover rounded-xl bg-ink/5"
+                />
+              ) : (
+                <p className="text-label text-ink/45">
+                  No mobile image — phone visitors see the desktop image with optional focal crop.
+                </p>
+              )}
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setPickingMobile(true)}
+                  className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+                >
+                  {mobileSrc ? "Change mobile image" : "Pick mobile image"}
+                </button>
+                {mobileSrc && (
+                  <button
+                    type="button"
+                    onClick={() => commitCmsImage(parsed, { mobileSrc: "" }, onChange)}
+                    className="text-label text-ink/45 hover:text-terracotta transition-colors"
+                  >
+                    Clear mobile image
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <p className="text-eyebrow text-ink/35 mb-1">Or paste a mobile URL</p>
+                <input
+                  value={mobileSrc}
+                  placeholder={placeholder ?? "https://…"}
+                  onChange={(e) =>
+                    commitCmsImage(parsed, { mobileSrc: e.target.value }, onChange)
+                  }
+                  className="w-full rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-label text-ink outline-none focus:ring-2 focus:ring-ink/15"
+                />
+              </div>
+            </div>
           )}
         </div>
 
-        {hasCustomFocus && (
-          <p className="text-label text-ink/45">
-            Phone focus set · {parsed.mobileFocus.x}% × {parsed.mobileFocus.y}%
-          </p>
+        {(src || mobileSrc) && (
+          <div className="border-t border-[var(--hairline)] pt-3 space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setPositioning(true)}
+                className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+              >
+                {hasCustomFocus ? "Edit phone position" : "Position for phone"}
+              </button>
+            </div>
+            {hasCustomFocus && (
+              <p className="text-label text-ink/45">
+                Phone focus set · {parsed.mobileFocus.x}% × {parsed.mobileFocus.y}%
+              </p>
+            )}
+          </div>
         )}
-
-        <div>
-          <p className="text-eyebrow text-ink/35 mb-1">Or paste a URL</p>
-          <input
-            value={src}
-            placeholder={placeholder ?? "https://…"}
-            onChange={(e) => updateSrc(e.target.value)}
-            className="w-full rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-label text-ink outline-none focus:ring-2 focus:ring-ink/15"
-          />
-        </div>
       </div>
 
-      {picking && (
+      {pickingDesktop && (
         <MediaPicker
-          onClose={() => setPicking(false)}
+          onClose={() => setPickingDesktop(false)}
           onPick={(media: MediaItem) => {
-            updateSrc(media.url);
-            setPicking(false);
+            commitCmsImage(parsed, { src: media.url }, onChange);
+            setPickingDesktop(false);
           }}
         />
       )}
 
-      {positioning && src && (
+      {pickingMobile && (
+        <MediaPicker
+          onClose={() => setPickingMobile(false)}
+          onPick={(media: MediaItem) => {
+            commitCmsImage(parsed, { mobileSrc: media.url }, onChange);
+            setMobileOpen(true);
+            setPickingMobile(false);
+          }}
+        />
+      )}
+
+      {positioning && focalPreviewSrc && (
         <FocalPointModal
-          src={src}
+          src={focalPreviewSrc}
           focus={parsed.mobileFocus}
           frame={frame}
           onSave={(mobileFocus) => {
-            updateFocus(mobileFocus);
+            commitCmsImage(parsed, { mobileFocus }, onChange);
             setPositioning(false);
           }}
           onClose={() => setPositioning(false)}
@@ -309,54 +394,44 @@ export function VideoPickerField({
   placeholder?: string;
   frame?: ImageFramePreset;
 }) {
-  const [picking, setPicking] = useState(false);
+  const [pickingDesktop, setPickingDesktop] = useState(false);
+  const [pickingMobile, setPickingMobile] = useState(false);
   const [positioning, setPositioning] = useState(false);
   const parsed = parseCmsImage(value);
   const src = parsed.src;
+  const mobileSrc = parsed.mobileSrc ?? "";
   const hasCustomFocus = !isDefaultMobileFocus(parsed.mobileFocus);
-
-  const updateSrc = (nextSrc: string) => {
-    onChange(serializeCmsImage({ src: nextSrc, mobileFocus: parsed.mobileFocus }));
-  };
-
-  const updateFocus = (mobileFocus: typeof parsed.mobileFocus) => {
-    onChange(serializeCmsImage({ src: parsed.src, mobileFocus }));
-  };
+  const [mobileOpen, setMobileOpen] = useState(Boolean(mobileSrc));
+  const focalPreviewSrc = cmsImageMobileSrc(value);
 
   return (
     <div className="space-y-2">
       <p className="text-eyebrow text-ink/40">{label}</p>
 
-      <div className="rounded-2xl border border-[var(--hairline)] bg-stone p-3 space-y-3">
-        {src && (
-          <video
-            src={src}
-            className="w-full aspect-video object-cover rounded-xl bg-ink/5"
-            muted
-            playsInline
-            loop
-            autoPlay
-            preload="metadata"
-          />
-        )}
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setPicking(true)}
-            className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
-          >
-            {src ? "Change video" : "Pick from library"}
-          </button>
+      <div className="rounded-2xl border border-[var(--hairline)] bg-stone p-3 space-y-4">
+        <div className="space-y-3">
+          <p className="text-eyebrow text-ink/35">Desktop</p>
           {src && (
-            <>
-              <button
-                type="button"
-                onClick={() => setPositioning(true)}
-                className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
-              >
-                {hasCustomFocus ? "Edit phone position" : "Position for phone"}
-              </button>
+            <video
+              src={src}
+              className="w-full aspect-video object-cover rounded-xl bg-ink/5"
+              muted
+              playsInline
+              loop
+              autoPlay
+              preload="metadata"
+            />
+          )}
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setPickingDesktop(true)}
+              className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+            >
+              {src ? "Change video" : "Pick from library"}
+            </button>
+            {src && (
               <button
                 type="button"
                 onClick={() => onChange("")}
@@ -364,46 +439,133 @@ export function VideoPickerField({
               >
                 Remove
               </button>
-            </>
+            )}
+          </div>
+
+          <div>
+            <p className="text-eyebrow text-ink/35 mb-1">Or paste a URL</p>
+            <input
+              value={src}
+              placeholder={placeholder ?? "https://…/video.mp4"}
+              onChange={(e) => commitCmsImage(parsed, { src: e.target.value }, onChange)}
+              className="w-full rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-label text-ink outline-none focus:ring-2 focus:ring-ink/15"
+            />
+          </div>
+        </div>
+
+        <div className="border-t border-[var(--hairline)] pt-3 space-y-3">
+          <button
+            type="button"
+            onClick={() => setMobileOpen((open) => !open)}
+            className="flex w-full items-center justify-between text-left"
+          >
+            <span className="text-eyebrow text-ink/35">Mobile (optional)</span>
+            <span className="text-label text-ink/45">{mobileOpen ? "Hide" : "Show"}</span>
+          </button>
+
+          {mobileOpen && (
+            <div className="space-y-3">
+              {mobileSrc ? (
+                <video
+                  src={mobileSrc}
+                  className="w-full aspect-[9/16] max-w-[220px] object-cover rounded-xl bg-ink/5"
+                  muted
+                  playsInline
+                  loop
+                  autoPlay
+                  preload="metadata"
+                />
+              ) : (
+                <p className="text-label text-ink/45">
+                  No mobile video — phone visitors see the desktop video with optional focal crop.
+                </p>
+              )}
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setPickingMobile(true)}
+                  className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+                >
+                  {mobileSrc ? "Change mobile video" : "Pick mobile video"}
+                </button>
+                {mobileSrc && (
+                  <button
+                    type="button"
+                    onClick={() => commitCmsImage(parsed, { mobileSrc: "" }, onChange)}
+                    className="text-label text-ink/45 hover:text-terracotta transition-colors"
+                  >
+                    Clear mobile video
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <p className="text-eyebrow text-ink/35 mb-1">Or paste a mobile URL</p>
+                <input
+                  value={mobileSrc}
+                  placeholder={placeholder ?? "https://…/video.mp4"}
+                  onChange={(e) =>
+                    commitCmsImage(parsed, { mobileSrc: e.target.value }, onChange)
+                  }
+                  className="w-full rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-label text-ink outline-none focus:ring-2 focus:ring-ink/15"
+                />
+              </div>
+            </div>
           )}
         </div>
 
-        {hasCustomFocus && (
-          <p className="text-label text-ink/45">
-            Phone focus set · {parsed.mobileFocus.x}% × {parsed.mobileFocus.y}%
-          </p>
+        {(src || mobileSrc) && (
+          <div className="border-t border-[var(--hairline)] pt-3 space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setPositioning(true)}
+                className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+              >
+                {hasCustomFocus ? "Edit phone position" : "Position for phone"}
+              </button>
+            </div>
+            {hasCustomFocus && (
+              <p className="text-label text-ink/45">
+                Phone focus set · {parsed.mobileFocus.x}% × {parsed.mobileFocus.y}%
+              </p>
+            )}
+          </div>
         )}
-
-        <div>
-          <p className="text-eyebrow text-ink/35 mb-1">Or paste a URL</p>
-          <input
-            value={src}
-            placeholder={placeholder ?? "https://…/video.mp4"}
-            onChange={(e) => updateSrc(e.target.value)}
-            className="w-full rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-label text-ink outline-none focus:ring-2 focus:ring-ink/15"
-          />
-        </div>
       </div>
 
-      {picking && (
+      {pickingDesktop && (
         <MediaPicker
           mediaFilter="video"
-          onClose={() => setPicking(false)}
+          onClose={() => setPickingDesktop(false)}
           onPick={(media: MediaItem) => {
-            updateSrc(media.url);
-            setPicking(false);
+            commitCmsImage(parsed, { src: media.url }, onChange);
+            setPickingDesktop(false);
           }}
         />
       )}
 
-      {positioning && src && (
+      {pickingMobile && (
+        <MediaPicker
+          mediaFilter="video"
+          onClose={() => setPickingMobile(false)}
+          onPick={(media: MediaItem) => {
+            commitCmsImage(parsed, { mobileSrc: media.url }, onChange);
+            setMobileOpen(true);
+            setPickingMobile(false);
+          }}
+        />
+      )}
+
+      {positioning && focalPreviewSrc && (
         <FocalPointModal
-          src={src}
+          src={focalPreviewSrc}
           kind="video"
           focus={parsed.mobileFocus}
           frame={frame}
           onSave={(mobileFocus) => {
-            updateFocus(mobileFocus);
+            commitCmsImage(parsed, { mobileFocus }, onChange);
             setPositioning(false);
           }}
           onClose={() => setPositioning(false)}

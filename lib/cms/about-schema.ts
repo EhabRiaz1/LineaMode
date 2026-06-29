@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { cmsImageSchema } from "@/lib/cms/cms-image";
+import { cmsImageSchema, type CmsImageValue } from "@/lib/cms/cms-image";
 
 const ctaSchema = z.object({
   label: z.string().max(80),
@@ -8,9 +8,54 @@ const ctaSchema = z.object({
 
 const founderPreviewCardSchema = z.object({
   name: z.string().max(120),
-  description: z.string().max(300),
+  description: z.string().max(300).default(""),
   portrait: cmsImageSchema.default(""),
+  linkedin: z.string().max(2048).default(""),
+  email: z.string().max(200).default(""),
+  whatsapp: z.string().max(80).default(""),
 });
+
+const FOUNDER_PREVIEW_CARDS_DEFAULT = [
+  {
+    name: "Saif Ahmed",
+    description: "",
+    portrait:
+      "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1200&q=80",
+    linkedin: "",
+    email: "saif@lineamode.com",
+    whatsapp: "+92 300 1234567",
+  },
+  {
+    name: "Wasay Hasan",
+    description: "",
+    portrait:
+      "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=1200&q=80",
+    linkedin: "",
+    email: "wasay@lineamode.com",
+    whatsapp: "+92 321 4296677",
+  },
+  {
+    name: "Fawad Shah",
+    description: "",
+    portrait:
+      "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80",
+    linkedin: "",
+    email: "studio@lineamode.com",
+    whatsapp: "+92 300 0000000",
+  },
+] as const;
+
+const brandLogoSchema = z.object({
+  name: z.string().max(80),
+  image: cmsImageSchema.default(""),
+});
+
+const MANIFESTO_BRAND_LOGOS_DEFAULT = [
+  { name: "Lineamode", image: "/brand/lineamode-wordmark.png" },
+  { name: "Intermoda", image: "" },
+  { name: "Matrix", image: "" },
+  { name: "Triple Tree", image: "" },
+] as const;
 
 export const aboutContentSchema = z.object({
   intro: z
@@ -38,6 +83,7 @@ export const aboutContentSchema = z.object({
         .default(
           "We act as a design-led innovation partner that understands the intersection of global trends and manufacturing precision.",
         ),
+      brandLogos: z.array(brandLogoSchema).default([...MANIFESTO_BRAND_LOGOS_DEFAULT]),
       paragraphs: z
         .array(z.string().max(600))
         .default([
@@ -50,7 +96,7 @@ export const aboutContentSchema = z.object({
   foundersCta: z
     .object({
       eyebrow: z.string().max(80).default("Founders"),
-      headlineLine1: z.string().max(120).default("Four Founders."),
+      headlineLine1: z.string().max(120).default("Three Founders."),
       headlineLine2: z.string().max(120).default("One Studio."),
       body: z
         .string()
@@ -61,36 +107,7 @@ export const aboutContentSchema = z.object({
       image: cmsImageSchema.default(
           "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1600&q=80",
         ),
-      cards: z.array(founderPreviewCardSchema).default([
-        {
-          name: "Saif Ahmed",
-          description:
-            "Commercial strategy, mill relationships, and long-term partnerships for growing apparel brands.",
-          portrait:
-            "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1200&q=80",
-        },
-        {
-          name: "Wasay Hasan",
-          description:
-            "Design, product development, and critical-path discipline from concept through production.",
-          portrait:
-            "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=1200&q=80",
-        },
-        {
-          name: "Founder Three",
-          description:
-            "Product and sourcing leadership across fabric development, vendor coordination, and quality.",
-          portrait:
-            "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80",
-        },
-        {
-          name: "Founder Four",
-          description:
-            "Operations and merchandising support that keeps timelines, costing, and delivery aligned.",
-          portrait:
-            "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=1200&q=80",
-        },
-      ]),
+      cards: z.array(founderPreviewCardSchema).default([...FOUNDER_PREVIEW_CARDS_DEFAULT]),
       cta: ctaSchema.default({ label: "Meet the founders →", href: "/founders" }),
     })
     .prefault({}),
@@ -102,7 +119,7 @@ export const aboutContentSchema = z.object({
       headlineLine2: z.string().max(120).default("Pakistan."),
       body: z
         .string()
-        .max(400)
+        .max(1200)
         .default(
           "The studio sits at NESPAK House on Attaturk Avenue — a working floor, not a showroom. Visitors are welcome by appointment.",
         ),
@@ -132,6 +149,7 @@ export const ABOUT_CONTENT_DEFAULTS: AboutContent = {
     subheadline:
       "A specialism in knitwear made from performance polyesters, with a discipline that reaches into every step of the line.",
     pull: "We act as a design-led innovation partner that understands the intersection of global trends and manufacturing precision.",
+    brandLogos: [...MANIFESTO_BRAND_LOGOS_DEFAULT],
     paragraphs: [
       "Fashion businesses operate in an increasingly complex world, in which issues a brand experiences from a supplier include inadequate product quality, overproduction, poor coordination and long lead times.",
       "There is a constant pressure to be efficient and reduce cost without compromising on the brand — and this is becoming more difficult in a consumer landscape that is always evolving with new trends.",
@@ -139,41 +157,12 @@ export const ABOUT_CONTENT_DEFAULTS: AboutContent = {
   },
   foundersCta: {
     eyebrow: "Founders",
-    headlineLine1: "Four Founders.",
+    headlineLine1: "Three Founders.",
     headlineLine2: "One Studio.",
     body: "Three decades in the global textile industry — working alongside the most exacting brands and manufacturers in fashion — taught the studio one thing above all: brands grow when their partner owns the long-term, not just the next purchase order.",
     image:
       "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1600&q=80",
-    cards: [
-      {
-        name: "Saif Ahmed",
-        description:
-          "Commercial strategy, mill relationships, and long-term partnerships for growing apparel brands.",
-        portrait:
-          "https://images.unsplash.com/photo-1542060748-10c28b62716f?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        name: "Wasay Hasan",
-        description:
-          "Design, product development, and critical-path discipline from concept through production.",
-        portrait:
-          "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        name: "Founder Three",
-        description:
-          "Product and sourcing leadership across fabric development, vendor coordination, and quality.",
-        portrait:
-          "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80",
-      },
-      {
-        name: "Founder Four",
-        description:
-          "Operations and merchandising support that keeps timelines, costing, and delivery aligned.",
-        portrait:
-          "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=1200&q=80",
-      },
-    ],
+    cards: [...FOUNDER_PREVIEW_CARDS_DEFAULT],
     cta: { label: "Learn more about us", href: "/founders" },
   },
   hq: {
@@ -187,17 +176,76 @@ export const ABOUT_CONTENT_DEFAULTS: AboutContent = {
   },
 };
 
+function mergeManifestoBrandLogos(
+  raw: unknown,
+): AboutContent["manifesto"]["brandLogos"] {
+  const defaults = ABOUT_CONTENT_DEFAULTS.manifesto.brandLogos;
+  if (!Array.isArray(raw) || raw.length === 0) return defaults;
+  return defaults.map((def, i) => {
+    const item = raw[i];
+    if (!item || typeof item !== "object") return def;
+    const row = item as { name?: string; image?: CmsImageValue };
+    return {
+      name: typeof row.name === "string" && row.name.trim() ? row.name : def.name,
+      image: row.image ?? def.image,
+    };
+  });
+}
+
+function mergeFounderPreviewCards(
+  raw: unknown,
+): AboutContent["foundersCta"]["cards"] {
+  const defaults = ABOUT_CONTENT_DEFAULTS.foundersCta.cards;
+  if (!Array.isArray(raw) || raw.length === 0) return defaults;
+  return defaults.map((def, i) => {
+    const item = raw[i];
+    if (!item || typeof item !== "object") return def;
+    const row = item as {
+      name?: string;
+      description?: string;
+      portrait?: CmsImageValue;
+      linkedin?: string;
+      email?: string;
+      whatsapp?: string;
+    };
+    return {
+      name: typeof row.name === "string" && row.name.trim() ? row.name : def.name,
+      description: row.description ?? def.description,
+      portrait: row.portrait ?? def.portrait,
+      linkedin: row.linkedin ?? def.linkedin,
+      email: row.email ?? def.email,
+      whatsapp: row.whatsapp ?? def.whatsapp,
+    };
+  });
+}
+
 export function parseAboutContent(raw: unknown): AboutContent {
   const result = aboutContentSchema.safeParse(raw);
-  if (result.success) return result.data;
+  if (result.success) {
+    return {
+      ...result.data,
+      foundersCta: {
+        ...result.data.foundersCta,
+        cards: mergeFounderPreviewCards(result.data.foundersCta.cards),
+      },
+    };
+  }
   if (raw && typeof raw === "object") {
     const p = raw as Record<string, unknown>;
+    const manifestoRaw = (p.manifesto as Record<string, unknown>) ?? {};
     return {
       intro: { ...ABOUT_CONTENT_DEFAULTS.intro, ...((p.intro as object) ?? {}) },
-      manifesto: { ...ABOUT_CONTENT_DEFAULTS.manifesto, ...((p.manifesto as object) ?? {}) },
+      manifesto: {
+        ...ABOUT_CONTENT_DEFAULTS.manifesto,
+        ...manifestoRaw,
+        brandLogos: mergeManifestoBrandLogos(manifestoRaw.brandLogos),
+      },
       foundersCta: {
         ...ABOUT_CONTENT_DEFAULTS.foundersCta,
         ...((p.foundersCta as object) ?? {}),
+        cards: mergeFounderPreviewCards(
+          (p.foundersCta as Record<string, unknown> | undefined)?.cards,
+        ),
       },
       hq: { ...ABOUT_CONTENT_DEFAULTS.hq, ...((p.hq as object) ?? {}) },
     };

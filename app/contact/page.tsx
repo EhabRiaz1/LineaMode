@@ -20,12 +20,9 @@ export default async function ContactPage() {
       {/* Intro */}
       <section className="relative pt-40 pb-16 overflow-hidden">
         <GridPattern className="absolute inset-0 text-ink opacity-[0.05]" density={28} disruption />
-        <div className="shell relative grid grid-cols-12 gap-6 items-end">
-          <div className="col-span-12 md:col-span-3">
-            <Eyebrow number="00">{cms.intro.eyebrow}</Eyebrow>
-          </div>
-          <div className="col-span-12 md:col-span-9">
-            <h1 className="text-display-sm leading-[0.95]">
+        <div className="shell relative">
+          <Eyebrow number="00">{cms.intro.eyebrow}</Eyebrow>
+          <h1 className="text-contact-intro-headline mt-8 text-pretty">
               <span className="block">
                 <SplitText by="word" stagger={0.05} duration={1}>
                   {cms.intro.headlineLine1}
@@ -37,7 +34,6 @@ export default async function ContactPage() {
                 </SplitText>
               </span>
             </h1>
-          </div>
         </div>
       </section>
 
@@ -51,28 +47,19 @@ export default async function ContactPage() {
                 <p className="text-eyebrow text-ink/55 mb-3">/ 01 Email</p>
                 <a
                   href={`mailto:${cms.details.email}`}
-                  className="text-h2 leading-tight hover:underline underline-offset-4"
+                  className="text-body leading-relaxed hover:underline underline-offset-4 break-all"
                 >
                   {cms.details.email}
                 </a>
               </div>
               <div>
-                <p className="text-eyebrow text-ink/55 mb-3">/ 02 Phone</p>
-                <a
-                  href={`tel:${cms.details.phone.replace(/\s/g, "")}`}
-                  className="text-h2 leading-tight hover:underline underline-offset-4"
-                >
-                  {cms.details.phone}
-                </a>
-              </div>
-              <div>
-                <p className="text-eyebrow text-ink/55 mb-3">/ 03 Studio</p>
+                <p className="text-eyebrow text-ink/55 mb-3">/ 02 Location</p>
                 <address className="not-italic text-body text-ink/85 leading-relaxed whitespace-pre-line">
                   {cms.details.address}
                 </address>
               </div>
               <div>
-                <p className="text-eyebrow text-ink/55 mb-3">/ 04 Hours</p>
+                <p className="text-eyebrow text-ink/55 mb-3">/ 03 Hours</p>
                 <p className="text-body text-ink/85">{cms.details.hours}</p>
               </div>
             </div>

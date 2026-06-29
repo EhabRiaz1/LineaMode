@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { adminFetch } from "@/lib/admin/api";
@@ -191,6 +192,7 @@ export function ProductsEditor() {
   if (loading) return <p className="text-body text-ink/55">Loading editor…</p>;
 
   const intro = content.intro;
+  const lookbook = content.lookbookCta;
   const cta = content.cta;
 
   return (
@@ -214,8 +216,12 @@ export function ProductsEditor() {
     >
       <SectionAccordion id="intro" label="Intro" selected={selected} onSelect={setSelected}>
         <p className="text-label text-ink/55">
-          Configure category tiles, subcategories, and products in each category section
-          below. Homepage section 03 uses the category tile images and subcategories.
+          Configure category tile images, subcategories, and products in each category
+          section below. Homepage tile copy is edited in{" "}
+          <Link href="/admin/content/pages/home" className="underline hover:text-ink">
+            Home → 03 / Products
+          </Link>
+          .
         </p>
         <Field
           label="Eyebrow"
@@ -260,6 +266,24 @@ export function ProductsEditor() {
         );
       })}
 
+      <SectionAccordion id="lookbook" label="Lookbook hover" selected={selected} onSelect={setSelected}>
+        <Field
+          label="CTA label"
+          value={lookbook.label}
+          onChange={(v) => update({ ...content, lookbookCta: { ...lookbook, label: v } })}
+        />
+        <Field
+          label="Lookbook PDF URL"
+          value={lookbook.pdfHref}
+          placeholder="/documents/lineamode-lookbook.pdf"
+          onChange={(v) => update({ ...content, lookbookCta: { ...lookbook, pdfHref: v } })}
+        />
+        <p className="text-label text-ink/45">
+          Opens in a new tab when visitors hover a product image and click the CTA. Host the PDF in{" "}
+          <code className="text-ink/60">public/documents/</code> or link an external URL.
+        </p>
+      </SectionAccordion>
+
       <SectionAccordion id="cta" label="Closing CTA" selected={selected} onSelect={setSelected}>
         <Field
           label="Headline — line 1"
@@ -267,7 +291,7 @@ export function ProductsEditor() {
           onChange={(v) => update({ ...content, cta: { ...cta, headlineLine1: v } })}
         />
         <Field
-          label="Headline — line 2 (italic)"
+          label="Headline — line 2"
           value={cta.headlineLine2}
           onChange={(v) => update({ ...content, cta: { ...cta, headlineLine2: v } })}
         />

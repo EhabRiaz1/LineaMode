@@ -26,6 +26,8 @@ type CommonProps = {
   children: ReactNode;
   /** Omit the leading dot and trailing arrow. */
   plain?: boolean;
+  /** Omit only the leading dot; keeps the trailing arrow unless `plain`. */
+  noDot?: boolean;
 };
 
 export function ButtonLink({
@@ -36,6 +38,7 @@ export function ButtonLink({
   className,
   children,
   plain = false,
+  noDot = false,
 }: CommonProps & { href: string; external?: boolean }) {
   const styles = cn(
     "inline-flex items-center rounded-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group/btn",
@@ -49,7 +52,9 @@ export function ButtonLink({
     <span>{children}</span>
   ) : (
     <>
-      <span className="size-1.5 rounded-full bg-current transition-transform duration-500 group-hover/btn:scale-150" />
+      {!noDot && (
+        <span className="size-1.5 rounded-full bg-current transition-transform duration-500 group-hover/btn:scale-150" />
+      )}
       <span>{children}</span>
       <svg
         viewBox="0 0 16 16"

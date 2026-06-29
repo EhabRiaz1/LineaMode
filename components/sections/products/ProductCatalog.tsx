@@ -18,6 +18,8 @@ import { SubcategoryProductSection } from "./SubcategoryProductSection";
 type ProductCatalogProps = {
   catalog: ProductCardType[];
   categories: CategoryConfig[];
+  lookbookPdfHref?: string;
+  lookbookCtaLabel?: string;
 };
 
 const catalogInset = "mx-auto w-full max-w-[1760px] px-[clamp(28px,5vw,72px)]";
@@ -34,6 +36,8 @@ function ProductCatalogView({
   active,
   activeSubcategory,
   onTabChange,
+  lookbookPdfHref,
+  lookbookCtaLabel,
 }: ProductCatalogViewProps) {
   const categoryConfig = categories.find((item) => item.slug === active)!;
   const groups = useMemo(
@@ -106,8 +110,12 @@ function ProductCatalogView({
     <section className="border-t hairline bg-stone">
       <div className={`${catalogInset} pt-14 md:pt-16`}>
         <div className="border-b border-ink/15">
-          <nav aria-label="Product categories" role="tablist" className="flex justify-center">
-            <div className="inline-flex flex-wrap justify-center gap-x-8 md:gap-x-14">
+          <nav
+            aria-label="Product categories"
+            role="tablist"
+            className="overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] md:overflow-visible [&::-webkit-scrollbar]:hidden"
+          >
+            <div className="mx-auto flex w-max max-w-none flex-nowrap items-end justify-center gap-x-6 px-1 sm:gap-x-8 md:gap-x-14">
               {PRODUCT_CATEGORIES.map((category) => {
                 const isActive = active === category.slug;
                 return (
@@ -118,7 +126,7 @@ function ProductCatalogView({
                     aria-selected={isActive}
                     role="tab"
                     className={cn(
-                      "relative px-1 pb-4 font-sans text-[clamp(1.25rem,2vw,1.6rem)] font-light leading-none tracking-[0.01em] transition-colors duration-300",
+                      "relative shrink-0 whitespace-nowrap px-1 pb-4 font-sans text-[1.05rem] font-light leading-none tracking-[0.01em] transition-colors duration-300 sm:text-[clamp(1.15rem,2vw,1.6rem)]",
                       isActive ? "text-ink" : "text-ink/45 hover:text-ink/70",
                     )}
                   >
@@ -159,6 +167,8 @@ function ProductCatalogView({
                   products={group.products}
                   expanded={expandedSlugs.has(slug)}
                   onToggleExpanded={() => toggleExpanded(slug)}
+                  lookbookPdfHref={lookbookPdfHref}
+                  lookbookCtaLabel={lookbookCtaLabel}
                 />
               );
             })}
@@ -169,7 +179,12 @@ function ProductCatalogView({
   );
 }
 
-function ProductCatalogInner({ catalog, categories }: ProductCatalogProps) {
+function ProductCatalogInner({
+  catalog,
+  categories,
+  lookbookPdfHref,
+  lookbookCtaLabel,
+}: ProductCatalogProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -199,11 +214,18 @@ function ProductCatalogInner({ catalog, categories }: ProductCatalogProps) {
       active={active}
       activeSubcategory={activeSubcategory}
       onTabChange={onTabChange}
+      lookbookPdfHref={lookbookPdfHref}
+      lookbookCtaLabel={lookbookCtaLabel}
     />
   );
 }
 
-function ProductCatalogFallback({ catalog, categories }: ProductCatalogProps) {
+function ProductCatalogFallback({
+  catalog,
+  categories,
+  lookbookPdfHref,
+  lookbookCtaLabel,
+}: ProductCatalogProps) {
   return (
     <ProductCatalogView
       catalog={catalog}
@@ -211,6 +233,8 @@ function ProductCatalogFallback({ catalog, categories }: ProductCatalogProps) {
       active="lifestyle"
       activeSubcategory={null}
       onTabChange={() => {}}
+      lookbookPdfHref={lookbookPdfHref}
+      lookbookCtaLabel={lookbookCtaLabel}
     />
   );
 }

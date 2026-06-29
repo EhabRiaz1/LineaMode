@@ -8,6 +8,7 @@ import {
   HOME_CONTENT_DEFAULTS,
   parseHomeContent,
   type HomeContent,
+  type HomeProductCategory,
 } from "@/lib/cms/home-schema";
 import {
   saveHomeContentDraft,
@@ -15,7 +16,7 @@ import {
   discardHomeContentDraft,
 } from "@/app/admin/(console)/content/_actions";
 import { capabilities } from "@/content/capabilities";
-import { homeProducts } from "@/content/home-products";
+import { PRODUCT_CATEGORIES } from "@/content/product-catalog";
 import { cn } from "@/lib/utils";
 import { ImagePickerField, MediaModeToggle, VideoPickerField } from "./EditorFields";
 import { PreviewPanel } from "./PreviewPanel";
@@ -204,17 +205,6 @@ export function HomeEditor() {
           items: capabilities.map((c) => ({ title: c.title, short: c.short, image: "" })),
         };
       }
-      if (!parsed.products.tiles.length) {
-        parsed.products = {
-          ...parsed.products,
-          tiles: homeProducts.map((p) => ({
-            title: p.title,
-            caption: p.caption,
-            poster: p.poster,
-            imageAlt: p.imageAlt,
-          })),
-        };
-      }
 
       setContent(parsed);
       setHasDraft(!!res.data.draft);
@@ -303,6 +293,21 @@ export function HomeEditor() {
   const j = content.journal;
   const c = content.contactCta;
   const cap = content.capabilities;
+
+  const updateProductCategory = (
+    slug: HomeProductCategory["slug"],
+    patch: Partial<HomeProductCategory>,
+  ) => {
+    update({
+      ...content,
+      products: {
+        ...p,
+        categories: p.categories.map((category) =>
+          category.slug === slug ? { ...category, ...patch } : category,
+        ),
+      },
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -492,14 +497,67 @@ export function HomeEditor() {
               onChange={(v) => update({ ...content, products: { ...p, enabled: v } })}
             />
             {p.enabled && (
-              <p className="text-label text-ink/55">
-                The homepage shows three category tiles configured in the{" "}
-                <Link href="/admin/content/pages/products" className="underline hover:text-ink">
-                  Products page editor
-                </Link>
-                . Set tile images and subcategories per category there. There&rsquo;s
-                nothing else to configure here besides showing or hiding this section.
-              </p>
+              <>
+                <Field
+                  label="Eyebrow"
+                  value={p.eyebrow}
+                  onChange={(v) => update({ ...content, products: { ...p, eyebrow: v } })}
+                />
+                <Field
+                  label="Headline"
+                  value={p.headline}
+                  onChange={(v) => update({ ...content, products: { ...p, headline: v } })}
+                />
+                <Field
+                  label="View all button"
+                  value={p.viewAllLabel}
+                  onChange={(v) => update({ ...content, products: { ...p, viewAllLabel: v } })}
+                />
+
+                <p className="text-label text-ink/55 border-t border-[var(--hairline)] pt-4">
+                  Tile images are set in the{" "}
+                  <Link href="/admin/content/pages/products" className="underline hover:text-ink">
+                    Products page editor
+                  </Link>
+                  . Edit hover copy and category buttons below.
+                </p>
+
+                {PRODUCT_CATEGORIES.map((category) => {
+                  const tile =
+                    p.categories.find((item) => item.slug === category.slug) ??
+                    p.categories[PRODUCT_CATEGORIES.findIndex((c) => c.slug === category.slug)];
+
+                  if (!tile) return null;
+
+                  return (
+                    <div
+                      key={category.slug}
+                      className="space-y-2 rounded-xl border border-[var(--hairline)] bg-stone/50 p-3"
+                    >
+                      <p className="text-eyebrow text-ink/40">{category.title}</p>
+                      <Field
+                        label="Headline (optional)"
+                        value={tile.headline}
+                        onChange={(v) => updateProductCategory(category.slug, { headline: v })}
+                        placeholder={`Defaults to “${category.title}”`}
+                      />
+                      <Field
+                        label="Hover text"
+                        value={tile.description}
+                        onChange={(v) => updateProductCategory(category.slug, { description: v })}
+                        multiline
+                        rows={3}
+                      />
+                      <Field
+                        label="Button label"
+                        value={tile.ctaLabel}
+                        onChange={(v) => updateProductCategory(category.slug, { ctaLabel: v })}
+                        placeholder={`Defaults to “Explore ${category.title.toLowerCase()}”`}
+                      />
+                    </div>
+                  );
+                })}
+              </>
             )}
           </SectionAccordion>
 
@@ -579,7 +637,7 @@ export function HomeEditor() {
                   onChange={(v) => update({ ...content, journal: { ...j, headlineLine1: v } })}
                 />
                 <Field
-                  label="Headline — line 2 (italic)"
+                  label="Headline — line 2"
                   value={j.headlineLine2}
                   onChange={(v) => update({ ...content, journal: { ...j, headlineLine2: v } })}
                 />

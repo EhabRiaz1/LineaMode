@@ -30,10 +30,7 @@ async function FoundersPreviewContent() {
   ]);
   const cms = parseFoundersContent(draftRow?.value ?? pubRow?.value);
   const displayFounders = cms.founders.length > 0
-    ? [
-        ...cms.founders.map(cmsToFounder),
-        ...staticFounders.slice(cms.founders.length),
-      ]
+    ? cms.founders.slice(0, 3).map(cmsToFounder)
     : staticFounders;
 
   return (

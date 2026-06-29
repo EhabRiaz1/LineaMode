@@ -19,13 +19,13 @@ export const foundersContentSchema = z.object({
   intro: z
     .object({
       eyebrow: z.string().max(80).default("Founders"),
-      headlineLine1: z.string().max(120).default("Four founders."),
+      headlineLine1: z.string().max(120).default("Three founders."),
       headlineLine2: z.string().max(120).default("One studio."),
       body: z
         .string()
         .max(400)
         .default(
-          "Lineamode is run by four founders with overlapping but complementary remits — commercial, operational, sourcing, and merchandising. Scroll to flip each card and meet them.",
+          "Lineamode is run by three founders with overlapping but complementary remits — commercial, operational, and sourcing. Scroll to flip each card and meet them.",
         ),
     })
     .prefault({}),
@@ -55,9 +55,9 @@ export type FoundersContent = z.infer<typeof foundersContentSchema>;
 export const FOUNDERS_CONTENT_DEFAULTS: FoundersContent = {
   intro: {
     eyebrow: "Founders",
-    headlineLine1: "Four founders.",
+    headlineLine1: "Three founders.",
     headlineLine2: "One studio.",
-    body: "Lineamode is run by four founders with overlapping but complementary remits — commercial, operational, sourcing, and merchandising. Scroll to flip each card and meet them.",
+    body: "Lineamode is run by three founders with overlapping but complementary remits — commercial, operational, and sourcing. Scroll to flip each card and meet them.",
   },
   founders: [],
   cta: {

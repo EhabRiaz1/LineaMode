@@ -41,15 +41,8 @@ export function FoundersEditor() {
           website: f.website, address: f.address,
           bio: [...f.bio], focus: [...f.focus], pull: f.pull, portrait: f.portrait,
         }));
-      } else if (parsed.founders.length < staticFounders.length) {
-        parsed.founders = [
-          ...parsed.founders,
-          ...staticFounders.slice(parsed.founders.length).map(f => ({
-            name: f.name, role: f.role, phone: f.phone, email: f.email,
-            website: f.website, address: f.address,
-            bio: [...f.bio], focus: [...f.focus], pull: f.pull, portrait: f.portrait,
-          })),
-        ];
+      } else if (parsed.founders.length > 3) {
+        parsed.founders = parsed.founders.slice(0, 3);
       }
       setContent(parsed); setHasDraft(!!res.data.draft); setDirty(false);
     } else setError(res.error);

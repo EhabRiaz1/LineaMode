@@ -38,11 +38,11 @@ async function JournalPreviewContent() {
               <Eyebrow number="00" className="text-stone/80">{intro.eyebrow}</Eyebrow>
             </div>
             <div className="col-span-12 md:col-span-9">
-              <h1 className="text-display leading-[0.95]">
+              <h1 className="text-journal-intro-headline">
                 <span className="block">
                   <SplitText by="word" stagger={0.05} duration={1}>{intro.headlineLine1}</SplitText>
                 </span>
-                <span className="block italic font-extralight">
+                <span className="block font-extralight">
                   <SplitText by="word" stagger={0.05} duration={1} delay={0.2}>{intro.headlineLine2}</SplitText>
                 </span>
               </h1>
@@ -69,7 +69,7 @@ async function JournalPreviewContent() {
                 <div className="flex items-center justify-between text-label text-ink/55 mb-6">
                   <span>/ Featured</span><span>{featured.category}</span>
                 </div>
-                <h2 className="text-h1 leading-tight">{featured.title}</h2>
+                <h2 className="text-h1 leading-tight transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/featured:text-linen">{featured.title}</h2>
                 <p className="text-body text-ink/70 max-w-md mt-6">{featured.excerpt}</p>
                 <p className="text-label text-ink/55 mt-8">{featured.date}</p>
               </div>
@@ -97,7 +97,9 @@ async function JournalPreviewContent() {
                         </div>
                       )}
                     </div>
-                    <h3 className="text-h2 leading-snug max-w-[24ch]">{p.title}</h3>
+                    <h3 className="text-h2 leading-snug max-w-[24ch] transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/post:text-linen">
+                      {p.title}
+                    </h3>
                     <p className="text-body text-ink/70 max-w-md">{p.excerpt}</p>
                     <p className="text-label text-ink/55 mt-auto">{p.date}</p>
                   </Link>

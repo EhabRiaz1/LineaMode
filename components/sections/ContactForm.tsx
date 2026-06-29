@@ -18,7 +18,19 @@ const FIELD_INK =
 const FIELD_STONE =
   "w-full bg-transparent border-b border-stone/30 focus:border-stone outline-none py-3 text-body text-stone placeholder:text-stone/45 transition-colors";
 
+const CONTACT_TITLE_OPTIONS = [
+  { value: "Founder / CEO", label: "Founder / CEO" },
+  { value: "Creative Director", label: "Creative Director" },
+  { value: "Design Director", label: "Design Director" },
+  { value: "Head of Merchandising", label: "Head of Merchandising" },
+  { value: "Brand Manager", label: "Brand Manager" },
+  { value: "Production / Operations", label: "Production / Operations" },
+  { value: "Sourcing & Supply Chain", label: "Sourcing & Supply Chain" },
+  { value: "Other", label: "Other" },
+] as const;
+
 type FormValues = {
+  title: string;
   name: string;
   brand: string;
   email: string;
@@ -28,6 +40,7 @@ type FormValues = {
 };
 
 const EMPTY_VALUES: FormValues = {
+  title: "",
   name: "",
   brand: "",
   email: "",
@@ -115,12 +128,8 @@ export function ContactForm({
     tone === "stone" ? "text-stone" : "text-[var(--color-terracotta)]";
   const buttonClass =
     tone === "stone"
-      ? "inline-flex items-center gap-3 rounded-full bg-stone text-ink h-14 px-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group/btn"
-      : "inline-flex items-center gap-3 rounded-full bg-ink text-[var(--color-stone-veil)] h-14 px-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group/btn";
-  const buttonDotClass =
-    tone === "stone"
-      ? "size-1.5 rounded-full bg-ink transition-transform duration-500 group-hover/btn:scale-150"
-      : "size-1.5 rounded-full bg-[var(--color-stone-veil)] transition-transform duration-500 group-hover/btn:scale-150";
+      ? "inline-flex items-center justify-center rounded-full bg-stone text-ink h-14 px-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+      : "inline-flex items-center justify-center rounded-full bg-ink text-[var(--color-stone-veil)] h-14 px-8 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]";
   const [values, setValues] = useState<FormValues>(EMPTY_VALUES);
   const [state, formAction, pending] = useActionState<ContactState, FormData>(
     submitContact,
@@ -140,7 +149,7 @@ export function ContactForm({
 
   const updateField =
     (field: keyof FormValues) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       setValues((prev) => ({ ...prev, [field]: event.target.value }));
     };
 
@@ -185,6 +194,17 @@ export function ContactForm({
               fieldClass={fieldClass}
               labelClass={labelClass}
               errorClass={errorClass}
+            />
+            <TitleSelect
+              label="Title"
+              name="title"
+              value={values.title}
+              onChange={updateField("title")}
+              error={fieldError(state, "title")}
+              fieldClass={fieldClass}
+              labelClass={labelClass}
+              errorClass={errorClass}
+              tone={tone}
             />
             <Field
               label="Brand"
@@ -264,23 +284,9 @@ export function ContactForm({
                   "disabled:opacity-50 disabled:cursor-wait",
                 )}
               >
-                <span className={buttonDotClass} />
                 <span className="text-label">
                   {pending ? "Sending…" : "Send brief"}
                 </span>
-                <svg
-                  viewBox="0 0 16 16"
-                  className="size-3 transition-transform duration-500 group-hover/btn:translate-x-1"
-                  fill="none"
-                >
-                  <path
-                    d="M3 8h10m-4-4 4 4-4 4"
-                    stroke="currentColor"
-                    strokeWidth="1.25"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
               </button>
             </div>
           </motion.form>
@@ -292,6 +298,71 @@ export function ContactForm({
 function fieldError(state: ContactState, name: string) {
   if (state.status !== "error") return undefined;
   return state.errors?.[name as keyof typeof state.errors];
+}
+
+function TitleSelect({
+  label,
+  name,
+  value,
+  onChange,
+  error,
+  fieldClass,
+  labelClass,
+  errorClass,
+  tone,
+}: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  error?: string;
+  fieldClass: string;
+  labelClass: string;
+  errorClass: string;
+  tone: "ink" | "stone";
+}) {
+  const chevronClass = tone === "stone" ? "text-stone/45" : "text-ink/40";
+
+  return (
+    <label className="flex flex-col gap-2">
+      <span className={cn("text-eyebrow", labelClass)}>{label}</span>
+      <div className="relative">
+        <select
+          name={name}
+          value={value}
+          onChange={onChange}
+          className={cn(fieldClass, "appearance-none cursor-pointer pr-10")}
+        >
+          <option value="" disabled>
+            Select title
+          </option>
+          {CONTACT_TITLE_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <span
+          className={cn(
+            "pointer-events-none absolute right-0 top-1/2 -translate-y-1/2",
+            chevronClass,
+          )}
+          aria-hidden
+        >
+          <svg viewBox="0 0 16 16" className="size-3.5" fill="none">
+            <path
+              d="M4 6l4 4 4-4"
+              stroke="currentColor"
+              strokeWidth="1.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+      </div>
+      {error && <span className={cn("text-label", errorClass)}>{error}</span>}
+    </label>
+  );
 }
 
 function Field({

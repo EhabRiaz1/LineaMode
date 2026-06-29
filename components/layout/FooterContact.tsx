@@ -30,7 +30,7 @@ export function FooterContact({
               onClick={() => setActiveModal("email")}
               className={linkClass}
             >
-              Email us
+              Email Us
             </button>
           </li>
           <li>
@@ -39,7 +39,7 @@ export function FooterContact({
               onClick={() => setActiveModal("phone")}
               className={linkClass}
             >
-              Contact us
+              Contact Us
             </button>
           </li>
         </ul>

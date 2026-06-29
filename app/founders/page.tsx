@@ -34,10 +34,7 @@ export default async function FoundersPage() {
   const cms = await getFoundersContent();
   const displayFounders: Founder[] =
     cms.founders.length > 0
-      ? [
-          ...cms.founders.map(cmsToFounder),
-          ...staticFounders.slice(cms.founders.length),
-        ]
+      ? cms.founders.slice(0, 3).map(cmsToFounder)
       : staticFounders;
 
   return (

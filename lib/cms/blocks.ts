@@ -29,6 +29,7 @@ const mediaRef = z
   .object({
     id: z.string().uuid().optional(),
     src: z.string().max(2048).default(""),
+    mobile_src: z.string().max(2048).optional(),
     alt: z.string().max(240).optional(),
     width: z.number().int().positive().optional(),
     height: z.number().int().positive().optional(),

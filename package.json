@@ -25,8 +25,10 @@
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-globe.gl": "^2.38.0",
     "resend": "^6.12.2",
     "tailwind-merge": "^3.5.0",
+    "three": "^0.185.0",
     "zod": "^4.4.1"
   },
   "devDependencies": {
@@ -36,6 +38,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.185.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "sharp": "^0.34.5",

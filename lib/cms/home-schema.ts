@@ -1,11 +1,52 @@
 import { z } from "zod";
 import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
 import { cmsImageSchema } from "@/lib/cms/cms-image";
+import {
+  CATEGORY_DESCRIPTIONS,
+  PRODUCT_CATEGORIES,
+  type ProductCategorySlug,
+} from "@/content/product-catalog";
 
 const ctaSchema = z.object({
   label: z.string().max(80),
   href: z.string().max(2048),
 });
+
+const homeProductCategorySlugSchema = z.enum(
+  PRODUCT_CATEGORIES.map((c) => c.slug) as [ProductCategorySlug, ...ProductCategorySlug[]],
+);
+
+export const homeProductCategorySchema = z.object({
+  slug: homeProductCategorySlugSchema,
+  headline: z.string().max(80).default(""),
+  description: z.string().max(400).default(""),
+  ctaLabel: z.string().max(80).default(""),
+});
+
+export type HomeProductCategory = z.infer<typeof homeProductCategorySchema>;
+
+export function defaultHomeProductCategories(): HomeProductCategory[] {
+  return PRODUCT_CATEGORIES.map((category) => ({
+    slug: category.slug,
+    headline: "",
+    description: CATEGORY_DESCRIPTIONS[category.slug],
+    ctaLabel: `Explore ${category.title.toLowerCase()}`,
+  }));
+}
+
+function normalizeHomeProductCategories(raw: unknown): HomeProductCategory[] {
+  const defaults = defaultHomeProductCategories();
+  if (!Array.isArray(raw)) return defaults;
+
+  return defaults.map((fallback) => {
+    const found = raw.find(
+      (item) => item && typeof item === "object" && "slug" in item && item.slug === fallback.slug,
+    );
+    if (!found) return fallback;
+    const parsed = homeProductCategorySchema.safeParse({ ...fallback, ...found });
+    return parsed.success ? parsed.data : fallback;
+  });
+}
 
 export const homeContentSchema = z.object({
   hero: z
@@ -37,27 +78,10 @@ export const homeContentSchema = z.object({
   products: z
     .object({
       enabled: z.boolean().default(true),
-      headline: z.string().max(200).default("We cover a full range of products"),
-      headlineItalic: z
-        .string()
-        .max(200)
-        .default("designed to meet performance and lifestyle needs"),
-      body: z
-        .string()
-        .max(600)
-        .default(
-          "From everyday essentials to performance-led ranges, we build product lines with the right fabric, fit, and finish for the market they need to serve.",
-        ),
-      tiles: z
-        .array(
-          z.object({
-            title: z.string().max(80),
-            caption: z.string().max(200),
-            poster: z.string().max(2048),
-            imageAlt: z.string().max(200),
-          }),
-        )
-        .default([]),
+      eyebrow: z.string().max(80).default("Products"),
+      headline: z.string().max(200).default("A selection from across our range"),
+      viewAllLabel: z.string().max(80).default("View all products"),
+      categories: z.array(homeProductCategorySchema).default(defaultHomeProductCategories()),
     })
     .prefault({}),
 
@@ -90,7 +114,7 @@ export const homeContentSchema = z.object({
         .string()
         .max(600)
         .default(
-          "Field notes on materials, manufacturing, and the wider industry — written for brands that want context without the noise.",
+          "Explore trends in materials, color, and design – curated alongside industry developments, supply chain shifts, and manufacturing innovation.",
         ),
       ctaLabel: z.string().max(80).default("Read the journal"),
       ctaHref: z.string().max(2048).default("/journal"),
@@ -159,10 +183,10 @@ export const HOME_CONTENT_DEFAULTS: HomeContent = {
   },
   products: {
     enabled: true,
-    headline: "We cover a full range of products",
-    headlineItalic: "designed to meet performance and lifestyle needs",
-    body: "From everyday essentials to performance-led ranges, we build product lines with the right fabric, fit, and finish for the market they need to serve.",
-    tiles: [],
+    eyebrow: "Products",
+    headline: "A selection from across our range",
+    viewAllLabel: "View all products",
+    categories: defaultHomeProductCategories(),
   },
   identity: {
     enabled: true,
@@ -177,7 +201,7 @@ export const HOME_CONTENT_DEFAULTS: HomeContent = {
     eyebrow: "Journal",
     headlineLine1: "Stay up to date with the latest news",
     headlineLine2: "and trends for global fashion and textile",
-    body: "Field notes on materials, manufacturing, and the wider industry — written for brands that want context without the noise.",
+    body: "Explore trends in materials, color, and design – curated alongside industry developments, supply chain shifts, and manufacturing innovation.",
     ctaLabel: "Read the journal",
     ctaHref: "/journal",
   },
@@ -206,6 +230,10 @@ export function parseHomeContent(raw: unknown): HomeContent {
   if (result.success) {
     return {
       ...result.data,
+      products: {
+        ...result.data.products,
+        categories: normalizeHomeProductCategories(result.data.products.categories),
+      },
       hero: {
         ...result.data.hero,
         secondaryCta: {
@@ -227,7 +255,13 @@ export function parseHomeContent(raw: unknown): HomeContent {
         },
       },
       whatWeDo: { ...HOME_CONTENT_DEFAULTS.whatWeDo, ...((p.whatWeDo as object) ?? {}) },
-      products: { ...HOME_CONTENT_DEFAULTS.products, ...((p.products as object) ?? {}) },
+      products: {
+        ...HOME_CONTENT_DEFAULTS.products,
+        ...((p.products as object) ?? {}),
+        categories: normalizeHomeProductCategories(
+          (p.products as { categories?: unknown } | undefined)?.categories,
+        ),
+      },
       identity: { ...HOME_CONTENT_DEFAULTS.identity, ...((p.identity as object) ?? {}) },
       journal: { ...HOME_CONTENT_DEFAULTS.journal, ...((p.journal as object) ?? {}) },
       contactCta: { ...HOME_CONTENT_DEFAULTS.contactCta, ...((p.contactCta as object) ?? {}) },

@@ -7,7 +7,7 @@ import { CopyrightYear } from "@/components/layout/CopyrightYear";
 
 const NAV = [
   {
-    heading: "Studio",
+    heading: "Company",
     links: [
       { href: "/about", label: "About" },
       { href: "/products", label: "Products" },
@@ -15,7 +15,7 @@ const NAV = [
     ],
   },
   {
-    heading: "Library",
+    heading: "Blog",
     links: [
       // { href: "/lookbook", label: "Lookbook '26" },
       { href: "/journal", label: "Newsletter" },
@@ -54,10 +54,9 @@ export function SiteFooter() {
       <div className="shell relative pt-10 md:pt-12 pb-8">
         {/* Tagline — single line, smaller, italic accent matches the hero. */}
         <div className="border-y border-stone/15 py-8 mt-4 mb-8 md:mt-6 md:mb-10 text-center">
-          <p className="text-eyebrow text-stone/60 mb-4">Lineamode 2026</p>
-          <p className="text-h1 leading-[0.95]">
-            End to End
-            <span className="italic font-extralight"> Apparel Partners.</span>
+          <p className="text-footer-tagline">
+            From Idea to
+            <span className="italic font-extralight"> Execution</span>
           </p>
         </div>
 

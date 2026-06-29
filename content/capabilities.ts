@@ -13,7 +13,7 @@ export const capabilities: Capability[] = [
     slug: "design-support",
     title: "Design Support",
     short:
-      "We translate your ideas to well-engineered garments. Using best practices and tools for trend forecasting, materials selection, and pattern-fitting, we help ensure we prototype product to help meet your quality and cost requirements.",
+      "We translate your ideas to well-engineered garments. From concept development to production readiness, our services include trend forecasting, collection planning, design development, tech packs, 3D design, pattern and CAD services, and prototyping to help brands create market-relevant products with confidence.",
     description:
       "From mood-board to tech pack, our design team works alongside yours to develop ranges that are commercially aware and technically resolved.",
     bullets: [
@@ -28,7 +28,7 @@ export const capabilities: Capability[] = [
     slug: "textile-sourcing",
     title: "Textile Sourcing",
     short:
-      "Leveraging an elaborate vendor network and many years of experience, we help source all the materials necessary to ensure the best quality and price for the garments you wish to make and sell.",
+      "We focus on materials planning for fabrics, trims, and accessories with our elaborate vendor network to ensure quality and cost expectations are aligned – this helps all manufacturing needs are met to deliver product with quick lead times.",
     description:
       "Three decades of mill relationships let us specify fabrics with confidence — including custom yarns, finishes and blends developed for your line.",
     bullets: [
@@ -43,7 +43,7 @@ export const capabilities: Capability[] = [
     slug: "production",
     title: "Production",
     short:
-      "We pursue agile manufacturing with low MOQs and specialities in a variety of products. Faster lead times and product variety will help ensure commercial success with lean inventory and speed-to-market.",
+      "We specialize in the production of knit and woven apparel, offering agile manufacturing, low MOQ flexibility, and responsive execution to support brands across a wide range of product categories and business stages.",
     description:
       "Our manufacturing floor is built for high-mix, low-volume runs so growing brands can launch on instinct without over-committing inventory.",
     bullets: [
@@ -58,7 +58,7 @@ export const capabilities: Capability[] = [
     slug: "merchandising",
     title: "Merchandising",
     short:
-      "Data-driven strategies and analytics help pursue growth and depth in your product range. We have the ability to provide all the necessary insights to help plan your collections.",
+      "We combine analytics, insights, and merchandising expertise to help brands optimize their product range, identify growth opportunities, and build balanced assortments that improve commercial performance and ensure it is aligned with optimised supply chains.",
     description:
       "A dedicated merchandiser owns your timeline end-to-end — from PO to dispatch — keeping every stakeholder honest and informed.",
     bullets: [

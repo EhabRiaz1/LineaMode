@@ -15,7 +15,7 @@ export function ProductsHero({ eyebrow, headline, image }: ProductsHeroProps) {
   const heroImage = image ?? PRODUCTS_HERO_IMAGE_DEFAULT;
 
   return (
-    <section className="relative min-h-[75vh] overflow-hidden text-stone">
+    <section className="relative min-h-[53vh] overflow-hidden text-stone">
       <CmsImage
         value={heroImage}
         alt=""
@@ -40,7 +40,7 @@ export function ProductsHero({ eyebrow, headline, image }: ProductsHeroProps) {
         disruption
       />
 
-      <div className="shell relative z-10 flex min-h-[75vh] flex-col justify-end pb-20 pt-40 md:pb-28 md:pt-44">
+      <div className="shell relative z-10 flex min-h-[53vh] flex-col justify-end pb-14 pt-28 md:pb-20 md:pt-32">
         <div className="grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-3">
             <Eyebrow number="00" className="text-stone/80">

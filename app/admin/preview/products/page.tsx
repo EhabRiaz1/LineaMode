@@ -31,7 +31,12 @@ async function ProductsPreviewContent() {
           headline={cms.intro.headline}
           image={cms.intro.image}
         />
-        <ProductCatalog catalog={catalog} categories={categories} />
+        <ProductCatalog
+          catalog={catalog}
+          categories={categories}
+          lookbookPdfHref={cms.lookbookCta.pdfHref}
+          lookbookCtaLabel={cms.lookbookCta.label}
+        />
         <ProductsCta
           headlineLine1={cms.cta.headlineLine1}
           headlineLine2={cms.cta.headlineLine2}

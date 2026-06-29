@@ -113,8 +113,6 @@ export function ContactEditor() {
       <SectionAccordion id="details" label="Contact details" selected={selected} onSelect={setSelected}>
         <Field label="Email address" value={det.email}
           onChange={(v) => update({ ...content, details: { ...det, email: v } })} />
-        <Field label="Phone number" value={det.phone}
-          onChange={(v) => update({ ...content, details: { ...det, phone: v } })} />
         <Field label="Address" value={det.address} multiline rows={4}
           placeholder={"Line 1,\nLine 2,\nCity, Country."}
           onChange={(v) => update({ ...content, details: { ...det, address: v } })} />

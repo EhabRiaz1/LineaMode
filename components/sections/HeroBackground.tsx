@@ -15,7 +15,11 @@ import { useEffect, useRef } from "react";
 import { easeBrand } from "@/lib/motion/easings";
 import { CmsImage } from "@/components/ui/CmsImage";
 import { CmsVideo } from "@/components/ui/CmsVideo";
-import { cmsImageSrc, type CmsImageValue } from "@/lib/cms/cms-image";
+import {
+  cmsImageSrc,
+  hasDistinctMobileSrc,
+  type CmsImageValue,
+} from "@/lib/cms/cms-image";
 
 type HeroBackgroundProps = {
   image: CmsImageValue;
@@ -52,12 +56,39 @@ function ImageLayer({
   );
 }
 
+function syncHeroVideoPlayback(
+  inView: boolean,
+  desktopRef: HTMLVideoElement | null,
+  mobileRef: HTMLVideoElement | null,
+  distinctMobile: boolean,
+) {
+  const isMobile = window.matchMedia("(max-width: 767px)").matches;
+  const active =
+    distinctMobile && isMobile ? mobileRef : desktopRef ?? mobileRef;
+  const inactive =
+    distinctMobile && isMobile ? desktopRef : mobileRef;
+
+  inactive?.pause();
+
+  if (!active) return;
+
+  if (inView) {
+    void active.play().catch(() => {
+      // Autoplay can be blocked; poster remains visible.
+    });
+  } else {
+    active.pause();
+  }
+}
+
 export function HeroBackground({ image, video, mediaMode = "image" }: HeroBackgroundProps) {
   const reduce = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const inView = useInView(rootRef, { margin: "0px 0px 0px 0px" });
   const useVideo = mediaMode === "video" && Boolean(cmsImageSrc(video)) && !reduce;
+  const distinctMobileVideo = Boolean(video && hasDistinctMobileSrc(video));
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mobileVideoRef = useRef<HTMLVideoElement>(null);
 
   const { scrollY } = useScroll();
   const velocity = useVelocity(scrollY);
@@ -79,16 +110,23 @@ export function HeroBackground({ image, video, mediaMode = "image" }: HeroBackgr
   const filter = useMotionTemplate`blur(${blurPx}px) saturate(${saturate})`;
 
   useEffect(() => {
-    const el = videoRef.current;
-    if (!useVideo || !el) return;
-    if (inView) {
-      void el.play().catch(() => {
-        // Autoplay can be blocked; poster remains visible.
-      });
-    } else {
-      el.pause();
-    }
-  }, [useVideo, inView]);
+    if (!useVideo) return;
+
+    const run = () => {
+      syncHeroVideoPlayback(
+        inView,
+        videoRef.current,
+        mobileVideoRef.current,
+        distinctMobileVideo,
+      );
+    };
+
+    run();
+
+    const mq = window.matchMedia("(max-width: 767px)");
+    mq.addEventListener("change", run);
+    return () => mq.removeEventListener("change", run);
+  }, [useVideo, inView, distinctMobileVideo]);
 
   return (
     <motion.div
@@ -101,6 +139,7 @@ export function HeroBackground({ image, video, mediaMode = "image" }: HeroBackgr
       {useVideo ? (
         <CmsVideo
           ref={videoRef}
+          mobileVideoRef={mobileVideoRef}
           value={video}
           className="absolute inset-0 h-full w-full object-cover md:object-[center_25%]"
           autoPlay

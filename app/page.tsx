@@ -4,7 +4,7 @@ import { HomeProductRail } from "@/components/sections/products/HomeProductRail"
 import { IdentitySection } from "@/components/sections/IdentitySection";
 import { JournalTeaser } from "@/components/sections/JournalTeaser";
 import { getHomeContent, getPageVisibility, getProductsContent, listJournal } from "@/lib/cms";
-import { getHomeCategoryTiles } from "@/lib/cms/products-schema";
+import { getHomeCategoryTiles, applyHomeCategoryCopy } from "@/lib/cms/products-schema";
 
 export default async function HomePage() {
   const [cms, visibility, products, journalPosts] = await Promise.all([
@@ -14,7 +14,10 @@ export default async function HomePage() {
     listJournal(),
   ]);
 
-  const categoryTiles = getHomeCategoryTiles(products);
+  const categoryTiles = applyHomeCategoryCopy(
+    getHomeCategoryTiles(products),
+    cms.products.categories,
+  );
 
   const showJournal =
     cms.journal.enabled && visibility.journal?.homepage !== false;
@@ -25,7 +28,9 @@ export default async function HomePage() {
       {cms.whatWeDo.enabled && (
         <WhatWeDoSection cms={cms.whatWeDo} capabilityItems={cms.capabilities.items} />
       )}
-      {cms.products.enabled && <HomeProductRail categories={categoryTiles} />}
+      {cms.products.enabled && (
+        <HomeProductRail categories={categoryTiles} cms={cms.products} />
+      )}
       {cms.identity.enabled && <IdentitySection cms={cms.identity} />}
       {showJournal && <JournalTeaser cms={cms.journal} articles={journalPosts} />}
     </>

@@ -3,6 +3,7 @@
 import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { ButtonLink } from "@/components/ui/Button";
 import { easeBrand } from "@/lib/motion/easings";
 import { CmsImage } from "@/components/ui/CmsImage";
 import type { CmsImageValue } from "@/lib/cms/cms-image";
@@ -70,20 +71,40 @@ export function IdentitySection({ cms }: { cms?: IdentityCms } = {}) {
           </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-20% 0px" }}
-          transition={{ duration: 0.9, ease: easeBrand }}
-          className="max-w-xl"
-        >
-          <Eyebrow number="04" className="text-stone/70">
-            {eyebrow}
-          </Eyebrow>
-          <p className="font-display font-normal text-[clamp(0.95rem,0.2vw+0.9rem,1.0625rem)] leading-[1.55] text-stone/80 max-w-xl mt-8">
-            {body}
-          </p>
-        </motion.div>
+        <div className="flex w-full flex-col gap-8 md:flex-row md:items-end md:justify-between md:gap-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20% 0px" }}
+            transition={{ duration: 0.9, ease: easeBrand }}
+            className="max-w-xl"
+          >
+            <Eyebrow number="04" className="text-stone/70">
+              {eyebrow}
+            </Eyebrow>
+            <p className="font-display font-normal text-[clamp(0.95rem,0.2vw+0.9rem,1.0625rem)] leading-[1.55] text-stone/80 max-w-xl mt-8">
+              {body}
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20% 0px" }}
+            transition={{ duration: 0.9, ease: easeBrand, delay: 0.08 }}
+            className="md:shrink-0 md:self-end"
+          >
+            <ButtonLink
+              href="/about"
+              variant="ink"
+              size="sm"
+              plain
+              className="!text-ink bg-stone hover:bg-stone/90"
+            >
+              Learn more
+            </ButtonLink>
+          </motion.div>
+        </div>
       </div>
     </section>
   );

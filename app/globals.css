@@ -162,7 +162,8 @@ body {
 }
 
 html {
-  scroll-behavior: smooth;
+  /* Lenis owns smooth scroll — native smooth fights it (especially Safari). */
+  scroll-behavior: auto;
   position: relative;
 }
 
@@ -213,12 +214,60 @@ body {
   font-size: clamp(2.8rem, 7.2vw + 0.8rem, 8.4rem);
 }
 
+.text-contact-intro-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  font-size: clamp(1.68rem, 4.32vw + 0.48rem, 5.04rem);
+}
+
+.text-journal-intro-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  font-size: clamp(2.36rem, 6.09vw + 0.67rem, 7.1rem);
+}
+
+.text-capabilities-intro-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  font-size: clamp(3.08rem, 7.92vw + 0.88rem, 9.24rem);
+}
+
+.text-about-intro-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+  font-size: clamp(2.4675rem, 6.3vw + 0.7875rem, 7.35rem);
+}
+
 .text-h1 {
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: -0.02em;
   line-height: 0.98;
   font-size: clamp(2.5rem, 5vw + 1rem, 6rem);
+}
+
+.text-footer-tagline {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  font-size: clamp(1.5625rem, 3.125vw + 0.625rem, 3.75rem);
+}
+
+.text-about-manifesto-headline {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-size: clamp(1.875rem, 3.75vw + 0.75rem, 4.5rem);
 }
 
 .text-h2 {
@@ -362,6 +411,10 @@ body {
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
+  /* Negative tracking lets glyphs extend past the layout box; without
+     end padding, overflow:hidden clips the right edge of each word. */
+  padding-inline-end: 0.12em;
+  margin-inline-end: -0.12em;
 }
 
 .mask-reveal > span {

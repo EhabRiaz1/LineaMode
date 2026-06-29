@@ -8,6 +8,7 @@ import type { ProductCard as ProductCardType, Subcategory } from "@/lib/cms/prod
 import { easeBrand } from "@/lib/motion/easings";
 import { cn } from "@/lib/utils";
 import { ProductCard } from "./ProductCard";
+import { RailScrollButton } from "./RailScrollButton";
 
 type SubcategoryProductSectionProps = {
   categorySlug: ProductCategorySlug;
@@ -15,10 +16,12 @@ type SubcategoryProductSectionProps = {
   products: ProductCardType[];
   expanded: boolean;
   onToggleExpanded: () => void;
+  lookbookPdfHref?: string;
+  lookbookCtaLabel?: string;
 };
 
 const catalogCardWidth =
-  "w-full sm:w-[calc((100%-var(--catalog-gap))/2)] lg:w-[calc((100%-var(--catalog-gap)*3)/4)]";
+  "w-[min(88%,300px)] sm:w-[calc((100%-var(--catalog-gap))/2)] lg:w-[calc((100%-var(--catalog-gap)*3)/4)]";
 
 /** Products shown in the horizontal rail; expanded grid shows the rest only. */
 const RAIL_PREVIEW_COUNT = 4;
@@ -29,9 +32,12 @@ export function SubcategoryProductSection({
   products,
   expanded,
   onToggleExpanded,
+  lookbookPdfHref,
+  lookbookCtaLabel,
 }: SubcategoryProductSectionProps) {
   const railRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const [canScrollRail, setCanScrollRail] = useState(false);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
@@ -48,6 +54,7 @@ export function SubcategoryProductSection({
   const updateScrollState = useCallback(() => {
     const el = railRef.current;
     if (!el) return;
+    setCanScrollRail(el.scrollWidth > el.clientWidth + 4);
     setCanScrollPrev(el.scrollLeft > 4);
     setCanScrollNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   }, []);
@@ -65,8 +72,17 @@ export function SubcategoryProductSection({
   const scrollRail = (direction: "prev" | "next") => {
     const el = railRef.current;
     if (!el) return;
-    el.scrollBy({ left: direction === "next" ? 360 : -360, behavior: "smooth" });
+    const amount = Math.max(260, Math.round(el.clientWidth * 0.82));
+    el.scrollBy({ left: direction === "next" ? amount : -amount, behavior: "smooth" });
   };
+
+  const scrollDirection: "prev" | "next" | null = canScrollNext
+    ? "next"
+    : canScrollPrev
+      ? "prev"
+      : null;
+
+  const showRailControl = canScrollRail && scrollDirection !== null;
 
   return (
     <section
@@ -75,21 +91,16 @@ export function SubcategoryProductSection({
       aria-labelledby={`${sectionId}-heading`}
       className="scroll-mt-28 border-t border-ink/10 pt-12 first:border-t-0 first:pt-0 md:pt-14"
     >
-      <div className="mb-6 flex items-end justify-between gap-4 md:mb-8">
-        <div>
-          <p className="text-[0.625rem] uppercase tracking-[0.18em] text-ink/45">
-            {String(slug).replace(/-/g, " ")}
-          </p>
-          <h3
-            id={`${sectionId}-heading`}
-            className="mt-2 font-sans text-[clamp(1.35rem,2.2vw,1.75rem)] font-light leading-[1.12] tracking-[-0.02em] text-ink"
-          >
-            {title}
-          </h3>
-        </div>
-        <p className="hidden text-label text-ink/45 md:block">
-          {products.length} {products.length === 1 ? "piece" : "pieces"}
+      <div className="mb-6 md:mb-8">
+        <p className="text-[0.625rem] uppercase tracking-[0.18em] text-ink/45">
+          {String(slug).replace(/-/g, " ")}
         </p>
+        <h3
+          id={`${sectionId}-heading`}
+          className="mt-2 font-sans text-[clamp(1.35rem,2.2vw,1.75rem)] font-light leading-[1.12] tracking-[-0.02em] text-ink"
+        >
+          {title}
+        </h3>
       </div>
 
       <div className="relative">
@@ -106,49 +117,23 @@ export function SubcategoryProductSection({
               hoverImage={item.hoverImage}
               variant="rail"
               className="shrink-0 snap-start"
+              lookbookPdfHref={lookbookPdfHref}
+              lookbookCtaLabel={lookbookCtaLabel}
             />
           ))}
         </div>
 
-        {canScrollNext && (
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-16 items-center justify-end md:flex">
-            <button
-              type="button"
-              aria-label={`Scroll ${title} products forward`}
-              onClick={() => scrollRail("next")}
-              className="pointer-events-auto flex size-10 items-center justify-center rounded-full bg-stone text-ink shadow-[0_4px_20px_rgba(0,0,0,0.1)] ring-1 ring-ink/10 transition-transform hover:scale-105"
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
-                <path
-                  d="M6 3l5 5-5 5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
-        )}
-
-        {canScrollPrev && (
-          <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-16 items-center justify-start md:flex">
-            <button
-              type="button"
-              aria-label={`Scroll ${title} products back`}
-              onClick={() => scrollRail("prev")}
-              className="pointer-events-auto flex size-10 items-center justify-center rounded-full bg-stone text-ink shadow-[0_4px_20px_rgba(0,0,0,0.1)] ring-1 ring-ink/10 transition-transform hover:scale-105"
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
-                <path
-                  d="M10 3L5 8l5 5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+        {showRailControl && scrollDirection && (
+          <div className="pointer-events-none absolute right-2 top-1/2 z-10 -translate-y-1/2 sm:right-3 md:right-4">
+            <RailScrollButton
+              direction={scrollDirection}
+              label={
+                scrollDirection === "next"
+                  ? `Scroll ${title} products forward`
+                  : `Scroll ${title} products back`
+              }
+              onClick={() => scrollRail(scrollDirection)}
+            />
           </div>
         )}
       </div>
@@ -181,6 +166,8 @@ export function SubcategoryProductSection({
                   hoverImage={item.hoverImage}
                   variant="grid"
                   className={catalogCardWidth}
+                  lookbookPdfHref={lookbookPdfHref}
+                  lookbookCtaLabel={lookbookCtaLabel}
                 />
               ))}
             </motion.div>

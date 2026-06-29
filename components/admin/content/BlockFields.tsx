@@ -460,54 +460,119 @@ function MediaInput({
   onChange: (value: MediaRef) => void;
   frame?: ImageFramePreset;
 }) {
-  const [picking, setPicking] = useState(false);
+  const [pickingDesktop, setPickingDesktop] = useState(false);
+  const [pickingMobile, setPickingMobile] = useState(false);
   const [positioning, setPositioning] = useState(false);
+  const mobileSrc = value.mobile_src ?? "";
+  const [mobileOpen, setMobileOpen] = useState(Boolean(mobileSrc));
   const focusX = Math.round((value.focal_x ?? 0.5) * 100);
   const focusY = Math.round((value.focal_y ?? 0.5) * 100);
   const hasCustomFocus =
     value.focal_x !== undefined &&
     value.focal_y !== undefined &&
     (focusX !== DEFAULT_MOBILE_FOCUS.x || focusY !== DEFAULT_MOBILE_FOCUS.y);
+  const focalPreviewSrc = mobileSrc || value.src;
 
   return (
     <div className="space-y-2">
       <p className="text-eyebrow text-ink/40">{label}</p>
-      <div className="rounded-2xl border border-[var(--hairline)] bg-stone p-3 space-y-2">
-        <div className="flex items-center gap-3">
-          {value.src ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={value.src}
-              alt={value.alt ?? ""}
-              className="size-16 rounded-xl object-cover bg-ink/[0.04]"
-            />
-          ) : (
-            <div className="size-16 rounded-xl bg-ink/[0.04] flex items-center justify-center text-label text-ink/45">
-              empty
+      <div className="rounded-2xl border border-[var(--hairline)] bg-stone p-3 space-y-4">
+        <div className="space-y-2">
+          <p className="text-eyebrow text-ink/35">Desktop</p>
+          <div className="flex items-center gap-3">
+            {value.src ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={value.src}
+                alt={value.alt ?? ""}
+                className="size-16 rounded-xl object-cover bg-ink/[0.04]"
+              />
+            ) : (
+              <div className="size-16 rounded-xl bg-ink/[0.04] flex items-center justify-center text-label text-ink/45">
+                empty
+              </div>
+            )}
+            <div className="flex-1 space-y-1.5">
+              <Text
+                label="URL"
+                value={value.src}
+                onChange={(src) => onChange({ ...value, src })}
+              />
+              <Text
+                label="Alt text"
+                value={value.alt ?? ""}
+                onChange={(alt) => onChange({ ...value, alt: alt || undefined })}
+              />
             </div>
-          )}
-          <div className="flex-1 space-y-1.5">
-            <Text
-              label="URL"
-              value={value.src}
-              onChange={(src) => onChange({ ...value, src })}
-            />
-            <Text
-              label="Alt text"
-              value={value.alt ?? ""}
-              onChange={(alt) => onChange({ ...value, alt: alt || undefined })}
-            />
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setPickingDesktop(true)}
+              className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+            >
+              Pick from library
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+
+        <div className="border-t border-[var(--hairline)] pt-3 space-y-3">
           <button
             type="button"
-            onClick={() => setPicking(true)}
-            className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+            onClick={() => setMobileOpen((open) => !open)}
+            className="flex w-full items-center justify-between text-left"
           >
-            Pick from library
+            <span className="text-eyebrow text-ink/35">Mobile (optional)</span>
+            <span className="text-label text-ink/45">{mobileOpen ? "Hide" : "Show"}</span>
           </button>
-          {value.src && (
+          {mobileOpen && (
+            <div className="space-y-2">
+              {mobileSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={mobileSrc}
+                  alt=""
+                  className="w-full max-w-[180px] aspect-[9/16] rounded-xl object-cover bg-ink/[0.04]"
+                />
+              ) : (
+                <p className="text-label text-ink/45">
+                  No mobile image — phone visitors see the desktop image with optional focal crop.
+                </p>
+              )}
+              <Text
+                label="Mobile URL"
+                value={mobileSrc}
+                onChange={(next) =>
+                  onChange({
+                    ...value,
+                    mobile_src: next.trim() || undefined,
+                  })
+                }
+              />
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setPickingMobile(true)}
+                  className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+                >
+                  {mobileSrc ? "Change mobile image" : "Pick mobile image"}
+                </button>
+                {mobileSrc && (
+                  <button
+                    type="button"
+                    onClick={() => onChange({ ...value, mobile_src: undefined })}
+                    className="text-label text-ink/45 hover:text-terracotta transition-colors"
+                  >
+                    Clear mobile image
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {(value.src || mobileSrc) && (
+          <div className="border-t border-[var(--hairline)] pt-3 space-y-2">
             <button
               type="button"
               onClick={() => setPositioning(true)}
@@ -515,17 +580,17 @@ function MediaInput({
             >
               {hasCustomFocus ? "Edit phone position" : "Position for phone"}
             </button>
-          )}
-        </div>
-        {hasCustomFocus && (
-          <p className="text-label text-ink/45">
-            Phone focus set · {focusX}% × {focusY}%
-          </p>
+            {hasCustomFocus && (
+              <p className="text-label text-ink/45">
+                Phone focus set · {focusX}% × {focusY}%
+              </p>
+            )}
+          </div>
         )}
       </div>
-      {picking && (
+      {pickingDesktop && (
         <MediaPicker
-          onClose={() => setPicking(false)}
+          onClose={() => setPickingDesktop(false)}
           onPick={(media) => {
             onChange({
               ...value,
@@ -535,13 +600,26 @@ function MediaInput({
               height: media.height ?? undefined,
               id: media.id,
             });
-            setPicking(false);
+            setPickingDesktop(false);
           }}
         />
       )}
-      {positioning && value.src && (
+      {pickingMobile && (
+        <MediaPicker
+          onClose={() => setPickingMobile(false)}
+          onPick={(media) => {
+            onChange({
+              ...value,
+              mobile_src: media.url,
+            });
+            setMobileOpen(true);
+            setPickingMobile(false);
+          }}
+        />
+      )}
+      {positioning && focalPreviewSrc && (
         <FocalPointModal
-          src={value.src}
+          src={focalPreviewSrc}
           frame={frame}
           focus={{ x: focusX, y: focusY }}
           onClose={() => setPositioning(false)}

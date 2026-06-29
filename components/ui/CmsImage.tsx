@@ -3,7 +3,9 @@
 import {
   cmsImageMobileStyle,
   cmsImageObjectPosition,
+  cmsImageMobileSrc,
   cmsImageSrc,
+  hasDistinctMobileSrc,
   parseCmsImage,
   type CmsImageValue,
 } from "@/lib/cms/cms-image";
@@ -18,26 +20,48 @@ type CmsImageProps = Omit<
 };
 
 /**
- * Renders a CMS image with optional mobile-only focal positioning (below md).
- * Desktop uses the passed className as-is; mobile applies object-position from CMS.
+ * Renders a CMS image with optional separate mobile asset and mobile-only focal positioning.
+ * Desktop uses `src`; below md uses `mobileSrc` when set, otherwise `src` with focal crop.
  */
 export function CmsImage({ value, className, style, alt = "", ...props }: CmsImageProps) {
-  const src = cmsImageSrc(value ?? "");
-  if (!src) return null;
+  const desktopSrc = cmsImageSrc(value ?? "");
+  if (!desktopSrc) return null;
 
-  const { mobileFocus } = parseCmsImage(value);
   const mobileStyle = cmsImageMobileStyle(value);
+  const mobileClasses =
+    mobileStyle &&
+    "max-md:object-cover max-md:[object-position:var(--cms-mobile-focus)]";
+
+  if (hasDistinctMobileSrc(value)) {
+    const mobileSrc = cmsImageMobileSrc(value ?? "");
+    return (
+      <>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={desktopSrc}
+          alt={alt}
+          className={cn(className, "hidden md:block")}
+          style={style}
+          {...props}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={mobileSrc}
+          alt={alt}
+          className={cn(className, "block md:hidden", mobileClasses)}
+          style={{ ...style, ...mobileStyle }}
+          {...props}
+        />
+      </>
+    );
+  }
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
+      src={desktopSrc}
       alt={alt}
-      className={cn(
-        className,
-        mobileStyle &&
-          "max-md:object-cover max-md:[object-position:var(--cms-mobile-focus)]",
-      )}
+      className={cn(className, mobileClasses)}
       style={{
         ...style,
         ...mobileStyle,
@@ -52,6 +76,8 @@ export function cmsImageProps(value: CmsImageValue | undefined | null) {
   const parsed = parseCmsImage(value);
   return {
     src: parsed.src,
+    mobileSrc: cmsImageMobileSrc(value),
+    hasDistinctMobile: hasDistinctMobileSrc(value),
     mobileFocus: parsed.mobileFocus,
     mobileObjectPosition: cmsImageObjectPosition(parsed.mobileFocus),
     mobileStyle: cmsImageMobileStyle(value),

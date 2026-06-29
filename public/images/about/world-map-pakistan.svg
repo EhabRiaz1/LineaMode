@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" fill="none" role="img" aria-label="World map with Pakistan highlighted">
+  <defs>
+    <pattern id="lm-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" stroke="#201c1d" stroke-opacity="0.07" stroke-width="0.75"/>
+    </pattern>
+    <linearGradient id="lm-ocean" x1="120" y1="0" x2="880" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d6d0c6"/>
+      <stop offset="0.55" stop-color="#e1e1dc"/>
+      <stop offset="1" stop-color="#d6d0c6"/>
+    </linearGradient>
+    <radialGradient id="lm-pakistan-glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(700 156) rotate(90) scale(42 58)">
+      <stop stop-color="#c97a5a" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#c97a5a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1000" height="500" fill="url(#lm-ocean)"/>
+  <rect width="1000" height="500" fill="url(#lm-grid)"/>
+  <g stroke="#201c1d" stroke-opacity="0.06" stroke-width="0.75">
+    <line x1="0" y1="125" x2="1000" y2="125"/>
+    <line x1="0" y1="250" x2="1000" y2="250"/>
+    <line x1="0" y1="375" x2="1000" y2="375"/>
+    <line x1="250" y1="0" x2="250" y2="500"/>
+    <line x1="500" y1="0" x2="500" y2="500"/>
+    <line x1="750" y1="0" x2="750" y2="500"/>
+  </g>
+  <g fill="#201c1d" fill-opacity="0.1">
+    <path d="M72 118c28-16 64-24 98-20 38 4 72 24 86 54 12 28 4 58-16 76-24 24-66 32-100 18-38-16-64-52-74-88-8-26-2-48 6-40z"/>
+    <path d="M132 292c16-8 38-10 56-2 30 12 52 44 48 78-4 34-28 64-64 72-36 8-74-10-92-42-16-28-12-66 8-90 12-14 30-20 44-16z"/>
+    <path d="M392 92c48-18 104-16 148 8 36 20 58 58 60 98 2 42-16 82-48 104-34 24-80 28-120 10-44-20-72-64-70-108 2-40 16-78 30-112z"/>
+    <path d="M468 248c22-6 50-4 72 8 28 16 44 50 40 82-4 34-28 64-60 74-32 10-70 2-92-22-24-24-32-62-20-92 8-26 28-46 60-50z"/>
+    <path d="M588 108c72-22 156-14 212 22 48 32 72 86 66 140-6 54-40 102-90 126-54 26-118 22-172-8-58-32-94-92-92-148 2-52 28-100 76-132z"/>
+    <path d="M748 312c18-10 42-12 60-2 26 12 42 40 38 70-4 30-26 54-54 62-30 8-62-4-78-28-14-20-12-50 6-70 10-14 18-20 28-32z"/>
+  </g>
+  <ellipse cx="700" cy="156" rx="46" ry="58" fill="url(#lm-pakistan-glow)"/>
+  <path fill="#c97a5a" fill-opacity="0.9" stroke="#201c1d" stroke-opacity="0.5" stroke-width="1.2" d="M664 144l44-2 8 6-2 10-8 12-10 14-16 8-14-4-6-12 2-14 8-12 4-8z"/>
+  <circle cx="700" cy="156" r="3.75" fill="#201c1d" fill-opacity="0.85"/>
+  <circle cx="700" cy="156" r="7.5" stroke="#201c1d" stroke-opacity="0.2" stroke-width="1"/>
+  <text x="700" y="182" text-anchor="middle" fill="#201c1d" fill-opacity="0.5" font-family="ui-monospace, monospace" font-size="10.5" letter-spacing="0.2em">PAKISTAN</text>
+</svg>

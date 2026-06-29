@@ -11,7 +11,7 @@ export const contactContentSchema = z.object({
 
   details: z
     .object({
-      email: z.string().max(200).default("saif@lineamode.com"),
+      email: z.string().max(200).default("contact@lineamode-apparel.com"),
       phone: z.string().max(80).default("+92 300 1234567"),
       address: z
         .string()
@@ -32,7 +32,7 @@ export const CONTACT_CONTENT_DEFAULTS: ContactContent = {
     headlineLine2: "We answer in two days.",
   },
   details: {
-    email: "saif@lineamode.com",
+    email: "contact@lineamode-apparel.com",
     phone: "+92 300 1234567",
     address: "1st Floor, NESPAK House,\nG-5/2, Attaturk Avenue,\nIslamabad, Pakistan.",
     hours: "Mon — Fri · 09:00 to 18:00 PKT",

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { ProductCategorySlug } from "@/content/product-catalog";
 import type { CategoryConfig, ProductCard, Subcategory } from "@/lib/cms/products-schema";
@@ -95,8 +96,8 @@ export function CategoryCatalogPanel({
         <div>
           <p className="text-eyebrow text-ink/40">Subcategories</p>
           <p className="text-label text-ink/55 mt-1">
-            Define subcategories for {categoryTitle}. These appear when visitors expand
-            the homepage category tile.
+            Define subcategories for {categoryTitle}. These group products on the
+            Products page.
           </p>
         </div>
 
@@ -154,7 +155,7 @@ export function CategoryCatalogPanel({
                 onChange={(v) => updateSubcategory(sub.id, { slug: slugify(v) })}
               />
               <ImagePickerField
-                label="Tile image (homepage expand)"
+                label="Tile image (optional)"
                 frame="subcategory-tile"
                 value={sub.image ?? ""}
                 onChange={(v) => updateSubcategory(sub.id, { image: v })}
@@ -174,9 +175,14 @@ export function CategoryCatalogPanel({
 
       <section className="space-y-3 border-t border-[var(--hairline)] pt-6">
         <div>
-          <p className="text-eyebrow text-ink/40">Homepage tile</p>
+          <p className="text-eyebrow text-ink/40">Homepage tile image</p>
           <p className="text-label text-ink/55 mt-1">
-            These images power the homepage category tile for {categoryTitle}.
+            Image for the {categoryTitle} tile on the homepage products section. Hover
+            headline, text, and button label are edited in{" "}
+            <Link href="/admin/content/pages/home" className="underline hover:text-ink">
+              Home → 03 / Products
+            </Link>
+            .
           </p>
         </div>
         <ImagePickerField
@@ -184,19 +190,6 @@ export function CategoryCatalogPanel({
           frame="category-tile"
           value={categoryConfig.image}
           onChange={(v) => onUpdateCategory({ image: v })}
-        />
-        <ImagePickerField
-          label="Tile hover image"
-          frame="category-tile"
-          value={categoryConfig.hoverImage}
-          onChange={(v) => onUpdateCategory({ hoverImage: v })}
-        />
-        <Field
-          label="Description (expanded tile)"
-          value={categoryConfig.description ?? ""}
-          onChange={(v) => onUpdateCategory({ description: v })}
-          multiline
-          rows={3}
         />
       </section>
 

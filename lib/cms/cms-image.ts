@@ -8,6 +8,7 @@ export const mobileFocusSchema = z.object({
 
 export const cmsImageObjectSchema = z.object({
   src: z.string().max(2048),
+  mobileSrc: z.string().max(2048).optional(),
   mobileFocus: mobileFocusSchema.optional(),
 });
 
@@ -18,6 +19,12 @@ export type CmsImageObject = z.infer<typeof cmsImageObjectSchema>;
 export type CmsImageValue = z.infer<typeof cmsImageSchema>;
 
 export const DEFAULT_MOBILE_FOCUS: MobileFocus = { x: 50, y: 50 };
+
+export type ParsedCmsImage = {
+  src: string;
+  mobileSrc?: string;
+  mobileFocus: MobileFocus;
+};
 
 export type ImageFramePreset =
   | "hero"
@@ -57,18 +64,17 @@ export const IMAGE_FRAME_PRESETS: Record<
   portrait: { aspectRatio: 3 / 4, label: "Portrait (mobile)", previewWidth: 240 },
 };
 
-export function parseCmsImage(
-  raw: unknown,
-  fallbackSrc = "",
-): { src: string; mobileFocus: MobileFocus } {
+export function parseCmsImage(raw: unknown, fallbackSrc = ""): ParsedCmsImage {
   if (typeof raw === "string") {
     return { src: raw, mobileFocus: DEFAULT_MOBILE_FOCUS };
   }
 
   if (raw && typeof raw === "object" && "src" in raw) {
     const value = raw as CmsImageObject;
+    const mobileSrc = typeof value.mobileSrc === "string" ? value.mobileSrc.trim() : "";
     return {
       src: typeof value.src === "string" ? value.src : fallbackSrc,
+      mobileSrc: mobileSrc || undefined,
       mobileFocus: {
         x: value.mobileFocus?.x ?? DEFAULT_MOBILE_FOCUS.x,
         y: value.mobileFocus?.y ?? DEFAULT_MOBILE_FOCUS.y,
@@ -83,6 +89,15 @@ export function cmsImageSrc(raw: unknown, fallbackSrc = ""): string {
   return parseCmsImage(raw, fallbackSrc).src;
 }
 
+export function cmsImageMobileSrc(raw: unknown, fallbackSrc = ""): string {
+  const parsed = parseCmsImage(raw, fallbackSrc);
+  return parsed.mobileSrc ?? parsed.src;
+}
+
+export function hasDistinctMobileSrc(raw: unknown): boolean {
+  return Boolean(parseCmsImage(raw).mobileSrc);
+}
+
 export function cmsImageFocus(raw: unknown): MobileFocus {
   return parseCmsImage(raw).mobileFocus;
 }
@@ -91,15 +106,22 @@ export function isDefaultMobileFocus(focus: MobileFocus): boolean {
   return focus.x === DEFAULT_MOBILE_FOCUS.x && focus.y === DEFAULT_MOBILE_FOCUS.y;
 }
 
-/** Persist as a plain URL when focus is default to keep JSON compact. */
+/** Persist as a plain URL when focus is default and no mobile override to keep JSON compact. */
 export function serializeCmsImage(value: {
   src: string;
+  mobileSrc?: string;
   mobileFocus?: MobileFocus;
 }): CmsImageValue {
   if (!value.src) return "";
   const focus = value.mobileFocus ?? DEFAULT_MOBILE_FOCUS;
-  if (isDefaultMobileFocus(focus)) return value.src;
-  return { src: value.src, mobileFocus: focus };
+  const mobileSrc = value.mobileSrc?.trim() || undefined;
+
+  if (isDefaultMobileFocus(focus) && !mobileSrc) return value.src;
+
+  const obj: CmsImageObject = { src: value.src };
+  if (mobileSrc) obj.mobileSrc = mobileSrc;
+  if (!isDefaultMobileFocus(focus)) obj.mobileFocus = focus;
+  return obj;
 }
 
 export function cmsImageObjectPosition(focus: MobileFocus): string {

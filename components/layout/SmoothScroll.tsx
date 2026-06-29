@@ -3,10 +3,14 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 import {
   getScrollOffsetForHashId,
   parseHashId,
 } from "@/lib/navigation";
+
+/** Lenis default — close to macOS momentum deceleration. */
+const easeScroll = (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t));
 
 /**
  * Lenis-driven smooth scroll across all pages.
@@ -88,24 +92,27 @@ export function SmoothScroll() {
       };
     }
 
+    const isTouchDevice =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      autoRaf: true,
+      allowNestedScroll: true,
+      smoothWheel: true,
       lerp: 0.1,
       wheelMultiplier: 1,
       touchMultiplier: 1.4,
+      duration: 1.2,
+      easing: easeScroll,
+      syncTouch: isTouchDevice,
+      syncTouchLerp: 0.1,
+      touchInertiaExponent: 1.7,
     });
 
     const lenisScroll = (el: HTMLElement, offset: number) => {
       lenis.scrollTo(el, { offset: -offset });
     };
-
-    let raf = 0;
-    const tick = (time: number) => {
-      lenis.raf(time);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
 
     const onLenisHashChange = () => {
       scrollToHashTarget(parseHashId(window.location.hash), lenisScroll);
@@ -133,7 +140,6 @@ export function SmoothScroll() {
       scrollToHashTarget(id, lenisScroll);
     };
 
-    // Reset scroll on client navigations, or scroll to a hash target when present.
     requestAnimationFrame(() => {
       if (!scrollToHashTarget(parseHashId(window.location.hash), lenisScroll)) {
         lenis.scrollTo(0, { immediate: true });
@@ -144,7 +150,6 @@ export function SmoothScroll() {
     document.addEventListener("click", onLenisHashLinkClick, true);
 
     return () => {
-      cancelAnimationFrame(raf);
       window.removeEventListener("hashchange", onLenisHashChange);
       document.removeEventListener("click", onLenisHashLinkClick, true);
       lenis.destroy();
