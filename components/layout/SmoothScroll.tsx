@@ -8,21 +8,22 @@ import {
   getScrollOffsetForHashId,
   parseHashId,
 } from "@/lib/navigation";
+import { prefersNativeScroll } from "@/lib/scroll/prefers-native-scroll";
 
 /** Lenis default — close to macOS momentum deceleration. */
 const easeScroll = (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t));
 
 /**
- * Lenis-driven smooth scroll across all pages.
- * Falls back to native scroll when prefers-reduced-motion is set, and is
- * disabled inside the admin console (which is an app surface, not a
- * scrolling document, so lerped scroll feels wrong against sticky panels).
+ * Lenis-driven smooth scroll on Chromium browsers.
+ * Falls back to native scroll on Safari/iOS (Lenis fights WebKit momentum),
+ * when prefers-reduced-motion is set, and inside the admin console.
  */
 export function SmoothScroll() {
   const pathname = usePathname();
   useEffect(() => {
     if (pathname?.startsWith("/admin")) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const useNativeScroll = reduce || prefersNativeScroll();
 
     const normalizeHashUrl = (id: string) => {
       const clean = `${window.location.pathname}#${id}`;
@@ -78,7 +79,7 @@ export function SmoothScroll() {
       scrollToHashTarget(id, nativeScroll);
     };
 
-    if (reduce) {
+    if (useNativeScroll) {
       if (!scrollToHashTarget(parseHashId(window.location.hash), nativeScroll)) {
         window.scrollTo({ top: 0, left: 0, behavior: "auto" });
       }
