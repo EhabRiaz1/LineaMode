@@ -36,7 +36,7 @@ function newProductId(category: ProductCategorySlug): string {
 }
 
 export function ProductsEditor() {
-  const { token, authHeaders, status } = useAdminSession();
+  const { token, authHeaders, status, refreshSession } = useAdminSession();
   const [content, setContent] = useState<ProductsContent>(PRODUCTS_CONTENT_DEFAULTS);
   const [loading, setLoading] = useState(true);
   const [hasDraft, setHasDraft] = useState(false);
@@ -48,14 +48,26 @@ export function ProductsEditor() {
   const [selected, setSelected] = useState<string | null>("intro");
   const [previewNonce, setPreviewNonce] = useState(0);
   const [previewSaving, setPreviewSaving] = useState(false);
+  const [panelEpoch, setPanelEpoch] = useState(0);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async () => {
     if (status !== "authenticated") return;
-    const res = await adminFetch<{ published: ProductsContent | null; draft: ProductsContent | null }>(
-      "/api/admin/cms/products",
-      { authHeaders: authHeaders() },
-    );
+    setLoading(true);
+    setError(null);
+
+    const fetchOnce = () =>
+      adminFetch<{ published: ProductsContent | null; draft: ProductsContent | null }>(
+        "/api/admin/cms/products",
+        { authHeaders: authHeaders() },
+      );
+
+    let res = await fetchOnce();
+    if (!res.ok && res.status === 401) {
+      await refreshSession();
+      res = await fetchOnce();
+    }
+
     if (res.ok) {
       const parsed = parseProductsContent(res.data.draft ?? res.data.published ?? PRODUCTS_CONTENT_DEFAULTS);
       if (!parsed.catalog.length) {
@@ -68,9 +80,13 @@ export function ProductsEditor() {
       setContent(parsed);
       setHasDraft(!!res.data.draft);
       setDirty(false);
-    } else setError(res.error);
+    } else if (res.status === 401) {
+      setError("Your session expired. Please sign in again.");
+    } else {
+      setError(res.error);
+    }
     setLoading(false);
-  }, [authHeaders, status]);
+  }, [authHeaders, refreshSession, status]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -87,6 +103,8 @@ export function ProductsEditor() {
       if (r.ok) {
         setHasDraft(true);
         setPreviewNonce((n) => n + 1);
+      } else {
+        setError(r.error);
       }
       setPreviewSaving(false);
     }, 700);
@@ -95,6 +113,16 @@ export function ProductsEditor() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, dirty]);
+
+  useEffect(() => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!dirty || publishing) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [dirty, publishing]);
 
   const update = useCallback((next: ProductsContent) => {
     setContent(next);
@@ -122,7 +150,7 @@ export function ProductsEditor() {
     update({ ...content, catalog });
   };
 
-  const addProduct = (category: ProductCategorySlug): string => {
+  const addProduct = (category: ProductCategorySlug, subcategoryId = ""): string => {
     const id = newProductId(category);
     const catalog = [
       ...content.catalog,
@@ -132,7 +160,7 @@ export function ProductsEditor() {
         title: "New product",
         image: "",
         hoverImage: "",
-        subcategoryId: "",
+        subcategoryId,
         featured: false,
       },
     ];
@@ -143,6 +171,8 @@ export function ProductsEditor() {
   const removeProduct = (id: string) => {
     update({ ...content, catalog: content.catalog.filter((item) => item.id !== id) });
   };
+
+  const closePanels = () => setPanelEpoch((n) => n + 1);
 
   const onSaveDraft = async () => {
     if (timer.current) clearTimeout(timer.current);
@@ -161,6 +191,7 @@ export function ProductsEditor() {
 
   const onPublish = async () => {
     if (timer.current) clearTimeout(timer.current);
+    closePanels();
     setPublishing(true);
     setError(null);
     if (dirty) {
@@ -183,6 +214,7 @@ export function ProductsEditor() {
   };
 
   const onDiscard = async () => {
+    closePanels();
     setDiscarding(true);
     await discardProductsContentDraft(token);
     setDiscarding(false);
@@ -216,8 +248,8 @@ export function ProductsEditor() {
     >
       <SectionAccordion id="intro" label="Intro" selected={selected} onSelect={setSelected}>
         <p className="text-label text-ink/55">
-          Configure category tile images, subcategories, and products in each category
-          section below. Homepage tile copy is edited in{" "}
+          Products page hero and catalog. Homepage category tile images and hover copy are edited
+          in{" "}
           <Link href="/admin/content/pages/home" className="underline hover:text-ink">
             Home → 03 / Products
           </Link>
@@ -253,13 +285,15 @@ export function ProductsEditor() {
             onSelect={setSelected}
           >
             <CategoryCatalogPanel
+              key={`${category.slug}-${panelEpoch}`}
               categorySlug={category.slug}
               categoryTitle={category.title}
               categoryConfig={config}
               products={items}
+              saving={saving || previewSaving}
               onUpdateCategory={(patch) => updateCategoryConfig(category.slug, patch)}
               onUpdateProduct={updateCatalogItem}
-              onAddProduct={() => addProduct(category.slug)}
+              onAddProduct={(subcategoryId) => addProduct(category.slug, subcategoryId)}
               onRemoveProduct={removeProduct}
             />
           </SectionAccordion>

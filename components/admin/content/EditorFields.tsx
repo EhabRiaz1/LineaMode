@@ -163,12 +163,14 @@ export function ImagePickerField({
   onChange,
   placeholder,
   frame = "video",
+  overlayZIndex = "z-50",
 }: {
   label: string;
   value: CmsImageValue;
   onChange: (value: CmsImageValue) => void;
   placeholder?: string;
   frame?: ImageFramePreset;
+  overlayZIndex?: string;
 }) {
   const [pickingDesktop, setPickingDesktop] = useState(false);
   const [pickingMobile, setPickingMobile] = useState(false);
@@ -307,6 +309,7 @@ export function ImagePickerField({
 
       {pickingDesktop && (
         <MediaPicker
+          overlayZIndex={overlayZIndex}
           onClose={() => setPickingDesktop(false)}
           onPick={(media: MediaItem) => {
             commitCmsImage(parsed, { src: media.url }, onChange);
@@ -317,6 +320,7 @@ export function ImagePickerField({
 
       {pickingMobile && (
         <MediaPicker
+          overlayZIndex={overlayZIndex}
           onClose={() => setPickingMobile(false)}
           onPick={(media: MediaItem) => {
             commitCmsImage(parsed, { mobileSrc: media.url }, onChange);
@@ -328,6 +332,7 @@ export function ImagePickerField({
 
       {positioning && focalPreviewSrc && (
         <FocalPointModal
+          overlayZIndex={overlayZIndex}
           src={focalPreviewSrc}
           focus={parsed.mobileFocus}
           frame={frame}

@@ -4,11 +4,15 @@ import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { blocks as blocksSchema, seoSchema } from "@/lib/cms/blocks";
 import { cmsTags } from "@/lib/cms/cache-tags";
-import { homeContentSchema } from "@/lib/cms/home-schema";
+import { homeContentSchema, backfillHomeProductCategoryImages, type HomeContent } from "@/lib/cms/home-schema";
 import { capabilitiesContentSchema } from "@/lib/cms/capabilities-schema";
 import { contactContentSchema } from "@/lib/cms/contact-schema";
 import { foundersContentSchema } from "@/lib/cms/founders-schema";
-import { productsContentSchema } from "@/lib/cms/products-schema";
+import {
+  productsContentSchema,
+  parseProductsContent,
+  getLegacyHomeCategoryImages,
+} from "@/lib/cms/products-schema";
 import { journalIntroSchema } from "@/lib/cms/journal-intro-schema";
 import { aboutContentSchema } from "@/lib/cms/about-schema";
 import {
@@ -41,6 +45,25 @@ async function authenticate(token: string | null): Promise<{ id: string } | { er
     if (err instanceof UnauthorizedError) return { error: err.message };
     return { error: err instanceof Error ? err.message : "Unauthorized" };
   }
+}
+
+async function enrichHomeContentWithLegacyProductImages(
+  content: HomeContent,
+  supabase: ReturnType<typeof getServiceRoleClient>,
+): Promise<HomeContent> {
+  const [{ data: productsDraft }, { data: productsPub }] = await Promise.all([
+    supabase.from("cms_settings").select("value").eq("key", "products_content_draft").maybeSingle(),
+    supabase.from("cms_settings").select("value").eq("key", "products_content").maybeSingle(),
+  ]);
+  const products = parseProductsContent(productsDraft?.value ?? productsPub?.value ?? {});
+  const legacyImages = getLegacyHomeCategoryImages(products);
+  return {
+    ...content,
+    products: {
+      ...content.products,
+      categories: backfillHomeProductCategoryImages(content.products.categories, legacyImages),
+    },
+  };
 }
 
 const savePageSchema = z.object({
@@ -156,8 +179,9 @@ export async function saveHomeContentDraft(
   }
 
   const supabase = getServiceRoleClient();
+  const enriched = await enrichHomeContentWithLegacyProductImages(parsed.data, supabase);
   const { error } = await supabase.from("cms_settings").upsert(
-    { key: "home_content_draft", value: parsed.data, updated_by: auth.id },
+    { key: "home_content_draft", value: enriched, updated_by: auth.id },
     { onConflict: "key" },
   );
   if (error) return { ok: false, error: error.message };
@@ -176,9 +200,12 @@ export async function publishHomeContent(token: string | null): Promise<ActionRe
   ]);
 
   const contentToPublish = draftRow?.value ?? pubRow?.value ?? {};
+  const parsed = homeContentSchema.safeParse(contentToPublish);
+  const base = parsed.success ? parsed.data : (contentToPublish as HomeContent);
+  const enriched = await enrichHomeContentWithLegacyProductImages(base, supabase);
 
   const { error: pubError } = await supabase.from("cms_settings").upsert(
-    { key: "home_content", value: contentToPublish, updated_by: auth.id },
+    { key: "home_content", value: enriched, updated_by: auth.id },
     { onConflict: "key" },
   );
   if (pubError) return { ok: false, error: pubError.message };

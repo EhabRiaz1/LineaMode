@@ -3,10 +3,14 @@ import { ContentPageEditorView } from "@/components/admin/content/ContentPageEdi
 
 export const metadata = { title: "Page Editor · Admin" };
 
-export default function ContentPageEditorPage() {
+type Props = { params: Promise<{ slug: string }> };
+
+export default function ContentPageEditorPage({ params }: Props) {
   return (
     <Suspense fallback={<p className="text-body text-ink/55">Loading editor…</p>}>
-      <ContentPageEditorView />
+      {params.then(({ slug }) => (
+        <ContentPageEditorView key={slug} slug={slug} />
+      ))}
     </Suspense>
   );
 }

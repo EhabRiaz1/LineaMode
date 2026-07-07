@@ -7,9 +7,14 @@ import { adminFetch } from "@/lib/admin/api";
 import {
   HOME_CONTENT_DEFAULTS,
   parseHomeContent,
+  backfillHomeProductCategoryImages,
   type HomeContent,
   type HomeProductCategory,
 } from "@/lib/cms/home-schema";
+import {
+  parseProductsContent,
+  getLegacyHomeCategoryImages,
+} from "@/lib/cms/products-schema";
 import {
   saveHomeContentDraft,
   publishHomeContent,
@@ -190,13 +195,37 @@ export function HomeEditor() {
 
   const load = useCallback(async () => {
     if (status !== "authenticated") return;
-    const res = await adminFetch<{
-      published: HomeContent | null;
-      draft: HomeContent | null;
-    }>("/api/admin/cms/home", { authHeaders: authHeaders() });
-    if (res.ok) {
-      const base = res.data.draft ?? res.data.published ?? HOME_CONTENT_DEFAULTS;
-      const parsed = parseHomeContent(base);
+    const [homeRes, productsRes] = await Promise.all([
+      adminFetch<{
+        published: HomeContent | null;
+        draft: HomeContent | null;
+      }>("/api/admin/cms/home", { authHeaders: authHeaders() }),
+      adminFetch<{
+        published: unknown;
+        draft: unknown;
+      }>("/api/admin/cms/products", { authHeaders: authHeaders() }),
+    ]);
+
+    if (homeRes.ok) {
+      const base = homeRes.data.draft ?? homeRes.data.published ?? HOME_CONTENT_DEFAULTS;
+      let parsed = parseHomeContent(base);
+
+      if (productsRes.ok) {
+        const products = parseProductsContent(
+          productsRes.data.draft ?? productsRes.data.published ?? {},
+        );
+        const legacyImages = getLegacyHomeCategoryImages(products);
+        parsed = {
+          ...parsed,
+          products: {
+            ...parsed.products,
+            categories: backfillHomeProductCategoryImages(
+              parsed.products.categories,
+              legacyImages,
+            ),
+          },
+        };
+      }
 
       // Pre-populate from static content files when CMS has no items yet
       if (!parsed.capabilities.items.length) {
@@ -207,10 +236,10 @@ export function HomeEditor() {
       }
 
       setContent(parsed);
-      setHasDraft(!!res.data.draft);
+      setHasDraft(!!homeRes.data.draft);
       setDirty(false);
     } else {
-      setError(res.error);
+      setError(homeRes.error);
     }
     setLoading(false);
   }, [authHeaders, status]);
@@ -515,11 +544,12 @@ export function HomeEditor() {
                 />
 
                 <p className="text-label text-ink/55 border-t border-[var(--hairline)] pt-4">
-                  Tile images are set in the{" "}
+                  Images and copy for the homepage products section. The product catalog is edited
+                  in the{" "}
                   <Link href="/admin/content/pages/products" className="underline hover:text-ink">
                     Products page editor
                   </Link>
-                  . Edit hover copy and category buttons below.
+                  .
                 </p>
 
                 {PRODUCT_CATEGORIES.map((category) => {
@@ -535,6 +565,12 @@ export function HomeEditor() {
                       className="space-y-2 rounded-xl border border-[var(--hairline)] bg-stone/50 p-3"
                     >
                       <p className="text-eyebrow text-ink/40">{category.title}</p>
+                      <ImagePickerField
+                        label="Tile image"
+                        frame="category-tile"
+                        value={tile.image ?? ""}
+                        onChange={(v) => updateProductCategory(category.slug, { image: v })}
+                      />
                       <Field
                         label="Headline (optional)"
                         value={tile.headline}

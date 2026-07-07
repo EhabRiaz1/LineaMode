@@ -27,10 +27,12 @@ export function MediaPicker({
   onClose,
   onPick,
   mediaFilter = "all",
+  overlayZIndex = "z-50",
 }: {
   onClose: () => void;
   onPick: (media: MediaItem) => void;
   mediaFilter?: "all" | "image" | "video";
+  overlayZIndex?: string;
 }) {
   const { authHeaders, status } = useAdminSession();
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -63,7 +65,7 @@ export function MediaPicker({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 bg-ink/60 flex items-center justify-center p-6"
+      className={`fixed inset-0 ${overlayZIndex} bg-ink/60 flex items-center justify-center p-6`}
       onClick={onClose}
     >
       <div

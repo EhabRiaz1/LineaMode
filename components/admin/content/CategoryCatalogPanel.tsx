@@ -1,12 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ProductCategorySlug } from "@/content/product-catalog";
 import type { CategoryConfig, ProductCard, Subcategory } from "@/lib/cms/products-schema";
 import { sortSubcategories } from "@/lib/cms/products-schema";
-import { Field, ImagePickerField } from "./EditorFields";
 import { cmsImageSrc } from "@/lib/cms/cms-image";
+import { ProductEditModal } from "./ProductEditModal";
+import { SubcategoryEditModal } from "./SubcategoryEditModal";
+
+function newSubcategoryId(category: ProductCategorySlug): string {
+  return `${category}-sub-${crypto.randomUUID().slice(0, 8)}`;
+}
 
 function slugify(value: string): string {
   return value
@@ -16,8 +20,30 @@ function slugify(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function newSubcategoryId(category: ProductCategorySlug): string {
-  return `${category}-sub-${crypto.randomUUID().slice(0, 8)}`;
+type ProductGroup = {
+  subcategory: Subcategory | null;
+  products: ProductCard[];
+};
+
+function buildAdminProductGroups(
+  products: ProductCard[],
+  subcategories: Subcategory[],
+): ProductGroup[] {
+  const sorted = sortSubcategories(subcategories);
+  const groups: ProductGroup[] = sorted.map((subcategory) => ({
+    subcategory,
+    products: products.filter((item) => item.subcategoryId === subcategory.id),
+  }));
+
+  const uncategorized = products.filter(
+    (item) =>
+      !item.subcategoryId || !sorted.some((sub) => sub.id === item.subcategoryId),
+  );
+  if (uncategorized.length > 0) {
+    groups.push({ subcategory: null, products: uncategorized });
+  }
+
+  return groups;
 }
 
 type CategoryCatalogPanelProps = {
@@ -25,9 +51,10 @@ type CategoryCatalogPanelProps = {
   categoryTitle: string;
   categoryConfig: CategoryConfig;
   products: ProductCard[];
+  saving?: boolean;
   onUpdateCategory: (patch: Partial<CategoryConfig>) => void;
   onUpdateProduct: (id: string, patch: Partial<ProductCard>) => void;
-  onAddProduct: () => string;
+  onAddProduct: (subcategoryId: string) => string;
   onRemoveProduct: (id: string) => void;
 };
 
@@ -36,15 +63,26 @@ export function CategoryCatalogPanel({
   categoryTitle,
   categoryConfig,
   products,
+  saving = false,
   onUpdateCategory,
   onUpdateProduct,
   onAddProduct,
   onRemoveProduct,
 }: CategoryCatalogPanelProps) {
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [isNewProduct, setIsNewProduct] = useState(false);
+  const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
+  const [isNewSubcategory, setIsNewSubcategory] = useState(false);
 
   const subcategories = sortSubcategories(categoryConfig.subcategories);
-  const selectedProduct = products.find((item) => item.id === selectedProductId) ?? null;
+  const groups = useMemo(
+    () => buildAdminProductGroups(products, subcategories),
+    [products, subcategories],
+  );
+
+  const editingProduct = products.find((item) => item.id === editingProductId) ?? null;
+  const editingSubcategory =
+    subcategories.find((item) => item.id === editingSubcategoryId) ?? null;
 
   const updateSubcategory = (id: string, patch: Partial<Subcategory>) => {
     const next = categoryConfig.subcategories.map((item) =>
@@ -63,6 +101,8 @@ export function CategoryCatalogPanel({
       sortOrder: categoryConfig.subcategories.length,
     };
     onUpdateCategory({ subcategories: [...categoryConfig.subcategories, next] });
+    setEditingSubcategoryId(next.id);
+    setIsNewSubcategory(true);
   };
 
   const removeSubcategory = (id: string) => {
@@ -85,37 +125,50 @@ export function CategoryCatalogPanel({
     });
   };
 
-  const handleAddProduct = () => {
-    const id = onAddProduct();
-    setSelectedProductId(id);
+  const openNewProduct = (subcategoryId: string) => {
+    const id = onAddProduct(subcategoryId);
+    setEditingProductId(id);
+    setIsNewProduct(true);
+  };
+
+  const closeProductModal = () => {
+    setEditingProductId(null);
+    setIsNewProduct(false);
+  };
+
+  const closeSubcategoryModal = () => {
+    setEditingSubcategoryId(null);
+    setIsNewSubcategory(false);
   };
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-3">
-        <div>
-          <p className="text-eyebrow text-ink/40">Subcategories</p>
-          <p className="text-label text-ink/55 mt-1">
-            Define subcategories for {categoryTitle}. These group products on the
-            Products page.
-          </p>
-        </div>
+    <div className="space-y-6">
+      <p className="text-label text-ink/55">
+        Subcategories group products on the /products page. Create a subcategory, then add
+        products underneath it. Homepage category tile images are edited in{" "}
+        <span className="text-ink/75">Home → 03 / Products</span>.
+      </p>
 
-        <div className="space-y-2">
-          {subcategories.map((sub, index) => (
-            <div
-              key={sub.id}
-              className="rounded-xl border border-[var(--hairline)] bg-stone/50 p-3 space-y-2"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-eyebrow text-ink/40">
-                  {String(index + 1).padStart(2, "0")} / Subcategory
-                </p>
+      {groups.map((group) => {
+        const sub = group.subcategory;
+        const groupKey = sub?.id ?? "uncategorized";
+        const subIndex = sub ? subcategories.findIndex((item) => item.id === sub.id) : -1;
+
+        return (
+          <section
+            key={groupKey}
+            className="space-y-3 rounded-xl border border-[var(--hairline)] bg-stone/50 p-3"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-body font-medium text-ink">
+                {sub ? sub.title : "Uncategorized"}
+              </p>
+              {sub && (
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
                     aria-label="Move subcategory up"
-                    disabled={index === 0}
+                    disabled={subIndex <= 0}
                     onClick={() => moveSubcategory(sub.id, "up")}
                     className="rounded-lg px-2 py-1 text-label text-ink/45 hover:text-ink disabled:opacity-30"
                   >
@@ -124,7 +177,7 @@ export function CategoryCatalogPanel({
                   <button
                     type="button"
                     aria-label="Move subcategory down"
-                    disabled={index === subcategories.length - 1}
+                    disabled={subIndex < 0 || subIndex >= subcategories.length - 1}
                     onClick={() => moveSubcategory(sub.id, "down")}
                     className="rounded-lg px-2 py-1 text-label text-ink/45 hover:text-ink disabled:opacity-30"
                   >
@@ -132,139 +185,27 @@ export function CategoryCatalogPanel({
                   </button>
                   <button
                     type="button"
-                    onClick={() => removeSubcategory(sub.id)}
-                    className="text-label text-ink/45 hover:text-terracotta px-2"
+                    onClick={() => {
+                      setEditingSubcategoryId(sub.id);
+                      setIsNewSubcategory(false);
+                    }}
+                    className="rounded-lg px-2 py-1 text-label text-ink/55 hover:text-ink"
                   >
-                    ✕
+                    Edit
                   </button>
                 </div>
-              </div>
-              <Field
-                label="Title"
-                value={sub.title}
-                onChange={(v) => {
-                  updateSubcategory(sub.id, {
-                    title: v,
-                    slug: sub.slug === slugify(sub.title) ? slugify(v) : sub.slug,
-                  });
-                }}
-              />
-              <Field
-                label="Slug"
-                value={sub.slug}
-                onChange={(v) => updateSubcategory(sub.id, { slug: slugify(v) })}
-              />
-              <ImagePickerField
-                label="Tile image (optional)"
-                frame="subcategory-tile"
-                value={sub.image ?? ""}
-                onChange={(v) => updateSubcategory(sub.id, { image: v })}
-              />
+              )}
             </div>
-          ))}
-        </div>
 
-        <button
-          type="button"
-          onClick={addSubcategory}
-          className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
-        >
-          + Add subcategory
-        </button>
-      </section>
-
-      <section className="space-y-3 border-t border-[var(--hairline)] pt-6">
-        <div>
-          <p className="text-eyebrow text-ink/40">Homepage tile image</p>
-          <p className="text-label text-ink/55 mt-1">
-            Image for the {categoryTitle} tile on the homepage products section. Hover
-            headline, text, and button label are edited in{" "}
-            <Link href="/admin/content/pages/home" className="underline hover:text-ink">
-              Home → 03 / Products
-            </Link>
-            .
-          </p>
-        </div>
-        <ImagePickerField
-          label="Tile image"
-          frame="category-tile"
-          value={categoryConfig.image}
-          onChange={(v) => onUpdateCategory({ image: v })}
-        />
-      </section>
-
-      <section className="space-y-3 border-t border-[var(--hairline)] pt-6">
-        <div>
-          <p className="text-eyebrow text-ink/40">Products</p>
-          <p className="text-label text-ink/55 mt-1">
-            Click a product tile to edit its details.
-          </p>
-        </div>
-
-        {selectedProduct ? (
-          <div className="rounded-xl border border-[var(--hairline)] p-3 space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={() => setSelectedProductId(null)}
-                className="text-label text-ink/55 hover:text-ink"
-              >
-                ← Back to products
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onRemoveProduct(selectedProduct.id);
-                  setSelectedProductId(null);
-                }}
-                className="text-label text-ink/45 hover:text-terracotta px-2 shrink-0"
-              >
-                ✕ Delete
-              </button>
-            </div>
-            <Field
-              label="Title"
-              value={selectedProduct.title}
-              onChange={(v) => onUpdateProduct(selectedProduct.id, { title: v })}
-            />
-            <ImagePickerField
-              label="Photo"
-              frame="product-grid"
-              value={selectedProduct.image}
-              onChange={(v) => onUpdateProduct(selectedProduct.id, { image: v })}
-            />
-            <ImagePickerField
-              label="Hover photo (alternate product)"
-              frame="product-hover"
-              value={selectedProduct.hoverImage ?? ""}
-              onChange={(v) => onUpdateProduct(selectedProduct.id, { hoverImage: v })}
-            />
-            <label className="block">
-              <span className="text-eyebrow text-ink/40 block mb-1">Subcategory</span>
-              <select
-                value={selectedProduct.subcategoryId ?? ""}
-                onChange={(e) =>
-                  onUpdateProduct(selectedProduct.id, { subcategoryId: e.target.value })
-                }
-                className="w-full rounded-xl border border-[var(--hairline)] bg-stone px-3 py-2 text-body text-ink outline-none focus:ring-2 focus:ring-ink/15"
-              >
-                <option value="">Uncategorized</option>
-                {subcategories.map((sub) => (
-                  <option key={sub.id} value={sub.id}>
-                    {sub.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {products.map((item) => (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {group.products.map((item) => (
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setSelectedProductId(item.id)}
+                  onClick={() => {
+                    setEditingProductId(item.id);
+                    setIsNewProduct(false);
+                  }}
                   className="group overflow-hidden rounded-xl border border-[var(--hairline)] bg-stone text-left transition-colors hover:border-ink/20"
                 >
                   <div className="aspect-[4/5] overflow-hidden bg-ink/5">
@@ -286,17 +227,65 @@ export function CategoryCatalogPanel({
                   </div>
                 </button>
               ))}
+
+              {sub && (
+                <button
+                  type="button"
+                  onClick={() => openNewProduct(sub.id)}
+                  className="group/add overflow-hidden rounded-xl border border-dashed border-[var(--hairline)] bg-stone/80 text-left transition-colors hover:border-ink hover:bg-ink"
+                >
+                  <div className="flex aspect-[4/5] items-center justify-center text-label text-ink/55 transition-colors group-hover/add:text-stone">
+                    + Add product
+                  </div>
+                  <div className="px-2.5 py-2" aria-hidden>
+                    <p className="text-label line-clamp-2 invisible">New product</p>
+                  </div>
+                </button>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={handleAddProduct}
-              className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
-            >
-              + Add product
-            </button>
-          </>
-        )}
-      </section>
+          </section>
+        );
+      })}
+
+      {subcategories.length === 0 && (
+        <p className="text-label text-ink/45">
+          No subcategories yet. Add one below to start grouping {categoryTitle} products.
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={addSubcategory}
+        className="rounded-full border border-[var(--hairline)] bg-stone px-3 py-1.5 text-label text-ink/85 hover:bg-ink hover:text-stone transition-colors"
+      >
+        + Add subcategory
+      </button>
+
+      {editingProduct && (
+        <ProductEditModal
+          product={editingProduct}
+          subcategories={subcategories}
+          isNew={isNewProduct}
+          saving={saving}
+          onDone={(next) => onUpdateProduct(editingProduct.id, next)}
+          onDelete={() => onRemoveProduct(editingProduct.id)}
+          onClose={closeProductModal}
+          onCancelNew={() => onRemoveProduct(editingProduct.id)}
+        />
+      )}
+
+      {editingSubcategory && (
+        <SubcategoryEditModal
+          subcategory={editingSubcategory}
+          allSubcategories={subcategories}
+          isNew={isNewSubcategory}
+          saving={saving}
+          onDone={(next) => updateSubcategory(editingSubcategory.id, next)}
+          onDelete={() => removeSubcategory(editingSubcategory.id)}
+          onClose={closeSubcategoryModal}
+          onCancelNew={() => removeSubcategory(editingSubcategory.id)}
+        />
+      )}
     </div>
   );
 }

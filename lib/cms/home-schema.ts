@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CONTACT_FORM_HREF, resolveContactHref } from "@/lib/navigation";
-import { cmsImageSchema } from "@/lib/cms/cms-image";
+import { cmsImageSchema, cmsImageSrc, type CmsImageValue } from "@/lib/cms/cms-image";
 import {
   CATEGORY_DESCRIPTIONS,
   PRODUCT_CATEGORIES,
@@ -21,9 +21,23 @@ export const homeProductCategorySchema = z.object({
   headline: z.string().max(80).default(""),
   description: z.string().max(400).default(""),
   ctaLabel: z.string().max(80).default(""),
+  image: cmsImageSchema.default(""),
 });
 
 export type HomeProductCategory = z.infer<typeof homeProductCategorySchema>;
+
+/** Fill empty home category images from legacy products_content category tiles. */
+export function backfillHomeProductCategoryImages(
+  categories: HomeProductCategory[],
+  legacyImagesBySlug: Partial<Record<ProductCategorySlug, CmsImageValue>>,
+): HomeProductCategory[] {
+  return categories.map((category) => ({
+    ...category,
+    image: cmsImageSrc(category.image)
+      ? category.image
+      : (legacyImagesBySlug[category.slug] ?? category.image ?? ""),
+  }));
+}
 
 export function defaultHomeProductCategories(): HomeProductCategory[] {
   return PRODUCT_CATEGORIES.map((category) => ({
@@ -31,6 +45,7 @@ export function defaultHomeProductCategories(): HomeProductCategory[] {
     headline: "",
     description: CATEGORY_DESCRIPTIONS[category.slug],
     ctaLabel: `Explore ${category.title.toLowerCase()}`,
+    image: "",
   }));
 }
 

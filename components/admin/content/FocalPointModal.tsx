@@ -30,7 +30,8 @@ export function FocalPointModal({
   kind = "image",
   onSave,
   onClose,
-}: FocalPointModalProps) {
+  overlayZIndex = "z-[80]",
+}: FocalPointModalProps & { overlayZIndex?: string }) {
   const preset = IMAGE_FRAME_PRESETS[frame];
   const frameRef = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<MobileFocus>(focus);
@@ -47,7 +48,7 @@ export function FocalPointModal({
   const frameHeight = Math.round(preset.previewWidth / preset.aspectRatio);
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+    <div className={`fixed inset-0 ${overlayZIndex} flex items-center justify-center p-4`}>
       <button
         type="button"
         aria-label="Close"

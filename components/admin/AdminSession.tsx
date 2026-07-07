@@ -13,6 +13,7 @@ type AdminSessionValue = {
   email: string | null;
   token: string | null;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<Session | null>;
   authHeaders: () => Record<string, string>;
 };
 
@@ -22,6 +23,10 @@ export function useAdminSession() {
   const ctx = useContext(AdminSessionContext);
   if (!ctx) throw new Error("useAdminSession must be used inside <AdminSessionProvider>");
   return ctx;
+}
+
+function isExpired(session: Session): boolean {
+  return !!session.expires_at && session.expires_at <= Math.floor(Date.now() / 1000);
 }
 
 /**
@@ -37,24 +42,69 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
   const [session, setSession] = useState<Session | null>(null);
   const [status, setStatus] = useState<Status>("loading");
 
-  const applySession = useCallback(async (next: Session | null) => {
-    if (!next?.access_token || (next.expires_at && next.expires_at <= Math.floor(Date.now() / 1000))) {
-      setSession(null);
-      setStatus("anonymous");
-      return;
-    }
+  const validateUser = useCallback(
+    async (accessToken: string, retries = 1) => {
+      const { data, error } = await supabase.auth.getUser(accessToken);
+      if (!error && data.user) return data.user;
 
-    const { data, error } = await supabase.auth.getUser(next.access_token);
-    if (error || !data.user) {
-      setSession(null);
-      setStatus("anonymous");
-      await supabase.auth.signOut();
-      return;
-    }
+      if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 400));
+        return validateUser(accessToken, retries - 1);
+      }
+      return null;
+    },
+    [supabase.auth],
+  );
 
-    setSession(next);
-    setStatus("authenticated");
-  }, [supabase.auth]);
+  const applySession = useCallback(
+    async (next: Session | null) => {
+      if (!next?.access_token) {
+        setSession(null);
+        setStatus("anonymous");
+        return;
+      }
+
+      let active = next;
+
+      if (isExpired(active)) {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError || !refreshed.session?.access_token) {
+          setSession(null);
+          setStatus("anonymous");
+          return;
+        }
+        active = refreshed.session;
+      }
+
+      const user = await validateUser(active.access_token);
+      if (!user) {
+        const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+        if (!refreshError && refreshed.session?.access_token) {
+          const retryUser = await validateUser(refreshed.session.access_token, 0);
+          if (retryUser) {
+            setSession(refreshed.session);
+            setStatus("authenticated");
+            return;
+          }
+        }
+        setSession(null);
+        setStatus("anonymous");
+        await supabase.auth.signOut();
+        return;
+      }
+
+      setSession(active);
+      setStatus("authenticated");
+    },
+    [supabase.auth, validateUser],
+  );
+
+  const refreshSession = useCallback(async (): Promise<Session | null> => {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error || !data.session?.access_token) return null;
+    await applySession(data.session);
+    return data.session;
+  }, [applySession, supabase.auth]);
 
   useEffect(() => {
     let mounted = true;
@@ -90,12 +140,13 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
         await supabase.auth.signOut();
         router.replace("/admin/login");
       },
+      refreshSession,
       authHeaders: (): Record<string, string> =>
         session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }
           : ({} as Record<string, string>),
     };
-  }, [router, session, status, supabase.auth]);
+  }, [refreshSession, router, session, status, supabase.auth]);
 
   const shouldRenderChildren = status === "authenticated" || pathname?.startsWith("/admin/login");
 

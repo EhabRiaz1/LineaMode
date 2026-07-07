@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { PageEditor } from "@/components/admin/content/PageEditor";
 import { HomeEditor } from "@/components/admin/content/HomeEditor";
 import { CapabilitiesEditor } from "@/components/admin/content/CapabilitiesEditor";
@@ -19,11 +18,17 @@ const PIPELINE_INFO: Record<string, { number: string; title: string }> = {
   "pipeline-manufacture_existing": { number: "03", title: "From a CAD" },
 };
 
-export function ContentPageEditorView() {
-  const params = useParams<{ slug?: string | string[] }>();
-  const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+const DEDICATED_EDITORS = new Set([
+  "home",
+  "capabilities",
+  "contact",
+  "founders",
+  "products",
+  "journal",
+  "about",
+]);
 
-  if (!slug) return <p className="text-body text-ink/55">Loading editor...</p>;
+export function ContentPageEditorView({ slug }: { slug: string }) {
   if (slug === "home") return <HomeEditor />;
   if (slug === "capabilities") return <CapabilitiesEditor />;
   if (slug === "contact") return <ContactEditor />;
@@ -57,6 +62,14 @@ export function ContentPageEditorView() {
           </p>
         </div>
         <PipelineFlowEditor pipelineType={pipelineType} />
+      </div>
+    );
+  }
+
+  if (DEDICATED_EDITORS.has(slug)) {
+    return (
+      <div className="rounded-2xl border border-[var(--hairline-strong)] bg-[var(--color-terracotta)]/10 px-4 py-3 text-body text-terracotta">
+        Unable to load editor for this page.
       </div>
     );
   }

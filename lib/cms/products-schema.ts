@@ -251,14 +251,28 @@ export function getHomeCategoryTiles(
   });
 }
 
+/** Images previously stored on products_content category config (pre–Home CMS split). */
+export function getLegacyHomeCategoryImages(
+  content: Pick<ProductsContent, "categories" | "catalog">,
+): Partial<Record<ProductCategorySlug, CmsImageValue>> {
+  const images: Partial<Record<ProductCategorySlug, CmsImageValue>> = {};
+  for (const tile of getHomeCategoryTiles(content)) {
+    if (cmsImageSrc(tile.image)) {
+      images[tile.slug] = tile.image;
+    }
+  }
+  return images;
+}
+
 export type HomeCategoryCopy = {
   slug: ProductCategorySlug;
   headline: string;
   description: string;
   ctaLabel: string;
+  image?: CmsImageValue;
 };
 
-/** Applies homepage CMS copy onto product-sourced category tiles (images + links). */
+/** Applies homepage CMS copy and images onto product-sourced category tiles. */
 export function applyHomeCategoryCopy(
   tiles: HomeCategoryTile[],
   copy: HomeCategoryCopy[],
@@ -274,6 +288,7 @@ export function applyHomeCategoryCopy(
       headline: home.headline.trim() || tile.headline,
       description: home.description.trim() || tile.description,
       ctaLabel: home.ctaLabel.trim() || tile.ctaLabel,
+      image: cmsImageSrc(home.image) ? home.image! : tile.image,
     };
   });
 }
