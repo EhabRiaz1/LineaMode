@@ -18,17 +18,9 @@ export async function generateMetadata({ params }: Props) {
   return { title: info ? `${info.title} · Pipelines · Admin` : "Pipeline · Admin" };
 }
 
-export default function PipelineEditorPage({ params }: Props) {
-  return (
-    <Suspense fallback={<p className="text-body text-ink/55">Loading pipeline…</p>}>
-      {params.then(({ type }) => (
-        <ResolvedEditor type={type} />
-      ))}
-    </Suspense>
-  );
-}
+async function ResolvedEditor({ params }: { params: Promise<{ type: string }> }) {
+  const { type } = await params;
 
-function ResolvedEditor({ type }: { type: string }) {
   if (!PIPELINE_TYPES.includes(type as (typeof PIPELINE_TYPES)[number])) {
     notFound();
   }
@@ -44,5 +36,13 @@ function ResolvedEditor({ type }: { type: string }) {
       />
       <PipelineFlowEditor pipelineType={type as (typeof PIPELINE_TYPES)[number]} />
     </div>
+  );
+}
+
+export default function PipelineEditorPage({ params }: Props) {
+  return (
+    <Suspense fallback={<p className="text-body text-ink/55">Loading pipeline…</p>}>
+      <ResolvedEditor params={params} />
+    </Suspense>
   );
 }
