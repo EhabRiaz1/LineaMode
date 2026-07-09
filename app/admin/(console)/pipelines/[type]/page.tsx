@@ -1,8 +1,4 @@
-import { Suspense } from "react";
-import { notFound } from "next/navigation";
-import { ConsoleHeader } from "@/components/admin/ConsoleHeader";
-import { PipelineFlowEditor } from "@/components/admin/pipelines/PipelineFlowEditor";
-import { PIPELINE_TYPES } from "@/lib/pipelines/types";
+import { PipelineTypeEditorView } from "@/components/admin/pipelines/PipelineTypeEditorView";
 
 type Props = { params: Promise<{ type: string }> };
 
@@ -18,31 +14,6 @@ export async function generateMetadata({ params }: Props) {
   return { title: info ? `${info.title} · Pipelines · Admin` : "Pipeline · Admin" };
 }
 
-async function ResolvedEditor({ params }: { params: Promise<{ type: string }> }) {
-  const { type } = await params;
-
-  if (!PIPELINE_TYPES.includes(type as (typeof PIPELINE_TYPES)[number])) {
-    notFound();
-  }
-
-  const info = PIPELINE_INFO[type] ?? { title: type, eyebrow: "Pipeline" };
-
-  return (
-    <div className="space-y-8">
-      <ConsoleHeader
-        eyebrow={info.eyebrow}
-        title={info.title}
-        subtitle="Drag to reorder questions. Click any card to edit its content."
-      />
-      <PipelineFlowEditor pipelineType={type as (typeof PIPELINE_TYPES)[number]} />
-    </div>
-  );
-}
-
-export default function PipelineEditorPage({ params }: Props) {
-  return (
-    <Suspense fallback={<p className="text-body text-ink/55">Loading pipeline…</p>}>
-      <ResolvedEditor params={params} />
-    </Suspense>
-  );
+export default function PipelineEditorPage() {
+  return <PipelineTypeEditorView />;
 }

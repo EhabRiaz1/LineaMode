@@ -98,7 +98,7 @@ export function PageEditor({ slug }: { slug: string }) {
   const [dirty, setDirty] = useState(false);
 
   const load = useCallback(async () => {
-    if (status !== "authenticated") return;
+    if (status !== "authenticated" || !slug) return;
     const res = await adminFetch<{ page: LoadedPage }>(
       `/api/admin/cms/pages/${slug}`,
       { authHeaders: authHeaders() },

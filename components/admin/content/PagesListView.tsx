@@ -38,13 +38,13 @@ const STATUS_TONE: Record<PageRow["status"], string> = {
 };
 
 export function PagesListView() {
-  const { authHeaders, status } = useAdminSession();
+  const { authHeaders, status, token } = useAdminSession();
   const [rows, setRows] = useState<PageRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (status !== "authenticated") return;
+    if (status !== "authenticated" || !token) return;
     setLoading(true);
     const res = await adminFetch<{ pages: PageRow[] }>(
       "/api/admin/cms/pages",
@@ -53,7 +53,7 @@ export function PagesListView() {
     if (res.ok) setRows((res.data.pages ?? []).filter((r) => !HIDDEN_SLUGS.has(r.slug)));
     else setError(res.error);
     setLoading(false);
-  }, [authHeaders, status]);
+  }, [authHeaders, status, token]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { adminFetch } from "@/lib/admin/api";
 import { saveJournalEntry } from "@/app/admin/(console)/content/_actions";
@@ -34,9 +34,19 @@ const DEFAULT_ENTRY: Entry = {
   updated_at: new Date().toISOString(),
 };
 
-export function JournalEditor({ slug }: { slug: string | null }) {
+function resolveRouteSlug(raw: string | string[] | undefined): string | null {
+  const slug = Array.isArray(raw) ? raw[0] : raw;
+  if (!slug || slug === "[slug]") return null;
+  return slug;
+}
+
+export function JournalEditor({ slug: slugOverride }: { slug?: string | null } = {}) {
+  const params = useParams<{ slug?: string | string[] }>();
+  const routeSlug = resolveRouteSlug(params.slug);
+  const isNew = slugOverride === null;
+  const slug = isNew ? null : (slugOverride ?? routeSlug);
+
   const router = useRouter();
-  const isNew = slug === null;
   const { token, authHeaders, status } = useAdminSession();
   const [entry, setEntry] = useState<Entry | null>(null);
   const [cover, setCover] = useState<MediaItem | null>(null);
@@ -64,6 +74,10 @@ export function JournalEditor({ slug }: { slug: string | null }) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  if (!isNew && !slug) {
+    return <p className="text-body text-ink/55">Loading editor…</p>;
+  }
 
   if (!entry) {
     return (
