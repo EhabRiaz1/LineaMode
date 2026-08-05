@@ -1,16 +1,19 @@
 import "server-only";
 import type { IntakePayload } from "@/lib/validators/intake";
+import { getEmailTemplate } from "./load-templates";
+import { renderEmailTemplate, type RenderedEmail } from "./render";
 
-const PIPELINE_LABELS: Record<IntakePayload["pipelineType"], string> = {
+export const PIPELINE_LABELS: Record<IntakePayload["pipelineType"], string> = {
   design_idea: "Design from an idea",
   design_scratch: "Design from scratch",
   manufacture_existing: "Manufacture from a CAD",
 };
 
 /**
- * Plain-text first; clients render the prose-style copy faithfully and
- * inboxes can quote it cleanly. The HTML body is a thin wrapper that adds
- * minimal editorial styling without breaking dark-mode-aware clients.
+ * The two customer-facing auto-replies render from templates editable at
+ * /admin/settings/email. Copy lives in cms_settings; layout, escaping and
+ * variable substitution live in render.ts. The admin notification below stays
+ * code-generated — it's an internal data dump, not brand copy.
  */
 export type ContactAutoReplyData = {
   name: string;
@@ -19,85 +22,31 @@ export type ContactAutoReplyData = {
   moq?: string;
 };
 
-export function contactAutoReply(data: ContactAutoReplyData) {
-  const firstName = data.name.split(/\s+/)[0] || "Friend";
-  const text = [
-    `Hi ${firstName},`,
-    "",
-    "Thanks for reaching out — your brief has landed at Lineamode.",
-    "",
-    `We've received your enquiry for ${data.brand} (${data.productType}). Someone from the founding team reads every brief by hand, and we usually reply within two working days with a few sharper questions and next steps.`,
-    data.moq ? `You mentioned an MOQ of: ${data.moq}.` : "",
-    "",
-    "If something changes between now and our reply, just write back to this email — your project is already in our queue.",
-    "",
-    "— The studio",
-    "Lineamode Apparel",
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  const html = `
-    <div style="font-family: 'Times New Roman', Georgia, serif; max-width: 560px; margin: 32px auto; line-height: 1.5; color: #1a1a1a;">
-      <p style="font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #999; margin: 0 0 24px;">
-        / Lineamode · Studio reply
-      </p>
-      <p>Hi ${escapeHtml(firstName)},</p>
-      <p>Thanks for reaching out — your brief has landed at Lineamode.</p>
-      <p>We've received your enquiry for <strong>${escapeHtml(data.brand)}</strong> (${escapeHtml(data.productType)}). Someone from the founding team reads every brief by hand, and we usually reply within two working days with a few sharper questions and next steps.</p>
-      ${data.moq ? `<p>You mentioned an MOQ of: <em>${escapeHtml(data.moq)}</em>.</p>` : ""}
-      <p>If something changes between now and our reply, just write back to this email — your project is already in our queue.</p>
-      <p style="margin-top: 32px;">— The studio<br/><em>Lineamode Apparel</em></p>
-    </div>
-  `;
-
-  return {
-    subject: `We have your brief, ${firstName}.`,
-    text,
-    html,
-  };
+export async function contactAutoReply(
+  data: ContactAutoReplyData,
+): Promise<RenderedEmail> {
+  const template = await getEmailTemplate("contact_auto_reply");
+  return renderEmailTemplate(template, {
+    firstName: data.name.split(/\s+/)[0] || "Friend",
+    name: data.name,
+    brand: data.brand,
+    productType: data.productType,
+    moq: data.moq ?? "",
+  });
 }
 
-export function customerAutoReply(payload: IntakePayload) {
-  const firstName = payload.name.split(/\s+/)[0] || "Friend";
-  const text = [
-    `Hi ${firstName},`,
-    "",
-    "Thanks for the letter — it's landed at Lineamode.",
-    "",
-    `We've logged your enquiry for ${PIPELINE_LABELS[payload.pipelineType]}. Someone from the founding team reads every brief by hand, and we usually reply within two working days with a few sharper questions and a calendar.`,
-    "",
-    payload.timeline ? `You mentioned a timeline of: ${payload.timeline}.` : "",
-    payload.budgetRange ? `Budget shape: ${payload.budgetRange}.` : "",
-    "",
-    "If something changes between now and our reply, just write back to this email — your project is already in our queue.",
-    "",
-    "— The studio",
-    "Lineamode Apparel",
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  const html = `
-    <div style="font-family: 'Times New Roman', Georgia, serif; max-width: 560px; margin: 32px auto; line-height: 1.5; color: #1a1a1a;">
-      <p style="font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #999; margin: 0 0 24px;">
-        / Lineamode · Studio reply
-      </p>
-      <p>Hi ${firstName},</p>
-      <p>Thanks for the letter — it's landed at Lineamode.</p>
-      <p>We've logged your enquiry for <strong>${PIPELINE_LABELS[payload.pipelineType]}</strong>. Someone from the founding team reads every brief by hand, and we usually reply within two working days with a few sharper questions and a calendar.</p>
-      ${payload.timeline ? `<p>You mentioned a timeline of: <em>${escapeHtml(payload.timeline)}</em>.</p>` : ""}
-      ${payload.budgetRange ? `<p>Budget shape: <em>${escapeHtml(payload.budgetRange)}</em>.</p>` : ""}
-      <p>If something changes between now and our reply, just write back to this email — your project is already in our queue.</p>
-      <p style="margin-top: 32px;">— The studio<br/><em>Lineamode Apparel</em></p>
-    </div>
-  `;
-
-  return {
-    subject: `We have your letter, ${firstName}.`,
-    text,
-    html,
-  };
+export async function customerAutoReply(
+  payload: IntakePayload,
+): Promise<RenderedEmail> {
+  const template = await getEmailTemplate("intake_auto_reply");
+  return renderEmailTemplate(template, {
+    firstName: payload.name.split(/\s+/)[0] || "Friend",
+    name: payload.name,
+    pipelineType: PIPELINE_LABELS[payload.pipelineType],
+    company: payload.company ?? "",
+    timeline: payload.timeline ?? "",
+    budgetRange: payload.budgetRange ?? "",
+  });
 }
 
 export function adminNotification(payload: IntakePayload, projectId: string) {

@@ -94,7 +94,7 @@ async function sendContactEmails(data: z.infer<typeof ContactSchema>) {
   logResendFailure("admin notification", { to: adminTo, from }, adminResult);
 
   if (contactAutoReplyEnabled()) {
-    const reply = contactAutoReply({ name, brand, productType, moq });
+    const reply = await contactAutoReply({ name, brand, productType, moq });
     const autoResult = await resend.emails.send({
       from,
       to: email,

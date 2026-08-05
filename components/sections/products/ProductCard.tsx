@@ -25,24 +25,14 @@ type ProductCardProps = {
 const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
 const DURATION = "duration-[620ms]";
 
-/** Single full-width edge frost — one layer per card state. */
-function EdgeBackdrop({
-  edge,
-  className,
-}: {
-  edge: "bottom" | "top";
-  className?: string;
-}) {
-  const isTop = edge === "top";
-
+/** Top-edge frost behind the heading once it glides up on an expanded card. */
+function EdgeBackdrop({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
       className={cn(
         "pointer-events-none absolute inset-x-0 z-[1]",
-        isTop
-          ? "top-0 h-[50%] bg-white/[0.12] backdrop-blur-[8px] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_14%,rgba(0,0,0,0.42)_30%,rgba(0,0,0,0.18)_46%,rgba(0,0,0,0.06)_62%,rgba(0,0,0,0.02)_76%,transparent_90%)] [mask-image:linear-gradient(to_bottom,black_0%,black_14%,rgba(0,0,0,0.42)_30%,rgba(0,0,0,0.18)_46%,rgba(0,0,0,0.06)_62%,rgba(0,0,0,0.02)_76%,transparent_90%)]"
-          : "bottom-0 h-[44%] bg-white/[0.14] backdrop-blur-[10px] [-webkit-mask-image:linear-gradient(to_top,black_0%,black_22%,rgba(0,0,0,0.55)_38%,rgba(0,0,0,0.28)_52%,rgba(0,0,0,0.1)_68%,rgba(0,0,0,0.03)_80%,transparent_94%)] [mask-image:linear-gradient(to_top,black_0%,black_22%,rgba(0,0,0,0.55)_38%,rgba(0,0,0,0.28)_52%,rgba(0,0,0,0.1)_68%,rgba(0,0,0,0.03)_80%,transparent_94%)]",
+        "top-0 h-[50%] bg-white/[0.12] backdrop-blur-[8px] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_14%,rgba(0,0,0,0.42)_30%,rgba(0,0,0,0.18)_46%,rgba(0,0,0,0.06)_62%,rgba(0,0,0,0.02)_76%,transparent_90%)] [mask-image:linear-gradient(to_bottom,black_0%,black_14%,rgba(0,0,0,0.42)_30%,rgba(0,0,0,0.18)_46%,rgba(0,0,0,0.06)_62%,rgba(0,0,0,0.02)_76%,transparent_90%)]",
         className,
       )}
     />
@@ -82,15 +72,21 @@ export function ProductCard({
     variant === "grid" ? "aspect-[4/5]" : "h-[340px] sm:h-[450px] md:h-[475px]";
 
   const headingClass = cn(
-    "font-sans font-light leading-[1.15] tracking-[-0.01em] text-ink",
+    // 330 = font-light (300) stepped up 10%; Manrope is variable so this renders exactly.
+    "font-sans font-[330] tracking-[-0.01em] text-ink",
     variant === "grid"
       ? "text-[clamp(1.5rem,2.6vw,1.8rem)]"
       : "text-[clamp(1.35rem,2.4vw,1.65rem)]",
-    hasDetails && active
-      ? "[text-shadow:0_0_18px_rgba(255,255,255,0.75),0_0_34px_rgba(255,255,255,0.4),0_1px_2px_rgba(255,255,255,0.7)]"
-      : showLookbookHover
-        ? ""
-        : "[text-shadow:0_1px_14px_rgba(255,255,255,0.35)]",
+    // After the font-size class on purpose: tailwind-merge treats font-size as
+    // conflicting with leading, so a leading-* written earlier gets dropped.
+    "leading-[1.15]",
+    // Only the expandable variant still sits over the photo, so only it needs
+    // the legibility glow. Everywhere else the title is a caption under the
+    // tile and stays plain ink.
+    hasDetails &&
+      (active
+        ? "[text-shadow:0_0_18px_rgba(255,255,255,0.75),0_0_34px_rgba(255,255,255,0.4),0_1px_2px_rgba(255,255,255,0.7)]"
+        : "[text-shadow:0_1px_14px_rgba(255,255,255,0.35)]"),
   );
 
   return (
@@ -188,29 +184,8 @@ export function ProductCard({
           </div>
         )}
 
-        {!showLookbookHover && (
-          <EdgeBackdrop
-            edge="bottom"
-            className={cn(
-              "transition-opacity duration-[400ms]",
-              EASE,
-              hasDetails && active ? "opacity-0" : "opacity-100",
-            )}
-          />
-        )}
-        {showLookbookHover && (
-          <EdgeBackdrop
-            edge="bottom"
-            className={cn(
-              "z-[2] transition-opacity duration-500",
-              EASE,
-              active ? "opacity-0" : "opacity-100",
-            )}
-          />
-        )}
         {hasDetails && (
           <EdgeBackdrop
-            edge="top"
             className={cn(
               "transition-opacity duration-[500ms]",
               EASE,
@@ -285,22 +260,12 @@ export function ProductCard({
               </svg>
             </Link>
           </>
-        ) : (
-          <div
-            className={cn(
-              "absolute bottom-0 left-0 z-10 transition-[opacity,filter] duration-500",
-              EASE,
-              showLookbookHover && active
-                ? "pointer-events-none opacity-0 blur-[8px]"
-                : "opacity-100 blur-0",
-            )}
-          >
-            <div className="relative w-fit pb-1.5 pl-3.5 pr-1.5 pt-0">
-              <h3 className={cn("relative", headingClass)}>{title}</h3>
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
+
+      {!hasDetails && (
+        <h3 className={cn("mt-3 text-center", headingClass)}>{title}</h3>
+      )}
     </article>
   );
 }

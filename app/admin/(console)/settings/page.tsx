@@ -35,9 +35,10 @@ const SETTINGS_CARDS: SettingsCard[] = [
   },
   {
     eyebrow: "04",
-    title: "Email templates",
-    body: "Auto-reply and admin-notification copy ship from Resend.",
-    status: "coming",
+    title: "Email",
+    body: "Edit the automatic replies, preview them, and review what Resend delivered.",
+    href: "/admin/settings/email",
+    status: "available",
   },
   {
     eyebrow: "05",

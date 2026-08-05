@@ -118,10 +118,11 @@ export async function POST(request: Request) {
       const adminTo = process.env.CONTACT_EMAIL_TO ?? "saif@lineamode.com";
       await Promise.allSettled([
         (async () => {
-          const reply = customerAutoReply(payload);
+          const reply = await customerAutoReply(payload);
           const sent = await resend.emails.send({
             from: RESEND_FROM,
             to: payload.email,
+            replyTo: adminTo,
             subject: reply.subject,
             text: reply.text,
             html: reply.html,
