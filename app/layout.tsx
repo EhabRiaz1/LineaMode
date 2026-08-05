@@ -5,7 +5,7 @@ import "./globals.css";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { GrainOverlay } from "@/components/layout/GrainOverlay";
-import { SmoothScroll } from "@/components/layout/SmoothScroll";
+import { ScrollManager } from "@/components/layout/ScrollManager";
 import { PageTransitionGate } from "@/components/layout/PageTransitionGate";
 import { MarketingChromeGate } from "@/components/layout/MarketingChromeGate";
 import { buildOrganizationJsonLd } from "@/lib/seo/jsonld";
@@ -100,7 +100,7 @@ export default async function RootLayout({
       </head>
       <body className="bg-stone text-ink">
         <Suspense fallback={null}>
-          <SmoothScroll />
+          <ScrollManager />
         </Suspense>
         <GrainOverlay />
         <Suspense fallback={null}>

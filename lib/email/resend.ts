@@ -25,12 +25,14 @@ export function getResendClient(): Resend | null {
  * account itself, which is why it must not be used outside first-run testing.
  */
 export const RESEND_FROM =
-  process.env.RESEND_FROM ?? "Lineamode <no-reply@lineamode-apparel.com>";
+  process.env.RESEND_FROM ?? "Lineamode <studio@lineamode-apparel.com>";
 
 /**
- * Where replies should go. We send as no-reply@, so every outbound message
- * sets Reply-To explicitly — otherwise a client hitting "reply" writes into a
- * mailbox nobody reads.
+ * Where replies should go.
+ *
+ * Set explicitly on every outbound message rather than relying on From:
+ * studio@ is a sending identity, while briefs need to land in the inbox
+ * someone actually reads.
  */
 export const RESEND_REPLY_TO =
   process.env.CONTACT_EMAIL_TO ?? "contact@lineamode-apparel.com";

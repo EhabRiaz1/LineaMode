@@ -162,7 +162,8 @@ body {
 }
 
 html {
-  /* Lenis owns smooth scroll — native smooth fights it (especially Safari). */
+  /* Scrolling is the browser's. `auto` keeps wheel and touch native on every
+     engine; in-page anchors opt into smooth explicitly in ScrollManager. */
   scroll-behavior: auto;
   position: relative;
 }

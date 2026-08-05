@@ -21,9 +21,9 @@ import { useEffect, useRef, useState } from "react";
  * reconciliation.
  *
  * Children are still rendered outside any `AnimatePresence` so the
- * outgoing page DOM is never held alive (Lenis + ScrollTrigger track
- * those nodes and racing them with React reconciliation throws
- * `removeChild` errors).
+ * outgoing page DOM is never held alive (scroll observers track those
+ * nodes and racing them with React reconciliation throws `removeChild`
+ * errors).
  */
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

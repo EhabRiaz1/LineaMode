@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    optimizePackageImports: ["motion", "lenis"],
+    optimizePackageImports: ["motion"],
   },
 };
 
