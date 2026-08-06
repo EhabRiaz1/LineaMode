@@ -8,6 +8,7 @@ import {
   parseEmailTemplates,
 } from "@/lib/email/template-schema";
 import { RESEND_FROM, RESEND_REPLY_TO } from "@/lib/email/resend";
+import { getBriefRecipients } from "@/lib/email/load-delivery";
 import {
   getServiceRoleClient,
   requireAdminUser,
@@ -20,11 +21,13 @@ import {
  * UI shows them rather than pretending they're editable).
  */
 
-function deliveryConfig() {
+async function deliveryConfig() {
+  // Recipients are CMS-editable; reflect the resolved value, not the env var.
+  const { recipients } = await getBriefRecipients();
   return {
     from: RESEND_FROM,
-    replyTo: RESEND_REPLY_TO,
-    deliversTo: process.env.CONTACT_EMAIL_TO ?? "contact@lineamode-apparel.com",
+    replyTo: recipients[0] ?? RESEND_REPLY_TO,
+    deliversTo: recipients.join(", "),
     autoReplyEnabled: !["false", "0", "off", "no"].includes(
       (process.env.CONTACT_AUTO_REPLY ?? "true").toLowerCase(),
     ),
@@ -53,7 +56,7 @@ export async function GET(request: Request) {
     return respond.ok({
       templates: data?.value ? parseEmailTemplates(data.value) : EMAIL_TEMPLATE_DEFAULTS,
       usingDefaults: !data?.value,
-      config: deliveryConfig(),
+      config: await deliveryConfig(),
     });
   } catch (error) {
     if (error instanceof UnauthorizedError) return respond.unauthorized(error.message);

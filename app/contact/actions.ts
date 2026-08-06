@@ -6,6 +6,7 @@ import {
   persistContactSubmission,
 } from "@/lib/contact/persist";
 import { getResendClient, RESEND_FROM } from "@/lib/email/resend";
+import { getBriefRecipients } from "@/lib/email/load-delivery";
 import { contactAutoReply } from "@/lib/email/templates";
 
 const ContactSchema = z.object({
@@ -53,7 +54,7 @@ function contactAutoReplyEnabled() {
 
 function logResendFailure(
   kind: "admin notification" | "auto-reply",
-  meta: { to: string; from: string },
+  meta: { to: string | string[]; from: string },
   result: { error?: { message: string } | null },
 ) {
   if (!result.error) return;
@@ -67,7 +68,11 @@ async function sendContactEmails(data: z.infer<typeof ContactSchema>) {
   const resend = getResendClient();
   if (!resend) return false;
 
-  const adminTo = process.env.CONTACT_EMAIL_TO ?? "contact@lineamode-apparel.com";
+  // Recipients are editable at /admin/settings/email, falling back to
+  // CONTACT_EMAIL_TO when no CMS row exists.
+  const { recipients } = await getBriefRecipients();
+  const adminTo = recipients;
+  const replyTo = recipients[0];
   const from = process.env.CONTACT_EMAIL_FROM ?? RESEND_FROM;
   const { name, brand, email, productType, moq, message } = {
     ...data,
@@ -88,7 +93,7 @@ async function sendContactEmails(data: z.infer<typeof ContactSchema>) {
       `Brief:`,
       message,
       ``,
-      `— Sent from www.lineamode.com`,
+      `— Sent from lineamode-apparel.com`,
     ].join("\n"),
   });
   logResendFailure("admin notification", { to: adminTo, from }, adminResult);
@@ -98,7 +103,7 @@ async function sendContactEmails(data: z.infer<typeof ContactSchema>) {
     const autoResult = await resend.emails.send({
       from,
       to: email,
-      replyTo: adminTo,
+      replyTo,
       subject: reply.subject,
       text: reply.text,
       html: reply.html,

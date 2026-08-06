@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { respond } from "@/lib/api/responses";
-import { getResendClient, RESEND_FROM, RESEND_REPLY_TO } from "@/lib/email/resend";
+import { getResendClient, RESEND_FROM } from "@/lib/email/resend";
+import { getReplyToAddress } from "@/lib/email/load-delivery";
 import { renderEmailTemplate } from "@/lib/email/render";
 import {
   emailTemplateSchema,
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     const sent = await resend.emails.send({
       from: RESEND_FROM,
       to,
-      replyTo: RESEND_REPLY_TO,
+      replyTo: await getReplyToAddress(),
       subject: `[Test] ${rendered.subject}`,
       text: rendered.text,
       html: rendered.html,

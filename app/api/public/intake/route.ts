@@ -3,6 +3,7 @@ import { getServiceRoleClient } from "@/lib/supabase/client";
 import { intakePayloadSchema } from "@/lib/validators/intake";
 import { hashIp, parseIp } from "@/lib/utils/ip";
 import { getResendClient, RESEND_FROM } from "@/lib/email/resend";
+import { getBriefRecipients } from "@/lib/email/load-delivery";
 import { customerAutoReply, adminNotification } from "@/lib/email/templates";
 
 export async function POST(request: Request) {
@@ -115,14 +116,15 @@ export async function POST(request: Request) {
     // Failures here never fail the request — the project is already saved.
     const resend = getResendClient();
     if (resend) {
-      const adminTo = process.env.CONTACT_EMAIL_TO ?? "saif@lineamode.com";
+      // Editable at /admin/settings/email; falls back to CONTACT_EMAIL_TO.
+      const { recipients: adminTo } = await getBriefRecipients();
       await Promise.allSettled([
         (async () => {
           const reply = await customerAutoReply(payload);
           const sent = await resend.emails.send({
             from: RESEND_FROM,
             to: payload.email,
-            replyTo: adminTo,
+            replyTo: adminTo[0],
             subject: reply.subject,
             text: reply.text,
             html: reply.html,

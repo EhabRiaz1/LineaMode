@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { ConsoleHeader } from "@/components/admin/ConsoleHeader";
 import { EmailDeliveryLog } from "@/components/admin/settings/EmailDeliveryLog";
+import { EmailRecipientsEditor } from "@/components/admin/settings/EmailRecipientsEditor";
 import { EmailTemplateEditor } from "@/components/admin/settings/EmailTemplateEditor";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { key: "templates", label: "Templates" },
+  { key: "recipients", label: "Recipients" },
   { key: "log", label: "Delivery log" },
 ] as const;
 
@@ -42,7 +44,9 @@ export default function EmailSettingsPage() {
         ))}
       </div>
 
-      {tab === "templates" ? <EmailTemplateEditor /> : <EmailDeliveryLog />}
+      {tab === "templates" && <EmailTemplateEditor />}
+      {tab === "recipients" && <EmailRecipientsEditor />}
+      {tab === "log" && <EmailDeliveryLog />}
     </div>
   );
 }
