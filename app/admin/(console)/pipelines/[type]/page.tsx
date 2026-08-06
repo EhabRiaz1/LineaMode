@@ -14,6 +14,7 @@ export async function generateMetadata({ params }: Props) {
   return { title: info ? `${info.title} · Pipelines · Admin` : "Pipeline · Admin" };
 }
 
-export default function PipelineEditorPage() {
-  return <PipelineTypeEditorView />;
+export default async function PipelineEditorPage({ params }: Props) {
+  const { type } = await params;
+  return <PipelineTypeEditorView type={type} />;
 }

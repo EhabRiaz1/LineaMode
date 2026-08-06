@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { adminFetch } from "@/lib/admin/api";
 import { saveJournalEntry } from "@/app/admin/(console)/content/_actions";
@@ -34,17 +34,14 @@ const DEFAULT_ENTRY: Entry = {
   updated_at: new Date().toISOString(),
 };
 
-function resolveRouteSlug(raw: string | string[] | undefined): string | null {
-  const slug = Array.isArray(raw) ? raw[0] : raw;
-  if (!slug || slug === "[slug]") return null;
-  return slug;
-}
-
-export function JournalEditor({ slug: slugOverride }: { slug?: string | null } = {}) {
-  const params = useParams<{ slug?: string | string[] }>();
-  const routeSlug = resolveRouteSlug(params.slug);
-  const isNew = slugOverride === null;
-  const slug = isNew ? null : (slugOverride ?? routeSlug);
+/**
+ * `slug` comes from the server: a string when editing, `null` for a new
+ * entry. It used to fall back to `useParams()`, which returns the literal
+ * "[slug]" out of the prerendered shell under Cache Components — see
+ * ContentPageEditorView.
+ */
+export function JournalEditor({ slug }: { slug: string | null }) {
+  const isNew = slug === null;
 
   const router = useRouter();
   const { token, authHeaders, status } = useAdminSession();

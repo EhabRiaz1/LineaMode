@@ -1,7 +1,6 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { useParams } from "next/navigation";
 import { ConsoleHeader } from "@/components/admin/ConsoleHeader";
 import { PipelineFlowEditor } from "@/components/admin/pipelines/PipelineFlowEditor";
 import { PIPELINE_TYPES } from "@/lib/pipelines/types";
@@ -12,20 +11,8 @@ const PIPELINE_INFO: Record<string, { title: string; eyebrow: string }> = {
   manufacture_existing: { title: "From a CAD", eyebrow: "03 / Manufacture" },
 };
 
-function resolveRouteType(raw: string | string[] | undefined): string | null {
-  const type = Array.isArray(raw) ? raw[0] : raw;
-  if (!type || type === "[type]") return null;
-  return type;
-}
-
-export function PipelineTypeEditorView() {
-  const params = useParams<{ type?: string | string[] }>();
-  const type = resolveRouteType(params.type);
-
-  if (!type) {
-    return <p className="text-body text-ink/55">Loading pipeline…</p>;
-  }
-
+/** `type` is resolved on the server by the page — see ContentPageEditorView. */
+export function PipelineTypeEditorView({ type }: { type: string }) {
   if (!PIPELINE_TYPES.includes(type as (typeof PIPELINE_TYPES)[number])) {
     notFound();
   }

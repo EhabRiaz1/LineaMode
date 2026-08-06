@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { adminFetch } from "@/lib/admin/api";
@@ -23,9 +22,8 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-export function ProjectDetailView() {
-  const params = useParams<{ id?: string | string[] }>();
-  const projectId = Array.isArray(params.id) ? params.id[0] : params.id;
+/** `projectId` is resolved on the server by the page — see ContentPageEditorView. */
+export function ProjectDetailView({ projectId }: { projectId: string }) {
   const { authHeaders, status } = useAdminSession();
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [tab, setTab] = useState<TabId>("brief");

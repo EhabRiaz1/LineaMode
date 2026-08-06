@@ -2,6 +2,11 @@ import { ProjectDetailView } from "@/components/admin/projects/detail/ProjectDet
 
 export const metadata = { title: "Project · Admin" };
 
-export default function ProjectDetailPage() {
-  return <ProjectDetailView />;
+export default async function ProjectDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  return <ProjectDetailView projectId={id} />;
 }

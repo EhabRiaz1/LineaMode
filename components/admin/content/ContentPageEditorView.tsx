@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { PageEditor } from "@/components/admin/content/PageEditor";
 import { HomeEditor } from "@/components/admin/content/HomeEditor";
 import { CapabilitiesEditor } from "@/components/admin/content/CapabilitiesEditor";
@@ -29,22 +28,16 @@ const DEDICATED_EDITORS = new Set([
   "about",
 ]);
 
-function resolveRouteSlug(raw: string | string[] | undefined): string | null {
-  const slug = Array.isArray(raw) ? raw[0] : raw;
-  // Partial Prerender can pass the segment placeholder "[slug]" via server props;
-  // useParams() reads the real URL segment and ignores that placeholder.
-  if (!slug || slug === "[slug]") return null;
-  return slug;
-}
-
-export function ContentPageEditorView() {
-  const params = useParams<{ slug?: string | string[] }>();
-  const slug = resolveRouteSlug(params.slug);
-
-  if (!slug) {
-    return <p className="text-body text-ink/55">Loading editor…</p>;
-  }
-
+/**
+ * `slug` is resolved on the server by the page and passed in as a prop.
+ *
+ * It used to come from `useParams()` here, which breaks under Cache
+ * Components: the route's prerendered shell is built with the literal
+ * segment, so the client read back "[slug]" and the view stuck on a loading
+ * state forever in production. Dev never hit it because the shell isn't
+ * prerendered there.
+ */
+export function ContentPageEditorView({ slug }: { slug: string }) {
   if (slug === "home") return <HomeEditor />;
   if (slug === "capabilities") return <CapabilitiesEditor />;
   if (slug === "contact") return <ContactEditor />;
