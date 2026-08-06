@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { PipelineTypeEditorView } from "@/components/admin/pipelines/PipelineTypeEditorView";
 
 type Props = { params: Promise<{ type: string }> };
@@ -14,7 +15,16 @@ export async function generateMetadata({ params }: Props) {
   return { title: info ? `${info.title} · Pipelines · Admin` : "Pipeline · Admin" };
 }
 
-export default async function PipelineEditorPage({ params }: Props) {
+/** params awaited behind Suspense — see content/pages/[slug]/page.tsx. */
+async function Editor({ params }: Props) {
   const { type } = await params;
   return <PipelineTypeEditorView type={type} />;
+}
+
+export default function PipelineEditorPage({ params }: Props) {
+  return (
+    <Suspense fallback={<p className="text-body text-ink/55">Loading pipeline…</p>}>
+      <Editor params={params} />
+    </Suspense>
+  );
 }
