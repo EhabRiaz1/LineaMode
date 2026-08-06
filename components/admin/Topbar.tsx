@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAdminSession } from "@/components/admin/AdminSession";
+import { buildBreadcrumb } from "@/lib/admin/breadcrumb";
 import { cn } from "@/lib/utils";
 
 type SearchHit = {
@@ -14,17 +15,6 @@ type SearchHit = {
   updated_at: string;
 };
 
-const SECTION_TITLES: Record<string, string> = {
-  inbox: "Inbox",
-  projects: "Projects",
-  pipeline: "Pipeline",
-  clients: "Clients",
-  content: "Content",
-  pages: "Pages",
-  journal: "Journal",
-  media: "Media",
-  settings: "Settings",
-};
 
 export function Topbar() {
   const pathname = usePathname();
@@ -35,14 +25,7 @@ export function Topbar() {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const breadcrumb = useMemo(() => {
-    if (!pathname) return "Console";
-    const segments = pathname.split("/").filter(Boolean).slice(1); // strip "admin"
-    if (segments.length === 0) return "Overview";
-    return segments
-      .map((seg) => SECTION_TITLES[seg] ?? seg.replace(/-/g, " "))
-      .join(" · ");
-  }, [pathname]);
+  const breadcrumb = useMemo(() => buildBreadcrumb(pathname), [pathname]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {

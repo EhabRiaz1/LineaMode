@@ -93,7 +93,14 @@ export function ThemeToggle({ floating = false }: { floating?: boolean }) {
       className={cn(
         "flex items-center gap-2 px-3 py-2 text-label transition-colors",
         floating
-          ? "rounded-full border border-[var(--hairline)] bg-stone text-ink/70 shadow-lg hover:bg-ink hover:text-stone"
+          ? // Deliberately NOT `bg-stone`: globals.css pins `.admin-* .bg-stone`
+            // to --background in an *unlayered* rule, which outranks Tailwind's
+            // entire utilities layer. Any hover:bg-* on such an element is dead,
+            // so the button kept its dark background while hover:text-stone
+            // applied — dark text on dark. Setting the rest background as an
+            // arbitrary utility keeps both states in the same layer, where the
+            // hover variant's higher specificity wins as normal.
+            "rounded-full border border-[var(--hairline)] bg-[var(--background)] text-ink/70 shadow-lg hover:bg-[var(--sidebar-active-bg)] hover:text-[var(--sidebar-active-text)]"
           : "rounded-lg text-[var(--sidebar-text-muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text)]",
       )}
       aria-label={`Current theme: ${theme}. Click to change.`}
