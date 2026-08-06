@@ -31,7 +31,6 @@ export default function ContentPage() {
         eyebrow="Content"
         title="Content management"
         subtitle="Manage pages, journal entries, and media assets."
-        centered
       />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {SECTIONS.map((section) => (

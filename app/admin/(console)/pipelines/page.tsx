@@ -31,7 +31,6 @@ export default function PipelinesPage() {
         eyebrow="Pipelines"
         title="Questionnaire flows"
         subtitle="Configure the questions and flow for each intake pipeline."
-        centered
       />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {PIPELINES.map((pipeline) => (

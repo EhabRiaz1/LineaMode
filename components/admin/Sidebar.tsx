@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useAdminSession } from "@/components/admin/AdminSession";
 import { useConsoleShell } from "@/components/admin/ConsoleShell";
@@ -43,7 +44,13 @@ const SECTIONS: Section[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const { email, signOut } = useAdminSession();
-  const { collapsed, setCollapsed } = useConsoleShell();
+  const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useConsoleShell();
+
+  // Navigating on a phone should dismiss the drawer, otherwise it covers the
+  // page you just asked for.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname, setMobileOpen]);
 
   const isActive = (href: string) => {
     if (!pathname) return false;
@@ -52,15 +59,30 @@ export function Sidebar() {
   };
 
   return (
-    <aside
-      data-collapsed={collapsed}
-      className={cn(
-        "fixed inset-y-0 left-0 z-30 flex flex-col border-r border-[var(--hairline)] bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] backdrop-blur-sm",
-        "transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-        collapsed ? "w-[72px]" : "w-[240px]",
+    <>
+      {/* Scrim: only rendered on phones, where the sidebar is a drawer. */}
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+        />
       )}
-    >
-      <div className="flex items-center justify-between gap-3 px-5 py-5 border-b border-[var(--hairline)]">
+      <aside
+        data-collapsed={collapsed}
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[var(--hairline)] bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] backdrop-blur-sm",
+          "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:transition-[width]",
+          // Phones: full-width-ish drawer that slides in. Desktop: always
+          // on-screen, width driven by the collapse toggle.
+          "w-[240px]",
+          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          collapsed ? "md:w-[72px]" : "md:w-[240px]",
+        )}
+      >
+      {/* Shares --admin-header-h with the topbar so both bottom borders line up. */}
+      <div className="flex h-[var(--admin-header-h)] shrink-0 items-center justify-between gap-3 px-5 border-b border-[var(--hairline)]">
         <Link href="/admin" className="flex items-center" aria-label="Lineamode admin home">
           {collapsed ? (
             <span className="text-h3 text-ink leading-none font-mono font-bold">L</span>
@@ -148,7 +170,8 @@ export function Sidebar() {
             <span aria-hidden>↩</span>
           </button>
         )}
-      </div>
-    </aside>
+        </div>
+      </aside>
+    </>
   );
 }

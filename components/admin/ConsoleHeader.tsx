@@ -1,49 +1,43 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * Every console page uses the same centred header. It used to have an
+ * opt-in `centered` variant that only seven of seventeen pages passed, so
+ * headings alternated between left- and centre-aligned as you moved around.
+ *
+ * `whitespace-nowrap` is deliberately absent: at narrow widths a long title
+ * would otherwise push the page into horizontal scroll.
+ */
 export function ConsoleHeader({
   eyebrow,
   title,
   subtitle,
   actions,
   className,
-  centered = false,
 }: {
   eyebrow: string;
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
   className?: string;
-  centered?: boolean;
 }) {
-  if (centered) {
-    return (
-      <header
-        className={cn(
-          "border-b border-[var(--hairline)] pb-8 text-center",
-          className,
-        )}
-      >
-        <p className="text-eyebrow text-ink/45">{eyebrow}</p>
-        <h1 className="text-h1 text-ink mt-2 whitespace-nowrap">{title}</h1>
-        {subtitle && <p className="text-body text-ink/70 mt-2 max-w-xl mx-auto">{subtitle}</p>}
-        {actions && <div className="flex justify-center gap-2 mt-6">{actions}</div>}
-      </header>
-    );
-  }
-
   return (
     <header
       className={cn(
-        "flex flex-wrap items-end justify-between gap-6 border-b border-[var(--hairline)] pb-8",
+        "border-b border-[var(--hairline)] pb-6 text-center md:pb-8",
         className,
       )}
     >
-      <div className="space-y-2 max-w-2xl">
-        <p className="text-eyebrow text-ink/45">{eyebrow}</p>
-        <h1 className="text-h1 text-ink">{title}</h1>
-        {subtitle && <p className="text-body text-ink/70">{subtitle}</p>}
-      </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      <p className="text-eyebrow text-ink/45">{eyebrow}</p>
+      <h1 className="text-admin-h1 text-ink mt-2 text-balance">{title}</h1>
+      {subtitle && (
+        <p className="text-body text-ink/70 mt-2 max-w-xl mx-auto text-pretty">
+          {subtitle}
+        </p>
+      )}
+      {actions && (
+        <div className="flex flex-wrap justify-center gap-2 mt-6">{actions}</div>
+      )}
     </header>
   );
 }

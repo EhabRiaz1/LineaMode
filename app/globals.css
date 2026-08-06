@@ -26,6 +26,10 @@
   --hairline-strong: rgba(32, 28, 29, 0.4);
   --muted: rgba(32, 28, 29, 0.6);
 
+  /* Admin console: the sidebar masthead and the topbar sit side by side, so
+     they share one height and their bottom borders read as a single line. */
+  --admin-header-h: 72px;
+
   /* Motion */
   --ease-brand: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-brand-in: cubic-bezier(0.7, 0, 0.84, 0);
@@ -253,6 +257,17 @@ body {
   letter-spacing: -0.02em;
   line-height: 0.98;
   font-size: clamp(2.5rem, 5vw + 1rem, 6rem);
+}
+
+/* Admin console page heading — text-h1 scaled to 70%. The console is a working
+   tool, not an editorial page, so the marketing display size overwhelms it.
+   Kept separate rather than shrinking .text-h1, which the customer site uses. */
+.text-admin-h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  font-size: clamp(1.75rem, 3.5vw + 0.7rem, 4.2rem);
 }
 
 .text-footer-tagline {

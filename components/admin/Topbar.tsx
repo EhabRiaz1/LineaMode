@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAdminSession } from "@/components/admin/AdminSession";
+import { useConsoleShell } from "@/components/admin/ConsoleShell";
 import { buildBreadcrumb } from "@/lib/admin/breadcrumb";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ type SearchHit = {
 export function Topbar() {
   const pathname = usePathname();
   const { authHeaders, status } = useAdminSession();
+  const { setMobileOpen } = useConsoleShell();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
@@ -80,10 +82,26 @@ export function Topbar() {
   return (
     <>
       <header className="sticky top-0 z-20 border-b border-[var(--hairline)] bg-stone/90 backdrop-blur">
-        <div className="flex items-center justify-between gap-4 px-8 py-4">
-          <div className="min-w-0">
-            <p className="text-eyebrow text-ink/45">Console</p>
-            <h2 className="text-h3 text-ink truncate">{breadcrumb}</h2>
+        {/* Shares --admin-header-h with the sidebar masthead — see Sidebar.tsx. */}
+        <div className="flex h-[var(--admin-header-h)] items-center justify-between gap-4 px-4 md:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            {/* Phone-only drawer trigger; the sidebar is always visible on md+. */}
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open navigation"
+              className="size-9 shrink-0 inline-flex items-center justify-center rounded-full border border-[var(--hairline)] text-ink/60 transition-colors hover:text-ink md:hidden"
+            >
+              <span aria-hidden className="flex flex-col gap-[3px]">
+                <span className="block h-px w-4 bg-current" />
+                <span className="block h-px w-4 bg-current" />
+                <span className="block h-px w-4 bg-current" />
+              </span>
+            </button>
+            <div className="min-w-0">
+              <p className="text-eyebrow text-ink/45">Console</p>
+              <h2 className="text-h3 text-ink truncate">{breadcrumb}</h2>
+            </div>
           </div>
 
           <button

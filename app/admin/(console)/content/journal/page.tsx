@@ -10,7 +10,6 @@ export default function JournalPage() {
         eyebrow="06 / Journal"
         title="Journal entries"
         subtitle="Manage editorial content and field essays."
-        centered
       />
       <JournalListView />
     </div>

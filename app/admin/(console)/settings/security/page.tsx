@@ -10,7 +10,6 @@ export default function SecuritySettingsPage() {
         eyebrow="09 / Settings"
         title="Security"
         subtitle="Two-factor authentication and account security settings."
-        centered
       />
       <TwoFactorSetup />
     </div>

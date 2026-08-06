@@ -10,7 +10,6 @@ export default function PagesPage() {
         eyebrow="05 / Pages"
         title="Site pages"
         subtitle="Manage content for customer-facing pages."
-        centered
       />
       <PagesListView />
     </div>

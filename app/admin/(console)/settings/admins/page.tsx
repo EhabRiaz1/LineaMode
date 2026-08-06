@@ -10,7 +10,6 @@ export default function AdminsSettingsPage() {
         eyebrow="09 / Settings"
         title="Admin accounts"
         subtitle="Manage team access and permissions."
-        centered
       />
       <AdminsList />
     </div>

@@ -10,7 +10,6 @@ export default function InboxPage() {
         eyebrow="01 / Inbox"
         title="Recent submissions"
         subtitle="Client inquiries from the past two weeks, organized by date."
-        centered
       />
       <InboxFeed />
     </div>
