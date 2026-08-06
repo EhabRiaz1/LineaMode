@@ -1,15 +1,27 @@
-export const SITE_URL = "https://www.lineamode.com";
+/** The live public domain. Every absolute URL we publish resolves here. */
+export const SITE_URL = "https://lineamode-apparel.com";
 
 /**
- * Canonical public origin for absolute URLs in metadata (Open Graph, JSON-LD).
+ * Canonical public origin for absolute URLs in metadata (Open Graph, JSON-LD,
+ * sitemap, robots).
  *
- * - Set `NEXT_PUBLIC_SITE_URL` on Vercel (e.g. `https://lineamode.vercel.app` or your custom domain).
- * - If unset, uses `VERCEL_URL` (each Vercel project’s default host) so previews work on *.vercel.app.
- * - Falls back to `SITE_URL` for local dev.
+ * Resolution order:
+ * - `NEXT_PUBLIC_SITE_URL` when set — the explicit override.
+ * - `SITE_URL` on production deployments. Deliberately *not* `VERCEL_URL`:
+ *   that is the per-deployment host (`linea-mode-<hash>.vercel.app`), which
+ *   Vercel Deployment Protection puts behind an SSO redirect. Crawlers that
+ *   fetch an og:image from it get bounced to a login page and silently drop
+ *   the preview — which is exactly how WhatsApp previews broke.
+ * - `VERCEL_URL` only for preview/branch deploys, where a per-deployment
+ *   host is the correct self-reference.
+ * - `SITE_URL` for local dev.
  */
 export function getDeploymentSiteOrigin(): string {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
   if (explicit) return explicit;
+
+  if (process.env.VERCEL_ENV === "production") return SITE_URL;
+
   const vercel = process.env.VERCEL_URL?.trim();
   if (vercel) {
     const host = vercel.replace(/^https?:\/\//, "");

@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { listJournal } from "@/lib/cms";
+import { getDeploymentSiteOrigin } from "@/lib/seo/site";
 
-const BASE = "https://www.lineamode.com";
+const BASE = getDeploymentSiteOrigin();
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 'use cache' makes the whole sitemap a Cache Component, which is
