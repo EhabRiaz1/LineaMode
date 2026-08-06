@@ -9,13 +9,8 @@ import { ScrollManager } from "@/components/layout/ScrollManager";
 import { PageTransitionGate } from "@/components/layout/PageTransitionGate";
 import { MarketingChromeGate } from "@/components/layout/MarketingChromeGate";
 import { buildOrganizationJsonLd } from "@/lib/seo/jsonld";
-import { getPageVisibility } from "@/lib/cms";
-import {
-  SITE_DESCRIPTION,
-  SITE_NAME,
-  SITE_TAGLINE,
-  getDeploymentSiteOrigin,
-} from "@/lib/seo/site";
+import { getBrandTokens, getPageVisibility } from "@/lib/cms";
+import { SITE_NAME, getDeploymentSiteOrigin } from "@/lib/seo/site";
 import {
   buildDefaultOpenGraph,
   buildDefaultTwitter,
@@ -50,12 +45,20 @@ const monoSans = Inter({
   style: ["normal", "italic"],
 });
 
-export const metadata: Metadata = {
+/**
+ * Async so the site-wide SEO defaults can come from the brand tokens editable
+ * at /admin/settings/brand. Falls back to the shipped constants when no row
+ * exists, so behaviour is unchanged until someone edits them.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrandTokens();
+
+  return {
   title: {
-    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    default: `${SITE_NAME} — ${brand.tagline}`,
     template: `%s · ${SITE_NAME}`,
   },
-  description: SITE_DESCRIPTION,
+  description: brand.metaDescription,
   keywords: [
     "Lineamode",
     "apparel manufacturer",
@@ -68,10 +71,11 @@ export const metadata: Metadata = {
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
   icons: siteIcons,
-  openGraph: buildDefaultOpenGraph(deploymentOrigin),
-  twitter: buildDefaultTwitter(deploymentOrigin),
+  openGraph: buildDefaultOpenGraph(deploymentOrigin, brand),
+  twitter: buildDefaultTwitter(deploymentOrigin, brand),
   robots: { index: true, follow: true },
-};
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#E1E1DC",

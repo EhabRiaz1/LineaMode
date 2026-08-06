@@ -43,8 +43,9 @@ const SETTINGS_CARDS: SettingsCard[] = [
   {
     eyebrow: "05",
     title: "Brand tokens",
-    body: "Hero CTA, footer copy, default SEO live in cms_settings.",
-    status: "coming",
+    body: "Site-wide tagline, default SEO copy and the footer line.",
+    href: "/admin/settings/brand",
+    status: "available",
   },
 ];
 

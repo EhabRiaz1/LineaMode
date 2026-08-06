@@ -22,24 +22,37 @@ function previewImageForOrigin(siteOrigin: string) {
   } as const;
 }
 
-export function buildDefaultOpenGraph(siteOrigin: string): NonNullable<Metadata["openGraph"]> {
+/** Site-wide copy, editable at /admin/settings/brand. */
+type BrandCopy = {
+  tagline?: string;
+  socialDescription?: string;
+  twitterDescription?: string;
+};
+
+export function buildDefaultOpenGraph(
+  siteOrigin: string,
+  brand: BrandCopy = {},
+): NonNullable<Metadata["openGraph"]> {
   return {
     type: "website",
     locale: "en_US",
     url: siteOrigin,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: SITE_OG_DESCRIPTION,
+    title: `${SITE_NAME} — ${brand.tagline ?? SITE_TAGLINE}`,
+    description: brand.socialDescription ?? SITE_OG_DESCRIPTION,
     images: [previewImageForOrigin(siteOrigin)],
   };
 }
 
-export function buildDefaultTwitter(siteOrigin: string): NonNullable<Metadata["twitter"]> {
+export function buildDefaultTwitter(
+  siteOrigin: string,
+  brand: BrandCopy = {},
+): NonNullable<Metadata["twitter"]> {
   const imageUrl = `${siteOrigin}${LINK_PREVIEW_IMAGE_PATH}`;
   return {
     card: "summary_large_image",
-    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
-    description: SITE_TWITTER_DESCRIPTION,
+    title: `${SITE_NAME} — ${brand.tagline ?? SITE_TAGLINE}`,
+    description: brand.twitterDescription ?? SITE_TWITTER_DESCRIPTION,
     images: [imageUrl],
   };
 }

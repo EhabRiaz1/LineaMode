@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getBrandTokens } from "@/lib/cms";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { FooterContact } from "@/components/layout/FooterContact";
 import { FooterSocial } from "@/components/layout/FooterSocial";
@@ -43,7 +44,9 @@ function FooterNavColumn({ col }: { col: (typeof NAV)[number] }) {
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const brand = await getBrandTokens();
+
   return (
     <footer className="relative bg-ink text-stone overflow-hidden">
       <GridPattern
@@ -101,7 +104,7 @@ export function SiteFooter() {
 
         <div className="mt-20 pt-8 pb-6 md:pb-10 border-t border-stone/15 flex flex-col md:flex-row gap-4 justify-between text-label text-stone/60">
           <p>© <CopyrightYear /> Lineamode Apparel. All rights reserved.</p>
-          <p>Design-led apparel manufacturing · Lahore, Pakistan</p>
+          <p>{brand.footerTagline}</p>
         </div>
       </div>
     </footer>

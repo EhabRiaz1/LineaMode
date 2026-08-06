@@ -26,6 +26,12 @@ import { FOUNDERS_CONTENT_DEFAULTS, type FoundersContent } from "./founders-sche
 import { PRODUCTS_CONTENT_DEFAULTS, type ProductsContent } from "./products-schema";
 import { JOURNAL_INTRO_DEFAULTS, type JournalIntroContent } from "./journal-intro-schema";
 import { ABOUT_CONTENT_DEFAULTS, type AboutContent } from "./about-schema";
+import {
+  BRAND_TOKENS_DEFAULTS,
+  BRAND_TOKENS_SETTING_KEY,
+  parseBrandTokens,
+  type BrandTokens,
+} from "./brand-schema";
 
 export type JournalSummary = {
   slug: string;
@@ -193,6 +199,13 @@ export const getHomeContent = async (): Promise<HomeContent> => {
   cacheTag(cmsTags.homeContent());
   const provider = await resolveProvider();
   return provider.getHomeContent();
+};
+
+export const getBrandTokens = async (): Promise<BrandTokens> => {
+  "use cache";
+  cacheTag(cmsTags.brandTokens());
+  const stored = await getSetting<unknown>(BRAND_TOKENS_SETTING_KEY);
+  return stored ? parseBrandTokens(stored) : BRAND_TOKENS_DEFAULTS;
 };
 
 export const getPageVisibility = async (): Promise<PageVisibility> => {

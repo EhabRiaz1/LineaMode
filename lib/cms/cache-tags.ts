@@ -19,5 +19,6 @@ export const cmsTags = {
   productsContent: () => "cms:products-content",
   journalIntro: () => "cms:journal-intro",
   aboutContent: () => "cms:about-content",
+  brandTokens: () => "cms:brand-tokens",
   media: () => "cms:media",
 };
