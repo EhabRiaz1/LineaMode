@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { PipelineTypeEditorView } from "@/components/admin/pipelines/PipelineTypeEditorView";
 
 type Props = { params: Promise<{ type: string }> };
@@ -15,8 +16,9 @@ export async function generateMetadata({ params }: Props) {
   return { title: info ? `${info.title} · Pipelines · Admin` : "Pipeline · Admin" };
 }
 
-/** params awaited behind Suspense — see content/pages/[slug]/page.tsx. */
+/** connection() + Suspense keeps this off the prerender — see content/pages/[slug]/page.tsx. */
 async function Editor({ params }: Props) {
+  await connection();
   const { type } = await params;
   return <PipelineTypeEditorView type={type} />;
 }
