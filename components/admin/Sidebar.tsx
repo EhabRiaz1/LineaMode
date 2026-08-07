@@ -44,7 +44,7 @@ const SECTIONS: Section[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const { email, signOut } = useAdminSession();
-  const { collapsed, setCollapsed, mobileOpen, setMobileOpen } = useConsoleShell();
+  const { mobileOpen, setMobileOpen } = useConsoleShell();
 
   // Navigating on a phone should dismiss the drawer, otherwise it covers the
   // page you just asked for.
@@ -70,42 +70,26 @@ export function Sidebar() {
         />
       )}
       <aside
-        data-collapsed={collapsed}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[var(--hairline)] bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] backdrop-blur-sm",
-          "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:transition-[width]",
-          // Phones: full-width-ish drawer that slides in. Desktop: always
-          // on-screen, width driven by the collapse toggle.
-          "w-[240px]",
+          "fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col border-r border-[var(--hairline)] bg-[var(--sidebar-bg)] text-[var(--sidebar-text)] backdrop-blur-sm",
+          "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          // Phones: a drawer that slides in. Desktop: always on-screen.
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          collapsed ? "md:w-[72px]" : "md:w-[240px]",
         )}
       >
       {/* Shares --admin-header-h with the topbar so both bottom borders line up. */}
-      <div className="flex h-[var(--admin-header-h)] shrink-0 items-center justify-between gap-3 px-5 border-b border-[var(--hairline)]">
+      <div className="flex h-[var(--admin-header-h)] shrink-0 items-center px-5 border-b border-[var(--hairline)]">
         <Link href="/admin" className="flex items-center" aria-label="Lineamode admin home">
-          {collapsed ? (
-            <span className="text-h3 text-ink leading-none font-mono font-bold">L</span>
-          ) : (
-            <BrandLogo context="light" className="admin-sidebar-logo h-3.5" priority />
-          )}
+          <BrandLogo context="light" className="admin-sidebar-logo h-3.5" priority />
         </Link>
-        <button
-          type="button"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          onClick={() => setCollapsed((v) => !v)}
-          className="size-7 inline-flex items-center justify-center rounded-full border border-[var(--hairline)] text-[var(--sidebar-text-muted)] hover:text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)] transition-colors"
-        >
-          <span aria-hidden className="block h-px w-3 bg-current" />
-        </button>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 py-5 space-y-7">
         {SECTIONS.map((section) => (
           <div key={section.heading}>
-            {!collapsed && (
-              <p className="px-3 mb-2 text-eyebrow text-[var(--sidebar-text-muted)]">{section.heading}</p>
-            )}
+            <p className="px-3 mb-2 text-eyebrow text-[var(--sidebar-text-muted)]">
+              {section.heading}
+            </p>
             <ul className="flex flex-col gap-px">
               {section.items.map((item) => {
                 const active = isActive(item.href);
@@ -113,7 +97,6 @@ export function Sidebar() {
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      title={collapsed ? item.label : undefined}
                       aria-current={active ? "page" : undefined}
                       className={cn(
                         "group flex items-center gap-3 rounded-xl px-3 py-2 text-label transition-colors",
@@ -130,8 +113,8 @@ export function Sidebar() {
                       >
                         {item.number}
                       </span>
-                      {!collapsed && <span className="truncate">{item.label}</span>}
-                      {active && !collapsed && (
+                      <span className="truncate">{item.label}</span>
+                      {active && (
                         <span aria-hidden className="ml-auto block size-1.5 rounded-full bg-[var(--sidebar-active-text)]" />
                       )}
                     </Link>
@@ -143,33 +126,25 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-t border-[var(--hairline)] px-3 py-3 space-y-3">
-        {!collapsed ? (
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-eyebrow text-[var(--sidebar-text-muted)]">Admin</p>
-              <p className="text-label text-[var(--sidebar-text)] truncate" title={email ?? undefined}>
-                {email ?? "—"}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => void signOut()}
-              className="text-label text-[var(--sidebar-text-muted)] hover:text-[var(--sidebar-text)] hover:underline"
+      <div className="border-t border-[var(--hairline)] px-3 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-eyebrow text-[var(--sidebar-text-muted)]">Admin</p>
+            <p
+              className="text-label text-[var(--sidebar-text)] truncate"
+              title={email ?? undefined}
             >
-              Sign out
-            </button>
+              {email ?? "—"}
+            </p>
           </div>
-        ) : (
           <button
             type="button"
             onClick={() => void signOut()}
-            aria-label="Sign out"
-            className="size-9 inline-flex items-center justify-center rounded-full border border-[var(--hairline)] text-[var(--sidebar-text-muted)] hover:text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)]"
+            className="text-label text-[var(--sidebar-text-muted)] hover:text-[var(--sidebar-text)] hover:underline"
           >
-            <span aria-hidden>↩</span>
+            Sign out
           </button>
-        )}
+        </div>
         </div>
       </aside>
     </>

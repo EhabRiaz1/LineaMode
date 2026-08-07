@@ -1,14 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { Sidebar } from "@/components/admin/Sidebar";
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import { Topbar } from "@/components/admin/Topbar";
 import { cn } from "@/lib/utils";
 
 type ShellContextValue = {
-  collapsed: boolean;
-  setCollapsed: (next: boolean | ((prev: boolean) => boolean)) => void;
   /** Phone-only: the sidebar is an off-canvas drawer below md. */
   mobileOpen: boolean;
   setMobileOpen: (next: boolean | ((prev: boolean) => boolean)) => void;
@@ -22,46 +20,23 @@ export function useConsoleShell() {
   return ctx;
 }
 
-const STORAGE_KEY = "lineamode.adminSidebarCollapsed";
-
+/**
+ * The desktop sidebar used to be collapsible, with the preference persisted in
+ * localStorage. Removing the toggle meant removing the state too: leaving the
+ * stored value in place would have pinned anyone who had collapsed it to a
+ * 72px rail with no way to expand it again.
+ */
 export function ConsoleShell({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Restore the collapsed preference once mounted so SSR markup matches the
-  // default (expanded) state and we never flash.
-  useEffect(() => {
-    const id = window.setTimeout(() => {
-      try {
-        const stored = window.localStorage.getItem(STORAGE_KEY);
-        if (stored === "true") setCollapsed(true);
-      } catch {
-        // ignore — private mode / disabled storage
-      }
-    }, 0);
-    return () => window.clearTimeout(id);
-  }, []);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, String(collapsed));
-    } catch {
-      // ignore
-    }
-  }, [collapsed]);
-
   return (
-    <ShellContext.Provider
-      value={{ collapsed, setCollapsed, mobileOpen, setMobileOpen }}
-    >
+    <ShellContext.Provider value={{ mobileOpen, setMobileOpen }}>
       <Sidebar />
       <div
         className={cn(
-          "transition-[margin] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           // No margin on phones — the sidebar is a drawer there, so reserving
           // 240px would leave the content squeezed into a sliver.
-          "ml-0",
-          collapsed ? "md:ml-[72px]" : "md:ml-[240px]",
+          "ml-0 md:ml-[240px]",
         )}
       >
         <Topbar />
