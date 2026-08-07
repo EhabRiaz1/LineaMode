@@ -47,6 +47,13 @@ const SETTINGS_CARDS: SettingsCard[] = [
     href: "/admin/settings/brand",
     status: "available",
   },
+  {
+    eyebrow: "06",
+    title: "Operation manual",
+    body: "How the site works, what to tell customers, and everything a new admin needs on day one.",
+    href: "/admin/settings/manual",
+    status: "available",
+  },
 ];
 
 export default function SettingsPage() {
