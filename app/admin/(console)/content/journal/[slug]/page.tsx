@@ -1,12 +1,14 @@
 import { Suspense } from "react";
+import { connection } from "next/server";
 import { JournalEditor } from "@/components/admin/content/JournalEditor";
 
 export const metadata = { title: "Edit entry · Admin" };
 
 type Props = { params: Promise<{ slug: string }> };
 
-/** params awaited behind Suspense — see content/pages/[slug]/page.tsx. */
+/** connection() + Suspense keeps this off the prerender — see content/pages/[slug]/page.tsx. */
 async function Editor({ params }: Props) {
+  await connection();
   const { slug } = await params;
   return <JournalEditor slug={slug} />;
 }
