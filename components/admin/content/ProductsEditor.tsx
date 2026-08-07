@@ -30,6 +30,7 @@ import {
   EditorShell,
 } from "./EditorFields";
 import { CategoryCatalogPanel } from "./CategoryCatalogPanel";
+import { LookbookPdfUploader } from "./LookbookPdfUploader";
 
 function newProductId(category: ProductCategorySlug): string {
   return `${category}-${crypto.randomUUID().slice(0, 8)}`;
@@ -306,15 +307,21 @@ export function ProductsEditor() {
           value={lookbook.label}
           onChange={(v) => update({ ...content, lookbookCta: { ...lookbook, label: v } })}
         />
+        <LookbookPdfUploader
+          value={lookbook.pdfHref}
+          onUploaded={(publicUrl) =>
+            update({ ...content, lookbookCta: { ...lookbook, pdfHref: publicUrl } })
+          }
+        />
         <Field
           label="Lookbook PDF URL"
           value={lookbook.pdfHref}
-          placeholder="/documents/lineamode-lookbook.pdf"
+          placeholder="https://…/lookbook.pdf"
           onChange={(v) => update({ ...content, lookbookCta: { ...lookbook, pdfHref: v } })}
         />
         <p className="text-label text-ink/45">
-          Opens in a new tab when visitors hover a product image and click the CTA. Host the PDF in{" "}
-          <code className="text-ink/60">public/documents/</code> or link an external URL.
+          Opens in a new tab when visitors hover a product image and click the CTA. Drop a
+          PDF above to upload it, or paste any external URL here instead.
         </p>
       </SectionAccordion>
 
